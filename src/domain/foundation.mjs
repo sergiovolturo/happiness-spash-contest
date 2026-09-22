@@ -20,6 +20,14 @@ export const PARTICIPATION_STATUSES = Object.freeze([
   'CANCELLED',
 ]);
 
+export const SUBMISSION_STATUSES = Object.freeze([
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+  'WITHDRAWN',
+  'CANCELLED',
+]);
+
 const nonEmpty = (value) => typeof value === 'string' && value.trim().length > 0;
 const validDate = (value) => value === undefined || value === null ||
   (typeof value === 'string' && Number.isFinite(Date.parse(value)));
@@ -72,6 +80,21 @@ export function validateCategoryFoundation(input) {
   }
   if (!Number.isInteger(input?.finalistsCount) || input.finalistsCount < 1) {
     errors.push('finalistsCount must be a positive integer');
+  }
+  return errors;
+}
+
+/** @param {Record<string, unknown>} input */
+export function validateSubmissionFoundation(input) {
+  const errors = [];
+  if (!nonEmpty(input?.participationId)) errors.push('participationId is required');
+  if (!nonEmpty(input?.categoryId)) errors.push('categoryId is required');
+  if (input?.status !== undefined && !SUBMISSION_STATUSES.includes(input.status)) {
+    errors.push('status is invalid');
+  }
+  if (input?.rejectionReason !== undefined && input.rejectionReason !== null &&
+      typeof input.rejectionReason !== 'string') {
+    errors.push('rejectionReason must be a string or null');
   }
   return errors;
 }
