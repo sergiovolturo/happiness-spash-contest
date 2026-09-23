@@ -40,8 +40,8 @@ create policy submission_publications_select_admin
     )
   );
 
-revoke select, insert, update, delete on table public.submission_publications from anon;
-revoke insert, update, delete on table public.submission_publications from authenticated;
+revoke all on table public.submission_publications from anon;
+revoke all on table public.submission_publications from authenticated;
 grant select on table public.submission_publications to authenticated;
 
 -- Public consumers receive only the identifiers needed to resolve published
@@ -58,7 +58,7 @@ where sp.revoked_at is null
   and sm.status = 'FINALIZED'
   and sm.is_current;
 
-revoke all on public.published_submission_media from public;
+revoke all on public.published_submission_media from public, anon, authenticated;
 grant select on public.published_submission_media to anon, authenticated;
 
 create or replace function public.open_contest_voting(

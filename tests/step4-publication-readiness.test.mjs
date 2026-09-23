@@ -52,11 +52,13 @@ test('revoke is Admin-only, reasoned, historical and safely idempotent', () => {
 test('publication RLS and Storage exposure are limited to active non-revoked records', () => {
   assert.match(migration, /alter table public\.submission_publications enable row level security/i);
   assert.doesNotMatch(migration, /create policy submission_publications_select_active/i);
-  assert.match(migration, /revoke select, insert, update, delete on table public\.submission_publications from anon/i);
+  assert.match(migration, /revoke all on table public\.submission_publications from anon/i);
+  assert.match(migration, /revoke all on table public\.submission_publications from authenticated/i);
   assert.match(migration, /create policy submission_publications_select_admin[\s\S]*?to authenticated/i);
   assert.match(migration, /create view public\.published_submission_media[\s\S]*?sp\.id as publication_id[\s\S]*?sp\.submission_id[\s\S]*?sp\.media_id[\s\S]*?sp\.published_at/i);
   assert.match(migration, /where sp\.revoked_at is null[\s\S]*?sm\.status = 'FINALIZED'[\s\S]*?sm\.is_current/i);
   assert.match(migration, /grant select on public\.published_submission_media to anon, authenticated/i);
+  assert.match(migration, /revoke all on public\.published_submission_media from public, anon, authenticated/i);
   const publicView = migration.slice(
     migration.indexOf('create view public.published_submission_media'),
     migration.indexOf('create or replace function public.open_contest_voting'),
