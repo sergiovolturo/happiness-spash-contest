@@ -52,7 +52,7 @@ test('Admin flow stays behind the existing Admin gate and shows publication stat
 });
 
 test('logout clears Admin state and participant Admin actions require an active session', () => {
-  assert.match(index, /isAdmin=false;settings=null;participantId=null;submissionRows=\[\];mediaRows=\[\];votedCategoryIds=new Set\(\);voteStateError=null;otpPending=false;otpVerified=false;galleryRequestSeq\+\+;clearGalleryObjectUrls\(\);galleryRows=\[\];galleryLoadedContestId=null;authView\(\)/);
+  assert.match(index, /isAdmin=false;settings=null;participantId=null;submissionRows=\[\];mediaRows=\[\];votedCategoryIds=new Set\(\);voteStateError=null;otpPending=false;otpVerified=false;adminResultsRequestSeq\+\+;galleryRequestSeq\+\+;clearGalleryObjectUrls\(\);galleryRows=\[\];galleryLoadedContestId=null;authView\(\)/);
   assert.match(adminFlow, /if\(!isAdmin\|\|!session\)return/);
 });
 
