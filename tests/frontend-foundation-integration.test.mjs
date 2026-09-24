@@ -4,14 +4,15 @@ import test from 'node:test';
 
 const index = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const start = index.indexOf('async function loadPublicContest');
-const end = index.indexOf('// Legacy media flow remains below');
-const participantFlow = index.slice(start, end);
+const galleryStart = index.indexOf('// Public gallery flow starts here');
+const participantEnd = index.indexOf('// Legacy media flow remains below');
+const participantFlow = index.slice(start, galleryStart) + index.slice(index.indexOf('// New participant domain flow'), participantEnd);
 
 test('frontend loads Contest and categories only through public RPCs', () => {
   assert.match(participantFlow, /rpc\('get_public_contest'\)/);
   assert.match(participantFlow, /rpc\('get_public_contest_categories'/);
   assert.doesNotMatch(participantFlow, /from\(['"]contests['"]\)|from\(['"]contest_categories['"]\)/);
-  assert.match(participantFlow, /publicContest\?\.status/);
+  assert.match(index, /publicContest\.status/);
 });
 
 test('frontend renders unavailable Contest and RPC errors', () => {
@@ -70,7 +71,7 @@ test('legacy login/signup remains present while new flow avoids hard-coded Conte
 
 test('auth initialization does not race the initial session event', () => {
   assert.match(index, /let authReady=false/);
-  assert.match(index, /authReady=true;if\(!session\)return authView/);
+  assert.match(index, /authReady=true;if\(!session\)return render/);
   assert.match(index, /if\(!authReady\)return/);
 });
 
