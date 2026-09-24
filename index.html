@@ -22,19 +22,19 @@ label{display:block;font-weight:700;font-size:14px;margin:14px 0 7px}.input{widt
 </head>
 <body>
 <div class="shell">
-<header class="top"><div class="brand"><div class="mark">H</div><div><h1>HAPPINESS × SPASH</h1><small>Highlight Contest</small></div></div><button id="logout" class="btn hidden">Esci</button></header>
+<header class="top"><div class="brand"><div class="mark">H</div><div><h1>HAPPINESS × SPASH</h1><small>Highlight Contest</small></div></div><div class="actions"><button id="login" class="btn">Accedi</button><button id="logout" class="btn hidden">Esci</button></div></header>
 <main id="app"><div class="spinner"></div></main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js" onerror="document.getElementById('app').innerHTML='<div class=&quot;notice error&quot;>Impossibile caricare l’app. Aggiorna la pagina oppure prova senza blocco pubblicità.</div>'"></script>
 <script>
 const supabase=window.supabase.createClient('https://pkaadvqyrdxgymzzugvo.supabase.co','sb_publishable_Yru2Ftclbaq6n-7laSrP_A_su230R5h');
-const app=document.querySelector('#app'), logout=document.querySelector('#logout');
+const app=document.querySelector('#app'), login=document.querySelector('#login'), logout=document.querySelector('#logout');
 let session=null,isAdmin=false,settings=null,currentTab='home';
 let publicContest=null,publicCategories=[],participantId=null,submissionRows=[],mediaRows=[],galleryRows=[],galleryError=null,gallerySelectedCategoryId=null,galleryLoadedContestId=null,galleryRequestSeq=0;
 const galleryObjectUrls=new Map(),galleryMediaErrors=new Map();
 let publicContestError=null,publicCategoryError=null,participantError=null,submissionError=null,mediaError=null;
 let votedCategoryIds=new Set(),voteStateError=null,voteTarget=null,otpEmail='',otpPending=false,otpVerified=false,adminResultsRequestSeq=0;
-let authReady=false;
+let authReady=false,authRequestSeq=0;
 const uploadedMediaIds=new Set();
 const mediaUploadInFlight=new Set();
 const adminActionsInFlight=new Set();
@@ -42,14 +42,17 @@ const otpRequestInFlight={value:false},otpVerifyInFlight={value:false},voteInFli
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const msg=(text,type='notice')=>'<div class="notice '+type+'">'+esc(text)+'</div>';
 const fmt=n=>new Intl.DateTimeFormat('it-IT',{dateStyle:'medium',timeStyle:'short'}).format(new Date(n));
-async function boot(){try{await loadPublicContest();const {data,error}=await supabase.auth.getSession();if(error)throw error;session=data.session;authReady=true;if(!session)return render();await loadContext();await loadVoteState();render()}catch(error){authReady=true;app.innerHTML=msg('Errore di collegamento. Aggiorna la pagina e riprova.','error');console.error(error)}}
-supabase.auth.onAuthStateChange(async(_,s)=>{session=s;if(!authReady)return;if(s){await loadContext();await loadVoteState();render()}else{isAdmin=false;settings=null;participantId=null;submissionRows=[];mediaRows=[];votedCategoryIds=new Set();voteStateError=null;otpPending=false;otpVerified=false;adminResultsRequestSeq++;galleryRequestSeq++;clearGalleryObjectUrls();galleryRows=[];galleryLoadedContestId=null;authView()}});
+function syncAuthButtons(){const authenticated=!!session;login.classList.toggle('hidden',authenticated);logout.classList.toggle('hidden',!authenticated)}
+async function boot(){try{await loadPublicContest();const {data,error}=await supabase.auth.getSession();if(error)throw error;session=data.session;authReady=true;syncAuthButtons();if(!session)return render();await loadContext();await loadVoteState();render()}catch(error){authReady=true;syncAuthButtons();app.innerHTML=msg('Errore di collegamento. Aggiorna la pagina e riprova.','error');console.error(error)}}
+supabase.auth.onAuthStateChange(async(_,s)=>{const requestId=++authRequestSeq;session=s;syncAuthButtons();if(!authReady)return;if(s){await loadContext();await loadVoteState();if(requestId!==authRequestSeq||session!==s)return;render()}else{isAdmin=false;settings=null;participantId=null;submissionRows=[];mediaRows=[];votedCategoryIds=new Set();voteStateError=null;otpPending=false;otpVerified=false;adminResultsRequestSeq++;galleryRequestSeq++;clearGalleryObjectUrls();galleryRows=[];galleryLoadedContestId=null;render()}});
+login.onclick=()=>authView();
 logout.onclick=async()=>supabase.auth.signOut();
-function authView(){logout.classList.add('hidden');app.innerHTML=`
+function authView(){syncAuthButtons();login.classList.add('hidden');logout.classList.add('hidden');app.innerHTML=`
 <section class="card auth"><div class="eyebrow">Happiness SPASH Contest</div><h2 id="authTitle">Entra nel contest.</h2><p id="authSub">Accedi per caricare i tuoi highlight e votare.</p><div id="authMsg"></div>
 <form id="loginForm"><div id="registerFields" class="hidden"><label>Nome e cognome</label><input class="input" id="fullName" autocomplete="name"><label>Profilo Instagram</label><input class="input" id="instagram" placeholder="@username"></div>
 <label>Email</label><input class="input" id="email" type="email" required autocomplete="email"><label>Password</label><input class="input" id="password" type="password" required minlength="8" autocomplete="current-password">
-<button class="btn primary wide" id="authSubmit">Accedi</button></form><button class="link wide" id="toggleAuth">Non hai un account? Registrati</button></section>`;
+<button class="btn primary wide" id="authSubmit">Accedi</button></form><button class="link wide" id="toggleAuth">Non hai un account? Registrati</button><button class="link wide" id="backToContest">← Torna al Contest</button></section>`;
+document.querySelector('#backToContest').onclick=()=>{currentTab='home';render()};
 let register=false;document.querySelector('#toggleAuth').onclick=()=>{register=!register;document.querySelector('#registerFields').classList.toggle('hidden',!register);document.querySelector('#authTitle').textContent=register?'Crea il tuo account.':'Entra nel contest.';document.querySelector('#authSubmit').textContent=register?'Registrati':'Accedi';document.querySelector('#toggleAuth').textContent=register?'Hai già un account? Accedi':'Non hai un account? Registrati';document.querySelector('#password').autocomplete=register?'new-password':'current-password'};
 document.querySelector('#loginForm').onsubmit=async e=>{e.preventDefault();const box=document.querySelector('#authMsg'),btn=document.querySelector('#authSubmit');btn.disabled=true;box.innerHTML='';const email=document.querySelector('#email').value.trim(),password=document.querySelector('#password').value;let error;
 if(register){const full_name=document.querySelector('#fullName').value.trim();if(full_name.length<2){box.innerHTML=msg('Inserisci nome e cognome.','error');btn.disabled=false;return}({error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:'https://gabrieledellatti22.github.io/happiness-spash-contest/',data:{full_name,instagram_handle:document.querySelector('#instagram').value.trim()}}}));if(!error)box.innerHTML=msg('Registrazione completata. Controlla la tua email per confermare l’account.','success')}
@@ -64,7 +67,7 @@ async function loadSubmissions(){if(!participantId)return;const {data,error}=awa
 async function loadMedia(){mediaRows=[];if(!submissionRows.length)return;const ids=submissionRows.map(s=>s.id);const {data,error}=await supabase.from('submission_media').select('id,submission_id,storage_bucket,storage_path,original_filename,mime_type,file_size_bytes,duration_seconds,version_no,status,is_current,created_at').in('submission_id',ids).order('version_no',{ascending:false});if(error){mediaError=error;return}mediaRows=data||[]}
 function nav(){return '<nav class="nav">'+[['home','Contest'],['upload','Candidatura'],...(isAdmin?[['admin','Amministra']]:[])].map(([id,l])=>'<button class="btn '+(currentTab===id?'active':'')+'" data-tab="'+id+'">'+l+'</button>').join('')+'</nav>'}
 function bindNav(){document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{currentTab=b.dataset.tab;render()})}
-async function render(){app.innerHTML=nav()+'<div id="view"><div class="spinner"></div></div>';bindNav();if(currentTab==='home')await homeView();if(currentTab==='upload'){if(session&&!participantId)await loadParticipantContext();await submissionView()}if(currentTab==='vote')await voteView();if(currentTab==='admin')await adminView()}
+async function render(){syncAuthButtons();app.innerHTML=nav()+'<div id="view"><div class="spinner"></div></div>';bindNav();if(currentTab==='home')await homeView();if(currentTab==='upload'){if(session&&!participantId)await loadParticipantContext();await submissionView()}if(currentTab==='vote')await voteView();if(currentTab==='admin')await adminView()}
 // Public gallery flow starts here; participant-flow tests intentionally stop before it.
 function clearGalleryObjectUrls(){for(const url of galleryObjectUrls.values())URL.revokeObjectURL(url);galleryObjectUrls.clear()}
 async function loadPublicGallery(){if(!publicContest||galleryLoadedContestId===publicContest.id)return;const contestId=publicContest.id,requestId=++galleryRequestSeq;galleryError=null;galleryRows=[];gallerySelectedCategoryId=null;galleryMediaErrors.clear();clearGalleryObjectUrls();const {data,error}=await supabase.from('published_submission_media').select('publication_id,submission_id,media_id,contest_id,category_id,published_at,storage_bucket,storage_path').eq('contest_id',contestId).order('published_at',{ascending:false});if(requestId!==galleryRequestSeq||publicContest?.id!==contestId)return;if(error){galleryError=error;return}galleryRows=(data||[]).filter(row=>row.contest_id===contestId&&publicCategories.some(category=>category.id===row.category_id));galleryLoadedContestId=contestId}

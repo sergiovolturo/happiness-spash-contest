@@ -71,8 +71,26 @@ test('legacy login/signup remains present while new flow avoids hard-coded Conte
 
 test('auth initialization does not race the initial session event', () => {
   assert.match(index, /let authReady=false/);
-  assert.match(index, /authReady=true;if\(!session\)return render/);
+  assert.match(index, /authReady=true;syncAuthButtons\(\);if\(!session\)return render/);
   assert.match(index, /if\(!authReady\)return/);
+});
+
+test('public entrypoint exposes the existing email/password auth view without a login wall', () => {
+  assert.match(index, /id="login"[^>]*>Accedi/);
+  assert.match(index, /login\.onclick=\(\)=>authView\(\)/);
+  assert.match(index, /id="loginForm"/);
+  assert.match(index, /id="backToContest"/);
+  assert.match(index, /currentTab='home';render\(\)/);
+  assert.match(index, /async function render\(\)\{syncAuthButtons\(\)/);
+});
+
+test('auth buttons follow session state and stale authenticated responses are ignored', () => {
+  assert.match(index, /function syncAuthButtons\(\)/);
+  assert.match(index, /login\.classList\.toggle\('hidden',authenticated\)/);
+  assert.match(index, /logout\.classList\.toggle\('hidden',!authenticated\)/);
+  assert.match(index, /let authReady=false,authRequestSeq=0/);
+  assert.match(index, /requestId!==authRequestSeq\|\|session!==s/);
+  assert.match(index, /else\{isAdmin=false[\s\S]*?render\(\)\}\}\);/);
 });
 
 test('media flow uses Step 3 prepare, backend path/bucket and finalize RPCs', () => {
