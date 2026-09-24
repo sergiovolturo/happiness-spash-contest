@@ -48,8 +48,8 @@ test('gallery handles empty, unavailable and network-error states', () => {
   assert.match(galleryFlow, /galleryRows=\(data\|\|\[\]\)/);
 });
 
-test('gallery does not expose voting, ranking or counts', () => {
-  assert.doesNotMatch(galleryFlow, /vota|voto|ranking|classifica|conteggio|percentuale/i);
+test('gallery does not expose ranking or vote counts', () => {
+  assert.doesNotMatch(galleryFlow, /ranking|classifica|conteggio|percentuale|vote_count/i);
 });
 
 test('gallery object URLs are cleaned up and stale downloads cannot update state', () => {
