@@ -73,3 +73,66 @@ test('auth initialization does not race the initial session event', () => {
   assert.match(index, /authReady=true;if\(!session\)return authView/);
   assert.match(index, /if\(!authReady\)return/);
 });
+
+test('media flow uses Step 3 prepare, backend path/bucket and finalize RPCs', () => {
+  assert.match(participantFlow, /rpc\('prepare_submission_media_upload'/);
+  assert.match(participantFlow, /media\.storage_bucket/);
+  assert.match(participantFlow, /media\.storage_path/);
+  assert.match(participantFlow, /storage\.from\(media\.storage_bucket\)\.upload/);
+  assert.match(participantFlow, /rpc\('finalize_submission_media_upload'/);
+  assert.match(participantFlow, /p_media_id:media\.id/);
+  assert.doesNotMatch(participantFlow, /session\.user\.id\+['"]\//);
+});
+
+test('media flow does not finalize when Storage upload fails', () => {
+  const uploadPosition = participantFlow.indexOf('storage.from(media.storage_bucket).upload');
+  const finalizePosition = participantFlow.indexOf("rpc('finalize_submission_media_upload'");
+  assert.ok(uploadPosition >= 0 && finalizePosition > uploadPosition);
+  assert.match(participantFlow.slice(uploadPosition, finalizePosition), /uploaded\.error/);
+});
+
+test('media flow validates backend-supported mime and size limits', () => {
+  assert.match(participantFlow, /video\/mp4/);
+  assert.match(participantFlow, /video\/webm/);
+  assert.match(participantFlow, /video\/quicktime/);
+  assert.match(participantFlow, /file\.size>10485760/);
+});
+
+test('media flow refreshes submission and media state after finalize', () => {
+  assert.match(participantFlow, /await loadParticipantContext\(\);await submissionView\(\)/);
+  assert.match(participantFlow, /from\(['"]submission_media['"]\)/);
+  assert.match(participantFlow, /mediaStatusLabel/);
+  assert.match(participantFlow, /is_current/);
+});
+
+test('media versioning reuses prepared media and never overwrites Storage objects', () => {
+  assert.match(participantFlow, /status==='PREPARED'/);
+  assert.match(participantFlow, /media\.original_filename!==file\.name/);
+  assert.match(participantFlow, /upsert:false/);
+  assert.doesNotMatch(participantFlow, /replace|overwrite/i);
+});
+
+test('media finalize retry does not re-upload an object already uploaded', () => {
+  assert.match(participantFlow, /uploadedMediaIds\.has\(media\.id\)/);
+  assert.match(participantFlow, /uploadedMediaIds\.add\(media\.id\)/);
+  assert.match(participantFlow, /uploadedMediaIds\.delete\(media\.id\)/);
+  assert.match(participantFlow, /Riprova finalize/);
+});
+
+test('media upload is serialized and recovers from network exceptions', () => {
+  assert.match(participantFlow, /mediaUploadInFlight\.has\(submissionId\)/);
+  assert.match(participantFlow, /mediaUploadInFlight\.add\(submissionId\)/);
+  assert.match(participantFlow, /mediaUploadInFlight\.delete\(submissionId\)/);
+  assert.match(participantFlow, /catch\(error\).*Connessione interrotta/s);
+  assert.match(participantFlow, /button\.disabled=false/);
+});
+
+test('successful media completion rebuilds the form and clears the file input', () => {
+  assert.match(participantFlow, /await loadParticipantContext\(\);await submissionView\(\)/);
+  assert.doesNotMatch(participantFlow, /const\s+lastSelectedFile/);
+});
+
+test('new media flow remains isolated from legacy video/vote writes', () => {
+  assert.doesNotMatch(participantFlow, /from\(['"]videos['"]\)|from\(['"]votes['"]\)|from\(['"]contest_settings['"]\)/);
+  assert.doesNotMatch(participantFlow, /\.insert\(\{[^}]*video_path/);
+});
