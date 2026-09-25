@@ -31,6 +31,7 @@ test('video cards are placeholders with on-demand playback; opening the gallery 
   assert.match(index, /storage\.from\(row\.storage_bucket\)\.download\(row\.storage_path\)/);
   assert.doesNotMatch(gallery.slice(0, gallery.indexOf('if(galleryActiveMediaId){')), /resolveGalleryMedia/);
   assert.doesNotMatch(gallery, /createSignedUrl|from\(['"]submission_media['"]\)|from\(['"]submission_publications['"]\)|from\(['"]submissions['"]\)/);
+  assert.doesNotMatch(gallery.slice(0, gallery.indexOf('if(galleryActiveMediaId){')), /<video/);
 });
 
 test('every public gallery visit refreshes publication view so revoked media disappear', () => {

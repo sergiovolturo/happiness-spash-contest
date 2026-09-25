@@ -12,6 +12,9 @@ test('Admin results reads backend snapshots and entries', () => {
   assert.match(adminResults, /vote_count/);
 });
 test('close voting uses the approved RPC', () => assert.match(adminResults, /rpc\('close_contest_voting'/));
+test('close voting requires explicit confirmation and explains its consequence', () => {
+  assert.match(index, /Chiudere definitivamente la votazione\? La chiusura impedirà ulteriori voti\./);
+});
 test('freeze results uses the approved RPC', () => assert.match(adminResults, /rpc\('freeze_contest_results'/));
 test('close and freeze are Admin surface only', () => assert.match(index, /if\(!isAdmin\|\|!session\)return view\.innerHTML/));
 test('ranking is rendered from backend rank and counts', () => {
