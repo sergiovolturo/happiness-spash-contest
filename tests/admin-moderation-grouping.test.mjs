@@ -23,6 +23,9 @@ test('moderation cards include participant/source, state, media/publication stat
   assert.match(admin, /adminModerate/);
   assert.match(admin, /adminRevoke/);
   assert.match(index, /\.adminSubmission video\{width:100%;max-width:640px;aspect-ratio:16\/9/);
+  assert.match(index, /\.adminSubmissionGrid\{grid-template-columns:repeat\(auto-fit,minmax\(420px,1fr\)/);
+  assert.match(index, /\.adminSubmissionInfo \.actions\{margin-top:auto/);
+  assert.match(index, /Apri player grande/);
 });
 
 test('moderation remains Admin-gated and keeps the existing readiness RPC', () => {
@@ -34,4 +37,10 @@ test('moderation remains Admin-gated and keeps the existing readiness RPC', () =
 test('Admin navigation hides the Player Candidatura tab and recovery upload stays Admin-side', () => {
   assert.match(index, /function nav\(\)\{const tabs=isAdmin\?\[\['home','Contest'\],\['admin','Amministra'\]\]/);
   assert.match(index, /adminPreparedUpload/);
+});
+
+test('Admin manual submission explains its operational use and remains desktop-first', () => {
+  assert.match(index, /video ricevuti via WhatsApp o email/);
+  assert.match(index, /adminManualIntro/);
+  assert.match(index, /adminManualForm\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)/);
 });

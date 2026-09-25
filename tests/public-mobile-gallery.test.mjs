@@ -14,6 +14,8 @@ test('public mobile category cards use only real backend categories and publishe
   assert.match(gallery, /Guarda i video/);
   assert.match(gallery, /display_order|publicCategories\.map/);
   assert.doesNotMatch(gallery, /vote_count|voter|ranking|classifica/i);
+  assert.match(index, /categoryCount/);
+  assert.match(index, /categoryCard:focus-visible/);
 });
 
 test('a single category opens its video list directly and player has a return action', () => {
@@ -40,4 +42,11 @@ test('every public gallery visit refreshes publication view so revoked media dis
 test('category visual slot remains extensible without adding unapproved assets', () => {
   assert.match(index, /categoryVisualSlot/);
   assert.doesNotMatch(gallery, /image_url|cover_url|icon_url|color_theme/);
+});
+
+test('public category and video surfaces are touch-sized and single-column on mobile', () => {
+  assert.match(index, /\.categorySelector\{display:grid/);
+  assert.match(index, /\.publicVideoGrid\{grid-template-columns:repeat\(auto-fit,minmax\(220px,1fr\)/);
+  assert.match(index, /\.categorySelector,\.publicVideoGrid,\.galleryGrid\{grid-template-columns:1fr\}/);
+  assert.match(index, /\.publicVideoCard\{min-height:190px/);
 });
