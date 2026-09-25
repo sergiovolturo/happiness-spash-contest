@@ -9,6 +9,8 @@ test('Player hides submission controls after submissions close', () => {
   assert.match(index, /La fase di candidatura per questo Contest è terminata\./);
   assert.match(index, /Se hai già partecipato, accedi per controllare lo stato della tua candidatura\./);
   assert.match(index, /if\(!open\)\{if\(form\)form\.remove\(\)/);
+  assert.match(index, /closedCategory/);
+  assert.match(index, /publicCategories\.length===1/);
 });
 
 test('Player open-submissions copy is human and anonymous entry preserves category', () => {
@@ -23,6 +25,7 @@ test('Player statuses and submitted-video copy avoid technical terminology', () 
   assert.match(index, /FINALIZED:'Video caricato'/);
   assert.match(index, /Qui puoi controllare lo stato dei video che hai inviato\./);
   assert.match(index, /option\.textContent\.split\(' · cap '\)\[0\]/);
+  assert.match(index, /<b>Categoria:<\/b>/);
 });
 
 test('Voter confirmation states one definitive vote per category', () => {
