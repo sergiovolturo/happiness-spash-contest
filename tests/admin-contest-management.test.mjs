@@ -34,3 +34,12 @@ test('Admin Contest creation is compact and lifecycle-aware', () => {
   assert.match(index, /Le candidature sono chiuse/);
   assert.match(index, /Le categorie sono bloccate/);
 });
+
+test('Admin lifecycle copy is human-readable and readonly categories are compact', () => {
+  assert.match(index, /const adminStatusLabel=\{VOTING_OPEN:'Votazione aperta'/);
+  assert.match(index, /const adminStatusText=status=>adminStatusLabel\[status\]\|\|status/);
+  assert.match(index, /adminCategoryReadonly/);
+  assert.match(index, /Candidature massime:/);
+  assert.match(index, /Numero di finalisti:/);
+  assert.match(index, /Verifica requisiti e prepara il voto/);
+});

@@ -27,7 +27,7 @@ test('Admin rejection requires a reason and approval requires current finalized 
 test('publication is backend-controlled by open_contest_voting readiness RPC', () => {
   assert.match(adminFlow, /rpc\('open_contest_voting'/);
   assert.match(adminFlow, /p_contest_id:publicContest\.id/);
-  assert.match(adminFlow, /Verifica readiness e apri votazione/);
+  assert.match(index, /Verifica requisiti e apri votazione/);
   assert.doesNotMatch(adminFlow, /submission_publications['"]\)\.insert/);
 });
 
