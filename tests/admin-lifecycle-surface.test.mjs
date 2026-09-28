@@ -16,12 +16,16 @@ test('Admin lifecycle surface derives the current phase from Contest status',()=
 });
 
 test('Admin opening prerequisites block zero categories and accept a valid window',()=>{
-  const contest={name:'Contest',submissions_open_at:'2026-09-28T08:00:00Z',submissions_close_at:'2026-09-30T18:00:00Z'};
+  const contest={name:'Contest',submissions_open_at:'2026-09-28T08:00:00Z',submissions_close_at:'2026-09-30T18:00:00Z',voting_open_at:'2026-10-01T08:00:00Z',voting_close_at:'2026-10-03T18:00:00Z'};
   assert.equal(helpers.adminOpeningPrerequisites(contest,[]).valid,false);
   assert.equal(helpers.adminOpeningPrerequisites(contest,[{is_active:false}]).valid,false);
   const valid=helpers.adminOpeningPrerequisites(contest,[{is_active:true}]);
-  assert.deepEqual(valid,{name:true,categories:true,period:true,valid:true});
+  assert.equal(valid.valid,true);
+  assert.equal(valid.submissionPeriod,true);
+  assert.equal(valid.votingPeriod,true);
+  assert.equal(valid.ordering,true);
   assert.equal(helpers.adminOpeningPrerequisites({...contest,submissions_close_at:contest.submissions_open_at},[{is_active:true}]).valid,false);
+  assert.equal(helpers.adminOpeningPrerequisites({...contest,voting_open_at:'2026-09-30T17:00:00Z'},[{is_active:true}]).valid,false);
 });
 
 test('DRAFT composition keeps configuration and hides operational surfaces',()=>{
