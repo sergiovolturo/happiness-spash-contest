@@ -22,10 +22,11 @@ test('Contest section owns voting schedule and status',()=>{
 
 test('Admin candidature cards show protagonist, uploader, publication and vote count',()=>{
   assert.match(index,/contestant_display_name/);
-  assert.match(index,/Caricato da/);
-  assert.match(index,/Voti ricevuti/);
-  assert.match(migration,/PUBBLICATO/);
-  assert.match(index,/admin_list_contest_submission_cards/);
+  assert.match(index,/creation_source/);
+  assert.match(index,/Publication: \$\{active\?/);
+  assert.match(index,/adminModerationGroup/);
+  assert.match(migration,/publication_status/);
+  assert.match(migration,/vote_count/);
 });
 
 test('vote counts are server-side, Admin-only and Contest-scoped',()=>{
@@ -44,3 +45,4 @@ test('public surface does not receive Admin vote counts or uploader identity',()
   const publicSurface=index.slice(publicStart,publicEnd);
   assert.doesNotMatch(publicSurface,/vote_count|voteCount|uploader_email|created_by_auth_user_id/);
 });
+
