@@ -48,3 +48,42 @@ test('voting and publication primitives remain wired', () => {
   assert.match(index, /published_submission_media/);
   assert.match(migration, /drop view public\.published_submission_media/);
 });
+
+
+test('the active Admin manual submission handler passes the contestant name', () => {
+  const activeStart = index.lastIndexOf('function bindAdminManualSubmission');
+  assert.ok(activeStart > 0);
+  const active = index.slice(activeStart);
+  assert.match(active, /admin_create_submission_with_media/);
+  assert.match(active, /p_contestant_display_name:form\.elements\.contestantDisplayName\.value\.trim\(\)/);
+});
+
+test('Europe/Rome helpers render UTC timestamps and submit local values with DST-aware offsets', () => {
+  const start = index.indexOf("const ROME_TIME_ZONE='Europe/Rome'");
+  const end = index.indexOf('const submissionWindowState=()=>', start);
+  const helperSource = index.slice(start, end);
+  const helpers = new Function(helperSource + '; return {romeTimestamptzToLocal,romeLocalToTimestamptz};')();
+  assert.equal(helpers.romeTimestamptzToLocal('2026-01-15T12:00:00Z'), '2026-01-15T13:00');
+  assert.equal(helpers.romeTimestamptzToLocal('2026-07-15T12:00:00Z'), '2026-07-15T14:00');
+  assert.equal(helpers.romeLocalToTimestamptz('2026-01-15T13:00'), '2026-01-15T12:00:00.000Z');
+  assert.equal(helpers.romeLocalToTimestamptz('2026-07-15T14:00'), '2026-07-15T12:00:00.000Z');
+  assert.match(index, /timeZone:ROME_TIME_ZONE/);
+  assert.doesNotMatch(index, /new Date\(selected\.submissions_(open|close)_at\)\.toISOString\(\)\.slice\(0,16\)/);
+});
+
+test('submission window state transitions are deterministic before, during and after the window', () => {
+  const start = index.indexOf('const submissionWindowStateAt=');
+  const end = index.indexOf('const submissionWindowState=()=>', start);
+  const helpers = new Function(index.slice(start, end) + '; return {submissionWindowStateAt};')();
+  const contest = {submissions_open_at:'2026-01-01T10:00:00Z', submissions_close_at:'2026-01-01T12:00:00Z'};
+  assert.equal(helpers.submissionWindowStateAt(contest, Date.parse('2026-01-01T09:59:59Z')), 'BEFORE');
+  assert.equal(helpers.submissionWindowStateAt(contest, Date.parse('2026-01-01T11:00:00Z')), 'OPEN');
+  assert.equal(helpers.submissionWindowStateAt(contest, Date.parse('2026-01-01T12:00:00Z')), 'CLOSED');
+});
+
+test('final wrapper audit preserves the new behavior', () => {
+  assert.match(index.slice(index.lastIndexOf('submissionView=')), /playerSubmissionViewBase/);
+  assert.match(index.slice(index.lastIndexOf('adminView=')), /adminCategoryCompactBase/);
+  assert.match(index.slice(index.lastIndexOf('galleryView=')), /publicGalleryWithUx/);
+  assert.match(index.slice(index.lastIndexOf('bindAdminContestManager=')), /bindAdminContestManagerBase/);
+});
