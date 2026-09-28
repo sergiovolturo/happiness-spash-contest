@@ -81,7 +81,11 @@ test('public entrypoint exposes the existing email/password auth view without a 
   assert.match(index, /id="loginForm"/);
   assert.match(index, /id="backToContest"/);
   assert.match(index, /currentTab='home';render\(\)/);
-  assert.match(index, /async function render\(\)\{syncAuthButtons\(\)/);
+  assert.match(index, /async function render\(\)\{const requestId=\+\+renderRequestSeq;activeRenderRequestId=requestId;syncAuthButtons\(\)/);
+  assert.match(index, /renderStep\(homeView\(requestId\)/);
+  assert.match(index, /renderStep\(submissionView\(requestId\)/);
+  assert.match(index, /renderStep\(voteView\(requestId\)/);
+  assert.match(index, /renderStep\(adminView\(requestId\)/);
 });
 
 test('auth buttons follow session state and stale authenticated responses are ignored', () => {

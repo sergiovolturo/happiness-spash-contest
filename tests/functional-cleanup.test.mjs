@@ -126,7 +126,7 @@ test('Admin manual submission follows lifecycle window state', () => {
   assert.match(helpers.adminSubmissionWindowMessageAt(contest, Date.parse('2026-01-01T09:00:00Z')), /Apertura/);
   assert.match(helpers.adminSubmissionWindowMessageAt(contest, Date.parse('2026-01-01T11:00:00Z')), /chiusura/);
   assert.match(helpers.adminSubmissionWindowMessageAt(contest, Date.parse('2026-01-01T13:00:00Z')), /terminato/);
-  assert.match(index, /disabled=!windowInfo\.enabled/);
+  assert.match(index, /manual\.outerHTML=.*Candidature chiuse/s);
 });
 
 test('Player window message remains phase-specific', () => {
