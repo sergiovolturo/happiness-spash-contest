@@ -34,7 +34,7 @@ test('Admin selection is independent from publicContest and preserves valid prio
 test('Admin selection explicitly loads the selected Contest categories', () => {
   assert.match(index, /const adminSelectionSurfaceBase=adminView/);
   assert.match(index, /publicContest=selected/);
-  assert.match(index, /get_public_contest_categories',\{p_contest_id:selected\.id\}/);
+  assert.match(index, /admin_list_contest_categories',\{p_contest_id:selected\.id\}/);
 });
 
 test('RESULTS removes whole configuration, category and manual surfaces', () => {
