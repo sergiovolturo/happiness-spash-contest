@@ -55,3 +55,9 @@ test('Admin lifecycle copy is translated at the final active surface',()=>{
   assert.match(index,/participation/);
   assert.match(index,/\['publication','pubblicazione'\]/);
 });
+
+
+test('lifecycle wrapper captures the previous Admin view instead of recursively calling itself',()=>{
+  assert.match(index,/const adminLifecycleSurfaceBase=adminView;/);
+  assert.doesNotMatch(index,/const adminLifecycleSurfaceBase=async requestId=>\{await adminView\(requestId\)/);
+});
