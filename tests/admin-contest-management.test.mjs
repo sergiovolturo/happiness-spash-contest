@@ -27,27 +27,30 @@ test('Admin Contest UI supports fresh Contest creation, selection and opening su
 
 test('Admin Contest creation is compact and lifecycle-aware', () => {
   assert.match(index, /adminNewContestToggle/);
-  assert.match(index, /\+ Nuovo Contest/);
-  assert.match(index, /createContest\.hidden=true/);
-  assert.match(index, /adminLifecycleNotice/);
-  assert.match(index, /status!=='SUBMISSIONS_OPEN'/);
-  assert.match(index, /Le candidature sono chiuse/);
-  assert.match(index, /Le categorie sono bloccate/);
+  assert.match(index, /id="adminNewContestForm"/);
+  assert.match(index, /hidden=!form\.hidden/);
+  assert.match(index, /adminSubmissionWindowMessageAt/);
+  assert.match(index, /Candidature programmate/);
+  assert.match(index, /Periodo candidature terminato/);
 });
 
 test('Admin Contest creation keeps exactly one runtime toggle', () => {
-  assert.match(index, /const adminRemoveLegacyContestToggle=.*querySelectorAll\('\.adminCreateToggle'\).*toggle\.remove/);
-  assert.equal((index.match(/id="adminNewContestToggle"/g) || []).length, 1);
-  assert.match(index, /adminRemoveLegacyContestToggle\(\);adminCompactContestArchive\(\)/);
-  assert.match(index, /if\(form&&!document\.querySelector\('#adminNewContestToggle'\)/);
+  assert.match(index, /adminRemoveLegacyContestToggle/);
+  assert.match(index, /querySelectorAll\('\.adminCreateToggle'\)/);
+  const activeCreate = index.slice(index.indexOf('const adminBindOverviewCreate='), index.indexOf('const adminRenderAuthoritativeShell='));
+  assert.equal((activeCreate.match(/id="adminNewContestToggle"/g) || []).length, 1);
+  assert.equal((activeCreate.match(/type="button"[^>]*>\+ Crea nuovo Contest/g) || []).length, 1);
+  assert.doesNotMatch(activeCreate, /adminCreateToggle/);
+  assert.match(index, /adminBindOverviewCreate/);
   assert.match(index, /form\.hidden=!form\.hidden/);
 });
 
 test('Admin lifecycle copy is human-readable and readonly categories are compact', () => {
   assert.match(index, /const adminStatusLabel=\{VOTING_OPEN:'Votazione aperta'/);
   assert.match(index, /const adminStatusText=status=>adminStatusLabel\[status\]\|\|status/);
-  assert.match(index, /adminCategoryReadonly/);
-  assert.match(index, /Candidature massime:/);
-  assert.match(index, /Numero di finalisti:/);
-  assert.match(index, /Verifica requisiti e prepara il voto/);
+  assert.match(index, /adminReadableStatus/);
+  assert.match(index, /adminOverviewMessage/);
+  assert.match(index, /adminSubmissionWindowLabelAt/);
+  assert.match(index, /Verifica readiness e apri votazione/);
 });
+
