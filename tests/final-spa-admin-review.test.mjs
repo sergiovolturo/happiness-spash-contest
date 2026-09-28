@@ -50,3 +50,10 @@ test('open manual submission keeps the full form only when the window is enabled
   assert.match(html,/enabled:contest\.status==='SUBMISSIONS_OPEN'&&temporalState==='OPEN'/);
   assert.match(html,/id="adminManualSubmission"/);
 });
+
+test('all runtime gallery definitions accept ownership and vote callback does not use an undefined token',()=>{
+  assert.doesNotMatch(html,/async function galleryView\(\)/);
+  assert.match(html,/async function galleryView\(renderRequestId=activeRenderRequestId\)/);
+  assert.match(html,/voteInFlight\.delete\(key\);await galleryView\(\)\}/);
+  assert.doesNotMatch(html,/voteInFlight\.delete\(key\);await galleryView\(requestId\)\}/);
+});
