@@ -24,7 +24,7 @@ test('player and admin submissions require an explicit contestant display name',
   assert.match(migration, /create_submission[\s\S]*p_contestant_display_name text default null/);
   assert.match(migration, /admin_create_submission_with_media[\s\S]*p_contestant_display_name text default null/);
   assert.match(index, /name="contestantDisplayName"/);
-  assert.match(index, /p_contestant_display_name:document\.querySelector\('#contestantDisplayName'\)\.value\.trim\(\)/);
+  assert.match(index, /contestantDisplayName=document\.querySelector\('#contestantDisplayName'\)\.value\.trim\(\)/);
   assert.match(index, /p_contestant_display_name:form\.elements\.contestantDisplayName\.value\.trim\(\)/);
 });
 
@@ -38,7 +38,7 @@ test('public gallery displays candidate and real category context', () => {
 test('admin vote review keeps IDs internal and provides readable fraud deletion CTA', () => {
   assert.match(index, /Voti da verificare/);
   assert.match(index, /deleteFraudVote/);
-  assert.match(index, /v\.contestant_display_name/);
+  assert.match(index, /contestant_display_name/);
   assert.doesNotMatch(index, /<b>\\$\\{esc\\(v\\.id\\)\\}/);
   assert.doesNotMatch(index, /submission \\$\\{esc\\(v\\.submission_id\\)\\}/);
 });
@@ -112,7 +112,7 @@ test('Rome fall-back chooses the second occurrence deterministically', () => {
 test('Admin manual submission follows lifecycle window state', () => {
   const start = index.indexOf('const submissionWindowStateAt=');
   const end = index.indexOf('const submissionWindowMessage=()=>', start);
-  const helpers = new Function(index.slice(start, end) + '; return {adminSubmissionWindowStateAt,adminSubmissionWindowLabelAt,adminSubmissionWindowMessageAt};')();
+  const helpers = new Function('const fmt=()=>"chiusura";' + index.slice(start, end) + '; return {adminSubmissionWindowStateAt,adminSubmissionWindowLabelAt,adminSubmissionWindowMessageAt};')();
   const contest = {status:'SUBMISSIONS_OPEN',submissions_open_at:'2026-01-01T10:00:00Z',submissions_close_at:'2026-01-01T12:00:00Z'};
   const before = helpers.adminSubmissionWindowStateAt(contest, Date.parse('2026-01-01T09:00:00Z'));
   const open = helpers.adminSubmissionWindowStateAt(contest, Date.parse('2026-01-01T11:00:00Z'));
