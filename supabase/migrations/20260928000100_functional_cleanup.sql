@@ -1,6 +1,9 @@
 -- Functional cleanup: submission window, explicit contestant names, and readable vote review.
 -- Additive only; this branch does not apply the migration to Production.
 
+drop function if exists public.create_submission(uuid,uuid);
+drop function if exists public.admin_create_submission_with_media(uuid,uuid,uuid,uuid,text,text,text,text,bigint,numeric);
+
 alter table public.submissions
   add column if not exists contestant_display_name text,
   add constraint submissions_contestant_display_name_nonblank
