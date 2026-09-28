@@ -87,3 +87,50 @@ test('final wrapper audit preserves the new behavior', () => {
   assert.match(index.slice(index.lastIndexOf('galleryView=')), /publicGalleryWithUx/);
   assert.match(index.slice(index.lastIndexOf('bindAdminContestManager=')), /bindAdminContestManagerBase/);
 });
+
+
+test('Rome spring-forward rejects nonexistent local time and preserves valid transition times', () => {
+  const start = index.indexOf("const ROME_TIME_ZONE='Europe/Rome'");
+  const end = index.indexOf('const submissionWindowState=()=>', start);
+  const helpers = new Function(index.slice(start, end) + '; return {romeTimestamptzToLocal,romeLocalToTimestamptz};')();
+  assert.equal(helpers.romeLocalToTimestamptz('2026-03-29T01:30'), '2026-03-29T00:30:00.000Z');
+  assert.equal(helpers.romeLocalToTimestamptz('2026-03-29T02:30'), '');
+  assert.equal(helpers.romeLocalToTimestamptz('2026-03-29T03:30'), '2026-03-29T01:30:00.000Z');
+  assert.equal(helpers.romeTimestamptzToLocal('2026-03-29T00:30:00Z'), '2026-03-29T01:30');
+  assert.equal(helpers.romeTimestamptzToLocal('2026-03-29T01:30:00Z'), '2026-03-29T03:30');
+});
+
+test('Rome fall-back chooses the first occurrence deterministically', () => {
+  const start = index.indexOf("const ROME_TIME_ZONE='Europe/Rome'");
+  const end = index.indexOf('const submissionWindowState=()=>', start);
+  const helpers = new Function(index.slice(start, end) + '; return {romeTimestamptzToLocal,romeLocalToTimestamptz};')();
+  assert.equal(helpers.romeLocalToTimestamptz('2026-10-25T02:30'), '2026-10-25T00:30:00.000Z');
+  assert.equal(helpers.romeTimestamptzToLocal('2026-10-25T00:30:00Z'), '2026-10-25T02:30');
+  assert.match(index, /fall-back|first occurrence|prima occorrenza/i);
+});
+
+test('Admin manual submission follows lifecycle window state', () => {
+  const start = index.indexOf('const submissionWindowStateAt=');
+  const end = index.indexOf('const submissionWindowMessage=()=>', start);
+  const helpers = new Function(index.slice(start, end) + '; return {adminSubmissionWindowStateAt,adminSubmissionWindowLabelAt,adminSubmissionWindowMessageAt};')();
+  const contest = {status:'SUBMISSIONS_OPEN',submissions_open_at:'2026-01-01T10:00:00Z',submissions_close_at:'2026-01-01T12:00:00Z'};
+  const before = helpers.adminSubmissionWindowStateAt(contest, Date.parse('2026-01-01T09:00:00Z'));
+  const open = helpers.adminSubmissionWindowStateAt(contest, Date.parse('2026-01-01T11:00:00Z'));
+  const closed = helpers.adminSubmissionWindowStateAt(contest, Date.parse('2026-01-01T13:00:00Z'));
+  assert.equal(before.enabled, false);
+  assert.equal(open.enabled, true);
+  assert.equal(closed.enabled, false);
+  assert.equal(helpers.adminSubmissionWindowLabelAt(contest, Date.parse('2026-01-01T09:00:00Z')), 'Candidature programmate');
+  assert.equal(helpers.adminSubmissionWindowLabelAt(contest, Date.parse('2026-01-01T11:00:00Z')), 'Candidature aperte');
+  assert.equal(helpers.adminSubmissionWindowLabelAt(contest, Date.parse('2026-01-01T13:00:00Z')), 'Periodo candidature terminato');
+  assert.match(helpers.adminSubmissionWindowMessageAt(contest, Date.parse('2026-01-01T09:00:00Z')), /Apertura/);
+  assert.match(helpers.adminSubmissionWindowMessageAt(contest, Date.parse('2026-01-01T11:00:00Z')), /chiusura/);
+  assert.match(helpers.adminSubmissionWindowMessageAt(contest, Date.parse('2026-01-01T13:00:00Z')), /terminato/);
+  assert.match(index, /disabled=!windowInfo\.enabled/);
+});
+
+test('Player window message remains phase-specific', () => {
+  assert.match(index, /Il periodo di candidatura non è ancora aperto/);
+  assert.match(index, /Candidature aperte fino al/);
+  assert.match(index, /Il periodo di candidatura è terminato/);
+});
