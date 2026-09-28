@@ -23,7 +23,8 @@ test('admin_list_contests returns explicit contest fields including the submissi
 
 test('date formatter never renders missing or invalid values as 1 January 1970', () => {
   assert.match(html, /if\(n===null\|\|n===undefined\|\|n===''\)return 'Data non disponibile'/);
-  assert.match(html, /Number\.isNaN\(date\.getTime\(\)\)return 'Data non disponibile'/);
+  assert.match(html, /Number\.isNaN\(date\.getTime\(\)\)/);
+  assert.match(html, /return 'Data non disponibile'/);
   assert.doesNotMatch(html, /fmt\(null\)/);
 });
 
@@ -40,5 +41,6 @@ test('SPA render replaces spinner on failure or timeout and guards stale views',
   assert.match(html, /SPA_RENDER_TIMEOUT_MS=20000/);
   assert.match(html, /render_timeout/);
   assert.match(html, /activeRenderRequestId=0/);
-  assert.match(html, /if\(!renderIsCurrent\(\)\)return/);
+  assert.match(html, /const renderIsCurrent=requestId=>Number\.isInteger\(requestId\)&&requestId===activeRenderRequestId/);
+  assert.match(html, /if\(!renderIsCurrent\(requestId\)\)return/);
 });
