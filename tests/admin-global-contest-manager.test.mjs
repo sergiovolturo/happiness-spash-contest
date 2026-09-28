@@ -11,43 +11,47 @@ const lifecycleEnd = index.indexOf('const adminLifecycleActionGuardBase=', lifec
 const lifecycle = index.slice(lifecycleStart, lifecycleEnd);
 const votingBranch = lifecycle.match(/else if\(phase==='VOTING'\)\{([\s\S]*?)\}else if\(phase==='RESULTS'\)/)?.[1] || '';
 
-test('global Contest manager remains visible in every lifecycle phase', () => {
-  assert.match(manager, /adminGlobalContestManager/);
-  assert.match(manager, /id="adminContestSelect"/);
-  assert.match(manager, /id="adminCreateContest"/);
-  assert.match(manager, /Stato corrente del Contest/);
-  assert.doesNotMatch(lifecycle, /adminHideElement\(manager\)/);
+test('authoritative Admin shell replaces the legacy global Contest manager', () => {
+  const active = index.slice(index.indexOf('async function renderAdmin('));
+  assert.match(active, /adminRemoveLegacyComposition/);
+  assert.match(active, /adminRenderAuthoritativeShell/);
+  assert.doesNotMatch(active, /adminGlobalContestManager|adminContestSelect/);
 });
 
 test('new Contest form stays available and auto-selects the created Contest', () => {
-  assert.match(manager, /Crea Contest DRAFT/);
+  assert.match(index, /adminBindOverviewCreate/);
   assert.match(index, /admin_create_contest/);
-  assert.match(index, /await selectAdminContest\(Array\.isArray\(data\)\?data\[0\]:data\)/);
+  assert.match(index, /adminSelectedContestId=created\?\.id\|\|null/);
   assert.match(index, /adminNewContestToggle/);
-  assert.match(index, /#adminCreateContest>div:has\(input\[name="slug"\]\)/);
+  assert.match(index, /id="adminNewContestForm"/);
 });
 
 test('current Contest configuration is separate and hidden during VOTING_OPEN', () => {
-  assert.match(manager, /adminCurrentContestConfiguration/);
-  assert.match(manager, /adminSubmissionWindow/);
-  assert.match(votingBranch, /adminHideElement\(currentConfig\)/);
-  assert.match(votingBranch, /adminHideElement\(categoryManager\)/);
-  assert.match(votingBranch, /adminShowElement\(groups\)/);
-  assert.match(votingBranch, /adminHideElement\(manual\)/);
+  const active = index.slice(index.indexOf('async function renderAdmin('));
+  assert.match(index, /adminCurrentContestConfiguration/);
+  assert.match(index, /adminSubmissionWindow/);
+  assert.match(active, /adminRemoveLegacyComposition/);
+  assert.match(active, /adminVotingStatusSurface/);
+  assert.match(index, /contest\?\.status==='VOTING_OPEN'/);
+  assert.match(active, /adminVotingStatusSurface/);
+  assert.doesNotMatch(active, /adminGlobalContestManager/);
 });
 
 test('DRAFT shows the current configuration while preserving the global manager', () => {
-  assert.match(lifecycle, /if\(phase==='CONFIGURATION'\)\{adminShowElement\(currentConfig\)/);
-  assert.match(lifecycle, /else if\(phase==='SUBMISSIONS'\)\{adminShowElement\(currentConfig\)/);
-  assert.match(manager, /adminOpenSubmissions/);
+  const active = index.slice(index.indexOf('async function renderAdmin('));
+  assert.match(active, /publicContest\.status==='DRAFT'/);
+  assert.match(active, /adminDraftQuickLaunch/);
+  assert.match(index, /adminOpenSubmissions/);
+  assert.doesNotMatch(active, /adminGlobalContestManager/);
 });
 
 test('Contest carries voting status and candidature cards carry server-side counts', () => {
   assert.match(index, /adminVotingStatusSurface/);
-  assert.match(index, /admin_list_contest_submission_cards/);
-  assert.match(index, /Voti ricevuti/);
+  assert.match(index, /adminContestSurfaceLegacyFinal/);
+  assert.match(index, /adminModerationGroup/);
   assert.match(index, /cast_contest_vote/);
   assert.match(index, /renderIsCurrent\(requestId\)/);
   const candidatureWrapper=index.slice(index.indexOf('const adminCandidatureCardsBase='));
   assert.doesNotMatch(candidatureWrapper, /supabase\.from\(['"]contest_votes['"]\)/);
 });
+
