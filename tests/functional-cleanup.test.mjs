@@ -134,3 +134,20 @@ test('Player window message remains phase-specific', () => {
   assert.match(index, /Candidature aperte fino al/);
   assert.match(index, /Il periodo di candidatura è terminato/);
 });
+
+
+test('final Player submission wrapper respects guest window state', () => {
+  const start = index.lastIndexOf('const playerSubmissionViewBase=submissionView');
+  const wrapper = index.slice(start);
+  assert.match(wrapper, /windowOpen=submissionWindowState\(\)==='OPEN'/);
+  assert.match(wrapper, /button\.disabled=!windowOpen/);
+  assert.match(wrapper, /if\(windowOpen\)\{button\.textContent='Continua con la tua email'/);
+  assert.match(wrapper, /else\{form\.onsubmit=null\}/);
+  const stateStart = index.indexOf('const submissionWindowStateAt=');
+  const stateEnd = index.indexOf('const submissionWindowMessage=()=>', stateStart);
+  const state = new Function(index.slice(stateStart, stateEnd) + '; return {submissionWindowStateAt};')();
+  const contest = {status:'SUBMISSIONS_OPEN',submissions_open_at:'2026-01-01T10:00:00Z',submissions_close_at:'2026-01-01T12:00:00Z'};
+  assert.equal(state.submissionWindowStateAt(contest, Date.parse('2026-01-01T09:00:00Z')), 'BEFORE');
+  assert.equal(state.submissionWindowStateAt(contest, Date.parse('2026-01-01T11:00:00Z')), 'OPEN');
+  assert.equal(state.submissionWindowStateAt(contest, Date.parse('2026-01-01T13:00:00Z')), 'CLOSED');
+});
