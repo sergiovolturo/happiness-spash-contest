@@ -100,13 +100,13 @@ test('Rome spring-forward rejects nonexistent local time and preserves valid tra
   assert.equal(helpers.romeTimestamptzToLocal('2026-03-29T01:30:00Z'), '2026-03-29T03:30');
 });
 
-test('Rome fall-back chooses the first occurrence deterministically', () => {
+test('Rome fall-back chooses the second occurrence deterministically', () => {
   const start = index.indexOf("const ROME_TIME_ZONE='Europe/Rome'");
   const end = index.indexOf('const submissionWindowState=()=>', start);
   const helpers = new Function(index.slice(start, end) + '; return {romeTimestamptzToLocal,romeLocalToTimestamptz};')();
-  assert.equal(helpers.romeLocalToTimestamptz('2026-10-25T02:30'), '2026-10-25T00:30:00.000Z');
+  assert.equal(helpers.romeLocalToTimestamptz('2026-10-25T02:30'), '2026-10-25T01:30:00.000Z');
   assert.equal(helpers.romeTimestamptzToLocal('2026-10-25T00:30:00Z'), '2026-10-25T02:30');
-  assert.match(index, /fall-back|first occurrence|prima occorrenza/i);
+  assert.match(index, /fall-back|second occurrence|seconda occorrenza/i);
 });
 
 test('Admin manual submission follows lifecycle window state', () => {
