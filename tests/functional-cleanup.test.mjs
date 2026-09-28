@@ -83,7 +83,7 @@ test('submission window state transitions are deterministic before, during and a
 
 test('final wrapper audit preserves the new behavior', () => {
   assert.match(index.slice(index.lastIndexOf('submissionView=')), /playerSubmissionViewBase/);
-  assert.match(index.slice(index.lastIndexOf('adminView=')), /adminCategoryCompactBase/);
+  assert.match(index, /adminLifecycleSurfaceBase/);
   assert.match(index.slice(index.lastIndexOf('galleryView=')), /publicGalleryWithUx/);
   assert.match(index.slice(index.lastIndexOf('bindAdminContestManager=')), /bindAdminContestManagerBase/);
 });
