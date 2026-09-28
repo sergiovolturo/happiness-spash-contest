@@ -61,7 +61,7 @@ test('Voting open removes the complete manual and category configuration surface
 test('Audit is collapsed by default and close voting keeps its confirmation', () => {
   assert.match(index, /<details class="adminAudit"><summary>Audit cancellazioni/);
   assert.doesNotMatch(index, /<details[^>]+open/);
-  assert.match(index, /Chiudere definitivamente la votazione\? La chiusura impedirà ulteriori voti/);
+  assert.match(index, /Chiudere anticipatamente la votazione\? Dopo la chiusura non saranno accettati altri voti/);
 });
 
 test('Voting safeguards and stale render ownership remain wired', () => {

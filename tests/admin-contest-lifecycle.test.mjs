@@ -64,7 +64,9 @@ test('Admin UI offers only the transition appropriate to current Contest state',
   assert.match(actions, /SUBMISSIONS_OPEN:\['admin_close_contest_submissions','Chiudi candidature'\]/);
   assert.match(actions, /SUBMISSIONS_CLOSED:\['admin_start_contest_moderation','Avvia moderazione'\]/);
   assert.match(actions, /MODERATION:\['admin_mark_contest_ready_for_voting'/);
-  assert.match(actions, /READY_FOR_VOTING:\['open_contest_voting','Apri votazione'\]/);
+  assert.doesNotMatch(actions, /READY_FOR_VOTING:\['open_contest_voting','Apri votazione'\]/);
+  assert.match(actions, /status==='READY_FOR_VOTING'/);
+  assert.match(actions, /Apertura automatica/);
   assert.match(actions, /status==='VOTING_OPEN'/);
   assert.match(index, /current\.outerHTML=adminLifecycleActions\(\)/);
   assert.match(index, /querySelectorAll\('\[data-contest-transition\]'\)/);
