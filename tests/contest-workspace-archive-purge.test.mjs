@@ -70,3 +70,8 @@ test('No service role or destructive production fixture is introduced in fronten
   assert.doesNotMatch(index,/contest_deletion_audit.*insert/i);
   assert.doesNotMatch(index,/pkaadvqyrdxgymzzugvo.*delete/i);
 });
+
+test('Administrative Contest listing is not executable by anonymous callers',()=>{
+  assert.match(migration,/revoke execute on function public\.admin_list_contests\(\) from public,anon,service_role/);
+  assert.match(migration,/grant execute on function public\.admin_list_contests\(\) to authenticated/);
+});
