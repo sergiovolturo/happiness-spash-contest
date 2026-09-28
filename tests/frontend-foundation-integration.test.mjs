@@ -71,7 +71,7 @@ test('legacy login/signup remains present while new flow avoids hard-coded Conte
 
 test('auth initialization does not race the initial session event', () => {
   assert.match(index, /let authReady=false/);
-  assert.match(index, /authReady=true;syncAuthButtons\(\);if\(!session\)return render/);
+  assert.match(index, /authReady=true;syncAuthButtons\(\);if\(recoveryRequested\)/);
   assert.match(index, /if\(!authReady\)return/);
 });
 
@@ -90,7 +90,7 @@ test('auth buttons follow session state and stale authenticated responses are ig
   assert.match(index, /logout\.classList\.toggle\('hidden',!authenticated\)/);
   assert.match(index, /let authReady=false,authRequestSeq=0/);
   assert.match(index, /requestId!==authRequestSeq\|\|session!==s/);
-  assert.match(index, /else\{isAdmin=false[\s\S]*?render\(\)\}\}\);/);
+  assert.match(index, /else\{clearClientAuthState\(\);render\(\)\}\}\);/);
 });
 
 test('media flow uses Step 3 prepare, backend path/bucket and finalize RPCs', () => {

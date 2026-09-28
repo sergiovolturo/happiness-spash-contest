@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-const migration = await readFile(
+const migration = (await readFile(
   new URL('../supabase/migrations/20260922000300_step3_media_moderation.sql', import.meta.url),
   'utf8',
-);
+)).replaceAll('\r\n', '\n');
 
 test('Step 3 adds versioned private media and moderation history only', () => {
   assert.match(migration, /create table public\.submission_media/i);
