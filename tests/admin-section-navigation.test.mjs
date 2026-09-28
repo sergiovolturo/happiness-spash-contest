@@ -21,12 +21,29 @@ test('Admin workspace keeps the selected Contest while changing section',()=>{
   assert.match(index,/adminContestSelect/);
 });
 
+test('Admin section navigation starts a fresh render for every click',()=>{
+  const shell=index.slice(index.indexOf('const renderAdminShell='),index.indexOf('const adminQuickLaunchSurfaceBase='));
+  assert.match(shell,/adminSection=button\.dataset\.adminSection;currentTab='admin';render\(\)/);
+  assert.doesNotMatch(shell,/adminView\(requestId\)/);
+  assert.match(index,/async function render\(\)\{const requestId=\+\+renderRequestSeq;activeRenderRequestId=requestId/);
+});
+
+test('Overview CTA preserves the selected Contest and routes through the fresh render',()=>{
+  const overview=index.slice(index.indexOf('const renderAdminOverview='),index.indexOf('const renderAdminContestSection='));
+  assert.match(overview,/adminSelectedContestId=selected\.id/);
+  assert.match(overview,/adminSection=button\.dataset\.adminOverviewSection;currentTab='admin';render\(\)/);
+  assert.doesNotMatch(overview,/adminView\(requestId\)/);
+});
+
 test('Overview separates current Contest cards from collapsed archive',()=>{
   assert.match(index,/renderAdminOverview/);
   assert.match(index,/I miei Contest/);
   assert.match(index,/adminOverviewGrid/);
   assert.match(index,/details class="adminArchive"/);
   assert.match(index,/Archivio storico/);
+  assert.match(index,/adminClearLegacyAdminSurfaces/);
+  assert.match(index,/adminLifecycleTimeline/);
+  assert.match(index,/adminPrerequisites/);
 });
 
 test('Contest workspace preserves calendar, categories, checklist and launch',()=>{
@@ -48,6 +65,8 @@ test('Candidature workspace contains manual CTA, upload form and moderation',()=
   assert.match(index,/adminModerationGroup/);
   assert.match(index,/data-decision="APPROVED"/);
   assert.match(index,/data-decision="REJECTED"/);
+  assert.match(index,/Vai a Contest/);
+  assert.match(index,/Completa la configurazione nella sezione Contest/);
 });
 
 test('Voting and Results workspaces keep their dedicated surfaces and hide clutter',()=>{
@@ -60,6 +79,14 @@ test('Voting and Results workspaces keep their dedicated surfaces and hide clutt
   assert.match(index,/Conferma finalisti/);
   assert.match(index,/Pubblica finalisti/);
   assert.match(index,/adminHideElement\(document\.querySelector\('#adminManualSubmission,#adminManualSubmissionClosed'\)/);
+  assert.match(index,/I risultati saranno disponibili dopo la chiusura della votazione/);
+  assert.match(index,/Votazione non disponibile/);
+});
+
+test('Section transitions retain one authoritative router without adding Admin wrappers',()=>{
+  const shell=index.slice(index.indexOf('const renderAdminShell='),index.indexOf('const adminQuickLaunchSurfaceBase='));
+  for(const section of ['overview','contest','submissions','voting','results'])assert.match(shell,new RegExp(`adminSection==='${section}'`));
+  assert.equal(adminViewWrappers(index),12);
 });
 
 test('Admin entry is consolidated behind renderAdmin and wrapper count is reduced',()=>{
