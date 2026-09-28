@@ -23,7 +23,7 @@ test('new Contest form stays available and auto-selects the created Contest', ()
   assert.match(manager, /Crea Contest DRAFT/);
   assert.match(index, /admin_create_contest/);
   assert.match(index, /await selectAdminContest\(Array\.isArray\(data\)\?data\[0\]:data\)/);
-  assert.match(index, /adminCreateToggle/);
+  assert.match(index, /adminNewContestToggle/);
   assert.match(index, /#adminCreateContest>div:has\(input\[name="slug"\]\)/);
 });
 

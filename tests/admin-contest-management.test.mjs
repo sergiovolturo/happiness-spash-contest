@@ -26,13 +26,21 @@ test('Admin Contest UI supports fresh Contest creation, selection and opening su
 });
 
 test('Admin Contest creation is compact and lifecycle-aware', () => {
-  assert.match(index, /adminCreateToggle/);
+  assert.match(index, /adminNewContestToggle/);
   assert.match(index, /\+ Nuovo Contest/);
   assert.match(index, /createContest\.hidden=true/);
   assert.match(index, /adminLifecycleNotice/);
   assert.match(index, /status!=='SUBMISSIONS_OPEN'/);
   assert.match(index, /Le candidature sono chiuse/);
   assert.match(index, /Le categorie sono bloccate/);
+});
+
+test('Admin Contest creation keeps exactly one runtime toggle', () => {
+  assert.match(index, /const adminRemoveLegacyContestToggle=.*querySelectorAll\('\.adminCreateToggle'\).*toggle\.remove/);
+  assert.equal((index.match(/id="adminNewContestToggle"/g) || []).length, 1);
+  assert.match(index, /adminRemoveLegacyContestToggle\(\);adminCompactContestArchive\(\)/);
+  assert.match(index, /if\(form&&!document\.querySelector\('#adminNewContestToggle'\)/);
+  assert.match(index, /form\.hidden=!form\.hidden/);
 });
 
 test('Admin lifecycle copy is human-readable and readonly categories are compact', () => {
