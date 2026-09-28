@@ -30,7 +30,8 @@ test('Admin voting videos are isolated by Contest and grouped by real category',
 test('Admin voting UI exposes private video playback and legacy name fallback', () => {
   assert.match(index, /Video in votazione/);
   assert.match(index, /renderAdminVotingVideos\(view,requestId\)/);
-  assert.match(index, /adminSignedMedia\(row\)/);
+  assert.match(index, /openAdminVotingVideo\(/);
+  assert.match(index, /adminSignedMedia\(media\)/);
   assert.match(index, /Nome candidato non disponibile/);
   assert.match(index, /\.eq\('contest_id',contestId\)/);
   assert.match(index, /category_id/);
