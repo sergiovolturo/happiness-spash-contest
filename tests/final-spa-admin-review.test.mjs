@@ -39,18 +39,18 @@ test('manual Admin UI copy contains no technical identity/participation labels',
 });
 
 test('closed manual submission is compact and does not keep the full form',()=>{
-  const active = html.slice(html.indexOf('async function renderAdmin('));
-  assert.match(active,/publicContest\.status==='SUBMISSIONS_OPEN'/);
-  assert.match(active,/adminSectionEmpty/);
-  assert.match(html,/Candidature chiuse/);
-  assert.match(html,/Le candidature non sono ancora aperte/);
+  const renderer = html.slice(html.indexOf('const renderAdminSubmissionsSectionAuthoritative='),html.indexOf('const renderAdminResultsSectionAuthoritative='));
+  assert.match(renderer,/publicContest\.status==='DRAFT'/);
+  assert.match(renderer,/adminSectionEmpty\('Candidature'/);
+  assert.match(renderer,/adminManualSubmissionClosed/);
+  assert.match(renderer,/Inserimento manuale non disponibile/);
 });
 
 test('open manual submission keeps the full form only when the window is enabled',()=>{
-  const active = html.slice(html.indexOf('async function renderAdmin('));
-  assert.match(active,/publicContest\.status==='SUBMISSIONS_OPEN'/);
-  assert.match(active,/bindAdminManualSubmission\(\)/);
-  assert.match(html,/enabled:contest\.status==='SUBMISSIONS_OPEN'&&temporalState==='OPEN'/);
+  const renderer = html.slice(html.indexOf('const renderAdminSubmissionsSectionAuthoritative='),html.indexOf('const renderAdminResultsSectionAuthoritative='));
+  assert.match(renderer,/publicContest\.status==='SUBMISSIONS_OPEN'&&submissionWindowState\(\)==='OPEN'/);
+  assert.match(renderer,/windowOpen\?adminManualSubmissionForm/);
+  assert.match(renderer,/if\(windowOpen\).*bindAdminManualSubmission\(\)/);
   assert.match(html,/id="adminManualSubmission"/);
 });
 
