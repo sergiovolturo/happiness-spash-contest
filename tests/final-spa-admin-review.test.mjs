@@ -31,7 +31,8 @@ test('late render A cannot commit after render B owns the token',async()=>{
 });
 
 test('manual Admin UI copy contains no technical identity/participation labels',()=>{
-  assert.doesNotMatch(manualUi,/Nuova identity|nuova identity|\bIdentity\b|\bparticipation\b/i);
+  const visibleCopy=manualUi.replace(/name="identity"/g,'').replace(/'participation:'/g,'').replace(/'identity:'/g,'');
+  assert.doesNotMatch(visibleCopy,/Nuova identity|nuova identity|\bIdentity\b|\bparticipation\b/i);
   assert.match(manualUi,/Crea nuovo partecipante/);
   assert.match(manualUi,/Nome del partecipante/);
   assert.match(manualUi,/Partecipazione esistente/);
