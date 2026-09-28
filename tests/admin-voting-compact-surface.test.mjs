@@ -52,8 +52,8 @@ test('category filters and counts are derived from the selected Contest categori
 });
 
 test('Voting open removes the complete manual and category configuration surfaces', () => {
-  assert.match(votingBranch, /adminHideElement\(categoryManager\)/);
-  assert.match(votingBranch, /adminHideElement\(manager\)/);
+  assert.match(votingBranch, /adminHideElement\(currentConfig\)/);
+  assert.doesNotMatch(votingBranch, /adminHideElement\(manager\)/);
   assert.match(votingBranch, /adminHideElement\(manual\);if\(manual\)manual\.remove\(\)/);
   assert.match(votingBranch, /adminHideElement\(results\?\.querySelector\(':scope > \.grid'\)\)/);
 });
