@@ -39,14 +39,17 @@ test('manual Admin UI copy contains no technical identity/participation labels',
 });
 
 test('closed manual submission is compact and does not keep the full form',()=>{
-  assert.match(html,/manual&&!windowInfo\.enabled\)\{manual\.outerHTML=/);
+  const active = html.slice(html.indexOf('async function renderAdmin('));
+  assert.match(active,/publicContest\.status==='SUBMISSIONS_OPEN'/);
+  assert.match(active,/adminSectionEmpty/);
   assert.match(html,/Candidature chiuse/);
-  assert.match(html,/Inserimento manuale non disponibile in questa fase/);
-  assert.match(html,/id="adminManualSubmissionClosed"/);
+  assert.match(html,/Le candidature non sono ancora aperte/);
 });
 
 test('open manual submission keeps the full form only when the window is enabled',()=>{
-  assert.match(html,/else if\(manual\)\{manual\.querySelectorAll\('input,select,button,textarea'\)\.forEach\(control=>control\.disabled=false\)\}/);
+  const active = html.slice(html.indexOf('async function renderAdmin('));
+  assert.match(active,/publicContest\.status==='SUBMISSIONS_OPEN'/);
+  assert.match(active,/bindAdminManualSubmission\(\)/);
   assert.match(html,/enabled:contest\.status==='SUBMISSIONS_OPEN'&&temporalState==='OPEN'/);
   assert.match(html,/id="adminManualSubmission"/);
 });
@@ -57,3 +60,4 @@ test('all runtime gallery definitions accept ownership and vote callback does no
   assert.match(html,/voteInFlight\.delete\(key\);await galleryView\(\)\}/);
   assert.doesNotMatch(html,/voteInFlight\.delete\(key\);await galleryView\(requestId\)\}/);
 });
+

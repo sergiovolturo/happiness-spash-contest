@@ -53,5 +53,7 @@ test('SUBMISSIONS_OPEN is compact while manual upload remains collapsed',()=>{
 test('READY_FOR_VOTING uses automatic schedule without manual opening CTA',()=>{
   assert.match(index,/adminReadyForVotingSurface/);
   assert.match(index,/si aprirà automaticamente/);
-  assert.match(index,/publicContest\.status==='READY_FOR_VOTING'/);
+  assert.match(index,/status==='READY_FOR_VOTING'/);
+  assert.doesNotMatch(index,/READY_FOR_VOTING:\['open_contest_voting'/);
 });
+

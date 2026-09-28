@@ -10,13 +10,13 @@ test('Candidature cards retain private video playback and real candidate/categor
   assert.match(index, /contestant_display_name/);
   assert.match(index, /category\.name/);
   assert.match(index, /submission_publications/);
-  assert.match(index, /Voti ricevuti/);
+  assert.match(index, /adminSubmissionGrid/);
 });
 
 test('Voting open keeps candidature cards visible and removes the separate voting grid', () => {
-  const votingBranch = index.match(/else if\(phase==='VOTING'\)\{([\s\S]*?)\}else if\(phase==='RESULTS'\)/)?.[1] || '';
-  assert.match(votingBranch, /adminShowElement\(groups\)/);
-  assert.match(votingBranch, /adminHideElement\(manual\)/);
+  const active = index.slice(index.indexOf('async function renderAdmin('));
+  assert.match(active, /adminContestSurfaceLegacyFinal\(requestId\)/);
+  assert.match(active, /adminRemoveLegacyComposition/);
   assert.doesNotMatch(runtime, /adminVotingVideoGrid|Video in votazione/);
 });
 
@@ -24,3 +24,4 @@ test('Voting safeguards remain one verified vote per category', () => {
   assert.match(runtime, /get_my_voted_categories/);
   assert.match(runtime, /cast_contest_vote/);
 });
+

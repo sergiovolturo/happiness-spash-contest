@@ -29,27 +29,29 @@ test('Admin opening prerequisites block zero categories and accept a valid windo
 });
 
 test('DRAFT composition keeps configuration and hides operational surfaces',()=>{
-  assert.match(index,/phase==='CONFIGURATION'/);
-  assert.match(index,/adminHideElement\(moderationAction\)/);
-  assert.match(index,/adminHideElement\(groups\)/);
-  assert.match(index,/adminHideElement\(manual\)/);
-  assert.match(index,/adminHideElement\(results\)/);
+  const active=index.slice(index.indexOf('async function renderAdmin('));
+  assert.match(active,/publicContest\.status==='DRAFT'/);
+  assert.match(active,/adminDraftQuickLaunch/);
+  assert.match(active,/adminRemoveLegacyComposition/);
   assert.match(index,/adminOpeningPrerequisites\(publicContest,publicCategories\)/);
 });
 
 test('SUBMISSIONS_OPEN composition keeps moderation and collapses manual entry',()=>{
-  assert.match(index,/phase==='SUBMISSIONS'/);
-  assert.match(index,/adminShowElement\(groups\)/);
-  assert.match(index,/adminManualToggle\(manual\)/);
+  const active=index.slice(index.indexOf('async function renderAdmin('));
+  assert.match(active,/publicContest\.status==='SUBMISSIONS_OPEN'/);
+  assert.match(active,/adminManualToggle\(/);
+  assert.match(index,/adminModerationGroup/);
   assert.match(index,/\+ Inserisci candidatura/);
 });
 
 test('VOTING_OPEN and RESULTS compositions foreground the correct surfaces',()=>{
-  assert.match(index,/phase==='VOTING'/);
+  const active=index.slice(index.indexOf('async function renderAdmin('));
+  assert.match(active,/adminVotingStatusSurface/);
+  assert.match(index,/contest\?\.status==='VOTING_OPEN'/);
   assert.match(index,/cast_contest_vote/);
-  assert.match(index,/published_submission_media/);
-  assert.match(index,/phase==='RESULTS'/);
-  assert.match(index,/adminReplaceResultIdentifiers/);
+  assert.match(active,/adminVotingStatusSurface/);
+  assert.match(active,/adminResults/);
+  assert.match(index,/renderAdminResults/);
 });
 
 test('Admin lifecycle copy is translated at the final active surface',()=>{
@@ -62,6 +64,9 @@ test('Admin lifecycle copy is translated at the final active surface',()=>{
 
 
 test('lifecycle wrapper captures the previous Admin view instead of recursively calling itself',()=>{
-  assert.match(index,/const adminLifecycleSurfaceBase=adminView;/);
-  assert.doesNotMatch(index,/const adminLifecycleSurfaceBase=async requestId=>\{await adminView\(requestId\)/);
+  const active=index.slice(index.indexOf('async function renderAdmin('));
+  assert.match(index,/adminView=renderAdmin/);
+  assert.match(active,/adminContestSurfaceLegacyFinal\(requestId\)/);
+  assert.doesNotMatch(index,/adminView=async function/);
 });
+

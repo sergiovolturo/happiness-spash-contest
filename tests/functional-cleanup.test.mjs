@@ -83,7 +83,9 @@ test('submission window state transitions are deterministic before, during and a
 
 test('final wrapper audit preserves the new behavior', () => {
   assert.match(index.slice(index.lastIndexOf('submissionView=')), /playerSubmissionViewBase/);
-  assert.match(index, /adminLifecycleSurfaceBase/);
+  assert.match(index, /async function renderAdmin\(/);
+  assert.match(index, /adminView=renderAdmin/);
+  assert.doesNotMatch(index, /adminView=async function/);
   assert.match(index.slice(index.lastIndexOf('galleryView=')), /publicGalleryWithUx/);
   assert.match(index.slice(index.lastIndexOf('bindAdminContestManager=')), /bindAdminContestManagerBase/);
 });
@@ -110,9 +112,11 @@ test('Rome fall-back chooses the second occurrence deterministically', () => {
 });
 
 test('Admin manual submission follows lifecycle window state', () => {
-  const start = index.indexOf('const submissionWindowStateAt=');
-  const end = index.indexOf('const submissionWindowMessage=()=>', start);
-  const helpers = new Function('const fmt=()=>"chiusura";' + index.slice(start, end) + '; return {adminSubmissionWindowStateAt,adminSubmissionWindowLabelAt,adminSubmissionWindowMessageAt};')();
+  const stateStart = index.indexOf('const submissionWindowStateAt=');
+  const stateEnd = index.indexOf('\r\n', stateStart) + 2;
+  const adminStart = index.indexOf('const adminSubmissionWindowStateAt=');
+  const adminEnd = index.indexOf('const submissionWindowMessage=', adminStart);
+  const helpers = new Function('const fmt=()=>"chiusura";' + index.slice(stateStart, stateEnd) + index.slice(adminStart, adminEnd) + '; return {adminSubmissionWindowStateAt,adminSubmissionWindowLabelAt,adminSubmissionWindowMessageAt};')();
   const contest = {status:'SUBMISSIONS_OPEN',submissions_open_at:'2026-01-01T10:00:00Z',submissions_close_at:'2026-01-01T12:00:00Z'};
   const before = helpers.adminSubmissionWindowStateAt(contest, Date.parse('2026-01-01T09:00:00Z'));
   const open = helpers.adminSubmissionWindowStateAt(contest, Date.parse('2026-01-01T11:00:00Z'));
@@ -126,7 +130,7 @@ test('Admin manual submission follows lifecycle window state', () => {
   assert.match(helpers.adminSubmissionWindowMessageAt(contest, Date.parse('2026-01-01T09:00:00Z')), /Apertura/);
   assert.match(helpers.adminSubmissionWindowMessageAt(contest, Date.parse('2026-01-01T11:00:00Z')), /chiusura/);
   assert.match(helpers.adminSubmissionWindowMessageAt(contest, Date.parse('2026-01-01T13:00:00Z')), /terminato/);
-  assert.match(index, /manual\.outerHTML=.*Candidature chiuse/s);
+  assert.match(index, /Le candidature non sono ancora aperte/);
 });
 
 test('Player window message remains phase-specific', () => {
@@ -151,3 +155,4 @@ test('final Player submission wrapper respects guest window state', () => {
   assert.equal(state.submissionWindowStateAt(contest, Date.parse('2026-01-01T11:00:00Z')), 'OPEN');
   assert.equal(state.submissionWindowStateAt(contest, Date.parse('2026-01-01T13:00:00Z')), 'CLOSED');
 });
+

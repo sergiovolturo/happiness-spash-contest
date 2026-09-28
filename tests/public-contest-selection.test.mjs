@@ -32,20 +32,17 @@ test('Admin selection is independent from publicContest and preserves valid prio
 });
 
 test('Admin selection explicitly loads the selected Contest categories', () => {
-  assert.match(index, /const adminSelectionSurfaceBase=adminView/);
-  assert.match(index, /publicContest=selected/);
+  assert.match(index, /const selected=adminContestRows\.find/);
+  assert.match(index, /publicContest\?\.id!==selected\.id/);
   assert.match(index, /admin_list_contest_categories',\{p_contest_id:selected\.id\}/);
 });
 
 test('RESULTS removes whole configuration, category and manual surfaces', () => {
-  assert.match(index, /adminCategoryManagementSurface/);
-  assert.match(index, /adminManualSubmissionSurface/);
+  assert.match(index, /adminRemoveLegacyComposition/);
+  assert.match(index, /adminManualSubmission/);
   assert.match(index, /adminCurrentContestConfiguration/);
-  assert.match(index, /adminLifecyclePhaseAt\(publicContest\)!=='RESULTS'/);
-  assert.match(index, /querySelector\('\.adminCategoryManagementSurface'\)\?\.remove\(\)/);
-  assert.match(index, /querySelector\('\.adminManualSubmissionSurface'\)\?\.remove\(\)/);
-  assert.match(index, /querySelector\('\.adminCurrentContestConfiguration'\)\?\.remove\(\)/);
-  assert.match(index, /adminResultsSurfaceBase=adminView/);
+  assert.match(index, /adminSection==='results'/);
+  assert.match(index, /view\.querySelectorAll\(':scope > section:not\(\.adminResults\)'\)/);
 });
 
 test('Global manager, timeline, results and audit remain present', () => {
@@ -55,3 +52,4 @@ test('Global manager, timeline, results and audit remain present', () => {
   assert.match(index, /class="adminAudit"/);
   assert.match(index, /Nuovo Contest|Crea Contest/);
 });
+

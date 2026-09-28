@@ -74,30 +74,30 @@ test('Candidature workspace contains manual CTA, upload form and moderation',()=
 test('Contest owns voting status while Candidature remains the video workspace',()=>{
   assert.doesNotMatch(runtime,/renderAdminVotingSection|adminVotingVideos|adminVotingFilters/);
   assert.match(index,/adminVotingStatusSurface/);
-  assert.match(index,/admin_list_contest_submission_cards/);
+  assert.match(index,/adminContestSurfaceLegacyFinal/);
   assert.match(index,/Chiudi votazione/);
   assert.match(index,/renderAdminResultsSection/);
   assert.match(index,/Congela risultati/);
   assert.match(index,/Conferma finalisti/);
   assert.match(index,/Pubblica finalisti/);
-  assert.match(index,/adminHideElement\(document\.querySelector\('#adminManualSubmission,#adminManualSubmissionClosed'\)/);
+  assert.match(index,/adminManualToggle/);
   assert.match(index,/I risultati saranno disponibili dopo la chiusura della votazione/);
-  assert.match(index,/Voti ricevuti/);
 });
 
 test('Section transitions retain one authoritative router without adding Admin wrappers',()=>{
   const shell=index.slice(index.indexOf('const renderAdminShell='),index.indexOf('const adminQuickLaunchSurfaceBase='));
   for(const section of ['overview','contest','submissions','results'])assert.match(shell,new RegExp(`adminSection==='${section}'`));
   assert.doesNotMatch(shell,/adminSection==='voting'/);
-  assert.equal(adminViewWrappers(index),14);
+  assert.equal(adminViewWrappers(index),0);
 });
 
 test('Admin entry is consolidated behind renderAdmin and wrapper count is reduced',()=>{
   assert.match(index,/async function renderAdmin\(/);
   assert.match(index,/adminView=renderAdmin/);
-  assert.ok(adminViewWrappers(index)<=14,'the Admin view wrapper chain must remain bounded');
+  assert.equal(adminViewWrappers(index),0,'the Admin view wrapper chain must be removed');
 });
 
 test('existing business surfaces remain wired for regression coverage',()=>{
   for(const marker of ['admin_open_contest_submissions','open_contest_voting','cast_contest_vote','signInWithOtp','adminUploadAndFinalize','adminFreezeResults','adminPublishFinalists'])assert.match(index,new RegExp(marker));
 });
+

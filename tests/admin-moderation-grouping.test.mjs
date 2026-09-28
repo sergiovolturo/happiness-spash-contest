@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const index = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-const adminStart = index.lastIndexOf('async function adminView');
-const adminEnd = index.indexOf('\nasync function updateSettings', adminStart);
+const adminStart = index.indexOf('async function adminContestSurfaceLegacyFinal');
+const adminEnd = index.indexOf('const renderPublicGalleryCards=', adminStart);
 const admin = index.slice(adminStart, adminEnd);
 
 test('Admin moderation renders every category section, including empty and inactive categories', () => {
   assert.match(admin, /categories\.map\(async category/);
+  assert.match(admin, /adminModerationGroup/);
   assert.match(admin, /rows\.length} candidature/);
   assert.match(admin, /Nessuna candidatura in questa categoria/);
   assert.match(admin, /category\.is_active\?'':' · inattiva'/);
@@ -40,7 +41,8 @@ test('Admin navigation hides the Player Candidatura tab and recovery upload stay
 });
 
 test('Admin manual submission explains its operational use and remains desktop-first', () => {
-  assert.match(index, /video ricevuti via WhatsApp o email/);
-  assert.match(index, /adminManualIntro/);
+  assert.match(index, /video ricevuti dall’organizzazione/);
+  assert.match(index, /adminManualSubmissionForm/);
   assert.match(index, /adminManualForm\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)/);
 });
+

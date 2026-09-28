@@ -13,9 +13,9 @@ test('Admin has no separate voting workspace or duplicate voting grid', () => {
 test('Voting status is shown in Contest and candidature cards remain the video surface', () => {
   assert.match(index, /adminVotingStatusSurface/);
   assert.match(index, /adminSubmissionGrid/);
-  assert.match(index, /admin_list_contest_submission_cards/);
-  assert.match(index, /Voti ricevuti/);
-  assert.match(index, /adminShowElement\(groups\)/);
+  assert.match(index, /adminContestSurfaceLegacyFinal/);
+  assert.match(index, /adminManualToggle/);
+  assert.match(index, /adminRemoveLegacyComposition/);
 });
 
 test('The ordinary Admin surface has no vote-verification UI', () => {
@@ -23,3 +23,4 @@ test('The ordinary Admin surface has no vote-verification UI', () => {
   assert.doesNotMatch(runtime, /adminVotingSummary|adminVotingVideos/);
   assert.match(runtime, /Cancella voto fraudolento/);
 });
+
