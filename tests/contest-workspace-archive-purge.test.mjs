@@ -5,6 +5,7 @@ import path from 'node:path';
 
 const index=fs.readFileSync(path.join(process.cwd(),'index.html'),'utf8');
 const migration=fs.readFileSync(path.join(process.cwd(),'supabase/migrations/20260929000200_contest_workspace_archive_purge.sql'),'utf8');
+const aclMigration=fs.readFileSync(path.join(process.cwd(),'supabase/migrations/20260929000300_restrict_admin_contest_list_acl.sql'),'utf8');
 
 test('Admin overview uses Contest cards and keeps the legacy selector hidden',()=>{
   assert.match(index,/data-admin-new-contest/);
@@ -72,6 +73,6 @@ test('No service role or destructive production fixture is introduced in fronten
 });
 
 test('Administrative Contest listing is not executable by anonymous callers',()=>{
-  assert.match(migration,/revoke execute on function public\.admin_list_contests\(\) from public,anon,service_role/);
-  assert.match(migration,/grant execute on function public\.admin_list_contests\(\) to authenticated/);
+  assert.match(aclMigration,/revoke execute on function public\.admin_list_contests\(\) from public, anon, service_role/);
+  assert.match(aclMigration,/grant execute on function public\.admin_list_contests\(\) to authenticated/);
 });
