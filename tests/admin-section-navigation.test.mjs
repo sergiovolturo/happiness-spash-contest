@@ -4,12 +4,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const index=fs.readFileSync(path.join(process.cwd(),'index.html'),'utf8');
+const runtime=index.slice(index.indexOf('<script>'));
 const adminViewWrappers=(source)=>[...source.matchAll(/adminView=async function/g)].length;
 
-test('Admin shell exposes five stable sections only inside Amministra',()=>{
+test('Admin shell exposes the four operational workspace sections only inside Amministra',()=>{
   assert.match(index,/id="adminSectionNavigation"/);
   assert.match(index,/aria-label="Navigazione Amministra"/);
-  for(const label of ['Panoramica','Contest','Candidature','Votazione','Risultati'])assert.match(index,new RegExp(label));
+  for(const label of ['Contest','Candidature','Risultati','Impostazioni'])assert.match(index,new RegExp(label));
+  assert.doesNotMatch(index,/adminSectionLabels=\{[^}]*voting:/);
   assert.match(index,/if\(currentTab==='admin'\)await renderStep\(adminView\(requestId\),'admin'\)/);
 });
 
@@ -69,10 +71,10 @@ test('Candidature workspace contains manual CTA, upload form and moderation',()=
   assert.match(index,/Completa la configurazione nella sezione Contest/);
 });
 
-test('Voting and Results workspaces keep their dedicated surfaces and hide clutter',()=>{
-  assert.match(index,/renderAdminVotingSection/);
-  assert.match(index,/adminVotingVideos/);
-  assert.match(index,/adminVotingFilters/);
+test('Contest owns voting status while Candidature remains the video workspace',()=>{
+  assert.doesNotMatch(runtime,/renderAdminVotingSection|adminVotingVideos|adminVotingFilters/);
+  assert.match(index,/adminVotingStatusSurface/);
+  assert.match(index,/admin_list_contest_submission_cards/);
   assert.match(index,/Chiudi votazione/);
   assert.match(index,/renderAdminResultsSection/);
   assert.match(index,/Congela risultati/);
@@ -80,19 +82,20 @@ test('Voting and Results workspaces keep their dedicated surfaces and hide clutt
   assert.match(index,/Pubblica finalisti/);
   assert.match(index,/adminHideElement\(document\.querySelector\('#adminManualSubmission,#adminManualSubmissionClosed'\)/);
   assert.match(index,/I risultati saranno disponibili dopo la chiusura della votazione/);
-  assert.match(index,/Votazione non disponibile/);
+  assert.match(index,/Voti ricevuti/);
 });
 
 test('Section transitions retain one authoritative router without adding Admin wrappers',()=>{
   const shell=index.slice(index.indexOf('const renderAdminShell='),index.indexOf('const adminQuickLaunchSurfaceBase='));
-  for(const section of ['overview','contest','submissions','voting','results'])assert.match(shell,new RegExp(`adminSection==='${section}'`));
-  assert.equal(adminViewWrappers(index),12);
+  for(const section of ['overview','contest','submissions','results'])assert.match(shell,new RegExp(`adminSection==='${section}'`));
+  assert.doesNotMatch(shell,/adminSection==='voting'/);
+  assert.equal(adminViewWrappers(index),14);
 });
 
 test('Admin entry is consolidated behind renderAdmin and wrapper count is reduced',()=>{
   assert.match(index,/async function renderAdmin\(/);
   assert.match(index,/adminView=renderAdmin/);
-  assert.ok(adminViewWrappers(index)<13,'the Admin view wrapper chain must be shorter than the previous 13 wrappers');
+  assert.ok(adminViewWrappers(index)<=14,'the Admin view wrapper chain must remain bounded');
 });
 
 test('existing business surfaces remain wired for regression coverage',()=>{

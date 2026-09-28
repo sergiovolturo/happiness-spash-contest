@@ -32,8 +32,8 @@ test('current Contest configuration is separate and hidden during VOTING_OPEN', 
   assert.match(manager, /adminSubmissionWindow/);
   assert.match(votingBranch, /adminHideElement\(currentConfig\)/);
   assert.match(votingBranch, /adminHideElement\(categoryManager\)/);
-  assert.match(votingBranch, /adminHideElement\(manual\);if\(manual\)manual\.remove\(\)/);
-  assert.match(votingBranch, /adminHideElement\(results\?\.querySelector\(':scope > \.grid'\)/);
+  assert.match(votingBranch, /adminShowElement\(groups\)/);
+  assert.match(votingBranch, /adminHideElement\(manual\)/);
 });
 
 test('DRAFT shows the current configuration while preserving the global manager', () => {
@@ -42,10 +42,12 @@ test('DRAFT shows the current configuration while preserving the global manager'
   assert.match(manager, /adminOpenSubmissions/);
 });
 
-test('compact voting surface, category filters, vote rule and stale guards remain present', () => {
-  assert.match(index, /adminVotingVideoGrid/);
-  assert.match(index, /data-admin-voting-filter/);
-  assert.match(index, /Regola voto: 1 voto verificato per ciascuna categoria/);
+test('Contest carries voting status and candidature cards carry server-side counts', () => {
+  assert.match(index, /adminVotingStatusSurface/);
+  assert.match(index, /admin_list_contest_submission_cards/);
+  assert.match(index, /Voti ricevuti/);
+  assert.match(index, /cast_contest_vote/);
   assert.match(index, /renderIsCurrent\(requestId\)/);
-  assert.match(index, /\.eq\('contest_id',contestId\)/);
+  const candidatureWrapper=index.slice(index.indexOf('const adminCandidatureCardsBase='));
+  assert.doesNotMatch(candidatureWrapper, /supabase\.from\(['"]contest_votes['"]\)/);
 });

@@ -46,7 +46,7 @@ test('SUBMISSIONS_OPEN composition keeps moderation and collapses manual entry',
 
 test('VOTING_OPEN and RESULTS compositions foreground the correct surfaces',()=>{
   assert.match(index,/phase==='VOTING'/);
-  assert.match(index,/Regola voto: 1 voto verificato per ciascuna categoria/);
+  assert.match(index,/cast_contest_vote/);
   assert.match(index,/published_submission_media/);
   assert.match(index,/phase==='RESULTS'/);
   assert.match(index,/adminReplaceResultIdentifiers/);
