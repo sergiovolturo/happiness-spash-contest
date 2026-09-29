@@ -48,3 +48,22 @@ test('public category cards consume canonical image paths without exposing resul
   assert.match(migration,/get_public_contest_results/);
   assert.match(migration,/status='PUBLISHED'/i);
 });
+
+test('category editing uses an Admin form and never the native name prompt',()=>{
+  assert.match(index,/data-category-edit-form/);
+  assert.match(index,/Salva modifiche/);
+  assert.match(index,/Annulla/);
+  assert.match(index,/categoryEditPreview/);
+  assert.doesNotMatch(index,/prompt\('Nome categoria'/);
+});
+
+test('category editing validates uploads and preserves the existing path until DB update succeeds',()=>{
+  assert.match(index,/adminCategoryEditFileError/);
+  assert.match(index,/file\.size>3145728/);
+  assert.match(index,/\['image\/jpeg','image\/png','image\/webp'\]/);
+  assert.match(index,/let imagePath=definition\.image_path\|\|null/);
+  assert.match(index,/storage\.from\('category-images'\)\.upload/);
+  assert.match(index,/admin_update_category_definition/);
+  assert.match(index,/p_image_path:imagePath/);
+  assert.match(index,/if\(result\.error\)throw result\.error/);
+});
