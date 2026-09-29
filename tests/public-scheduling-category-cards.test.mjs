@@ -49,6 +49,10 @@ test('public desktop surface uses CSS grid without DOM reparenting and preserves
   assert.match(index,/\.gallerySection\.publicDesktopSurface>#publicContestSchedule\{grid-column:3;grid-row:1/);
   assert.match(index,/\.gallerySection\.publicDesktopSurface>#publicGalleryArea\{grid-column:1\/-1;grid-row:2/);
   assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title:has\(> \.publicCategoryGrid\)>#publicContestSchedule\{grid-column:3;grid-row:1/);
+  assert.match(index,/@media\(min-width:1100px\)\{\.gallerySection\.publicDesktopSurface\{display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(480px,1fr\)/);
+  assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title:has\(> \.publicCategoryGrid\)> \.publicCategoryGrid\{grid-column:1\/-1;grid-row:2/);
+  assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title:has\(> \.publicCategoryGrid\)>#publicContestSchedule\{grid-column:2;grid-row:1/);
+  assert.match(index,/\.section-title:has\(> \.publicCategoryGrid\)>#publicContestSchedule \.publicScheduleGrid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)/);
   assert.match(index,/@media\(max-width:760px\)\{\.gallerySection\.publicDesktopSurface\{display:flex;flex-direction:column/);
   assert.match(index,/\.gallerySection\.publicDesktopSurface>#publicContestSchedule\{order:3/);
   const ensure=index.slice(index.indexOf('const ensurePublicScheduleSurface='),index.indexOf('const homeViewWithPublicSchedule='));
