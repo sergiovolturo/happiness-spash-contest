@@ -26,6 +26,20 @@ label{display:block;font-weight:700;font-size:14px;margin:14px 0 7px}.input{widt
 .closedCategory{margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#f8fcfd}.closedCategory ul{margin:8px 0 0;padding-left:22px}.submissionCategory{font-size:15px}
 </style>
 <style>.adminLifecycleSteps{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:800}.adminLifecycleStep{padding:8px 12px;border-radius:999px;background:#edf5f6;color:var(--muted)}.adminLifecycleStep.active{background:var(--ink);color:#fff}.adminLifecycleArrow{color:var(--muted)}.adminPrerequisites>div{margin:6px 0}.adminCategorySummary{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.adminCategorySummary>div{border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:5px}.adminCategorySummary span{color:var(--muted)}.adminManualToggle{margin:8px 0}.adminVotingFilters{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.adminVotingFilter.active{background:var(--ink);color:#fff}.adminVotingVideoGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:10px}.adminVotingVideoCategory{margin-top:20px}.adminVotingVideo{min-width:0;padding:10px;display:flex;flex-direction:column;gap:10px}.adminVotingVideoPreview{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:16/9;border:0;border-radius:14px;background:linear-gradient(135deg,#071b22,#167c8b);color:#fff;font-size:30px;overflow:hidden}.adminVotingVideoPreview:hover{filter:brightness(1.12)}.adminVotingVideoPreview span{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#ffffffdd;color:var(--ink);font-size:22px}.adminVotingVideoName{overflow-wrap:anywhere}.adminVideoModal{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:#071b22cc}.adminVideoModalCard{width:min(960px,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;border-radius:20px;padding:18px}.adminVideoModal video{display:block;width:100%;max-height:72vh;aspect-ratio:16/9;background:#071b22;border-radius:14px}.adminVideoModalClose{float:right}.adminAudit{margin-top:18px}.adminAudit summary{cursor:pointer;font-weight:800}@media(max-width:1050px){.adminVotingVideoGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:820px){.adminVotingVideoGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.adminVotingVideoGrid{grid-template-columns:1fr}}</style>
+<style>
+/* Category cards: visual-only layout, shared by admin library and public gallery. */
+.categoryManagerList{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),420px));justify-content:start;gap:18px}
+.categoryDefinitionCard{width:100%;max-width:420px;padding:18px;display:flex;flex-direction:column;align-items:stretch;gap:10px;overflow:hidden}
+.categoryDefinitionCard .categoryVisualSlot{width:100%;aspect-ratio:16/9;min-height:0;margin:0;background-size:cover;background-position:center;background-repeat:no-repeat;object-fit:cover}
+.categoryDefinitionCard h3{margin:0}
+.categoryDefinitionCard .actions{margin-top:0}
+.publicCategoryGrid,.categorySelector{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:18px}
+.publicCategoryCard,.categoryCard{width:100%;max-width:420px;min-height:0;padding:18px;gap:12px;overflow:hidden}
+.publicCategoryCard .categoryVisualSlot,.categoryCard .categoryVisualSlot{width:100%;aspect-ratio:16/9;min-height:0;margin:0;background-size:cover;background-position:center;background-repeat:no-repeat;object-fit:cover}
+.publicCategoryCard b,.categoryCard b,.categoryCard h2{font-size:1.1rem;line-height:1.25}
+@media(max-width:900px){.publicCategoryGrid,.categorySelector{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.categoryManagerList{grid-template-columns:1fr}.publicCategoryGrid,.categorySelector{grid-template-columns:1fr}.publicCategoryCard,.categoryCard,.categoryDefinitionCard{width:100%;max-width:none}}
+</style>
 </head>
 <body>
 <div class="shell">
