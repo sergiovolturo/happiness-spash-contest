@@ -30,7 +30,7 @@ test('new Contest form stays available and auto-selects the created Contest', ()
 
 test('current Contest configuration is rendered directly and voting status is isolated', () => {
   const active = index.slice(index.indexOf('async function renderAdmin('));
-  const contestRenderer = index.slice(index.indexOf('const renderAdminContestSectionAuthoritative='), index.indexOf('const renderAdminSubmissionsSectionAuthoritative='));
+  const contestRenderer = index.slice(index.indexOf('const renderAdminContestSectionAuthoritativeLegacy='), index.indexOf('const renderAdminSubmissionsSectionAuthoritative=')) + index.slice(index.indexOf('const renderAdminContestSectionAuthoritative=', index.indexOf('const renderAdminSubmissionsSectionAuthoritative=')), index.indexOf('boot();'));
   assert.match(active, /renderAdminContestSectionAuthoritative/);
   assert.match(contestRenderer, /adminSelectedContest\.status==='DRAFT'/);
   assert.match(contestRenderer, /adminDraftQuickLaunch/);
@@ -40,7 +40,7 @@ test('current Contest configuration is rendered directly and voting status is is
 });
 
 test('DRAFT uses only the direct quick-launch configuration', () => {
-  const contestRenderer = index.slice(index.indexOf('const renderAdminContestSectionAuthoritative='), index.indexOf('const renderAdminSubmissionsSectionAuthoritative='));
+  const contestRenderer = index.slice(index.indexOf('const renderAdminContestSectionAuthoritativeLegacy='), index.indexOf('const renderAdminSubmissionsSectionAuthoritative=')) + index.slice(index.indexOf('const renderAdminContestSectionAuthoritative=', index.indexOf('const renderAdminSubmissionsSectionAuthoritative=')), index.indexOf('boot();'));
   assert.match(contestRenderer, /adminSelectedContest\.status==='DRAFT'/);
   assert.match(contestRenderer, /adminDraftQuickLaunch/);
   assert.match(index, /adminOpenSubmissions/);
