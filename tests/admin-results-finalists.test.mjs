@@ -51,7 +51,7 @@ test('backend exposes all required Admin RPCs', () => {
     assert.match(migration, new RegExp(`create or replace function public\\.${name}\\(`, 'i'));
   }
 });
-test('Admin actions refresh Contest/results state', () => assert.match(adminResults, /await loadPublicContest\(\);await adminView\(\)/));
+test('Admin actions refresh Contest/results state', () => assert.match(adminResults, /await loadPublicContest\(\);await render\(\)/));
 test('no public ranking/counts are introduced', () => {
   const publicFlow = index.slice(index.indexOf('// Public gallery flow starts here'), index.indexOf('// New participant domain flow'));
   assert.doesNotMatch(publicFlow, /vote_count|ranking|classifica|percentuale/i);
@@ -68,7 +68,7 @@ test('tie selection enforces an exact count before RPC', () => {
 });
 test('tie resolution can be replaced before confirmation and refreshes state', () => {
   assert.match(adminResults, /Sostituisci decisione tie/);
-  assert.match(adminResults, /await loadPublicContest\(\);await adminView\(\)/);
+  assert.match(adminResults, /await loadPublicContest\(\);await render\(\)/);
 });
 test('confirm is enabled only after a resolved tie', () => assert.match(adminResults, /\(!tie\|\|resolved\)/));
 test('concurrent tie resolution and finalist actions are guarded', () => {

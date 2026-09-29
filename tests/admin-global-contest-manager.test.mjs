@@ -32,7 +32,7 @@ test('current Contest configuration is rendered directly and voting status is is
   const active = index.slice(index.indexOf('async function renderAdmin('));
   const contestRenderer = index.slice(index.indexOf('const renderAdminContestSectionAuthoritative='), index.indexOf('const renderAdminSubmissionsSectionAuthoritative='));
   assert.match(active, /renderAdminContestSectionAuthoritative/);
-  assert.match(contestRenderer, /publicContest\.status==='DRAFT'/);
+  assert.match(contestRenderer, /adminSelectedContest\.status==='DRAFT'/);
   assert.match(contestRenderer, /adminDraftQuickLaunch/);
   assert.match(contestRenderer, /adminVotingStatusSurface/);
   assert.match(index, /contest\?\.status==='VOTING_OPEN'/);
@@ -41,7 +41,7 @@ test('current Contest configuration is rendered directly and voting status is is
 
 test('DRAFT uses only the direct quick-launch configuration', () => {
   const contestRenderer = index.slice(index.indexOf('const renderAdminContestSectionAuthoritative='), index.indexOf('const renderAdminSubmissionsSectionAuthoritative='));
-  assert.match(contestRenderer, /publicContest\.status==='DRAFT'/);
+  assert.match(contestRenderer, /adminSelectedContest\.status==='DRAFT'/);
   assert.match(contestRenderer, /adminDraftQuickLaunch/);
   assert.match(index, /adminOpenSubmissions/);
   assert.doesNotMatch(contestRenderer, /adminGlobalContestManager|adminContestSurfaceLegacyFinal/);

@@ -12,7 +12,7 @@ test('Admin shell exposes the four operational workspace sections only inside Am
   assert.match(index,/aria-label="Navigazione Amministra"/);
   for(const label of ['Contest','Candidature','Risultati','Impostazioni'])assert.match(index,new RegExp(label));
   assert.doesNotMatch(index,/adminSectionLabels=\{[^}]*voting:/);
-  assert.match(index,/if\(currentTab==='admin'\)await renderStep\(adminView\(requestId\),'admin'\)/);
+  assert.match(index,/if\(requestedTab==='admin'&&renderIsCurrent\(requestId\)\)await renderStep\(adminView\(requestId\),'admin'/);
 });
 
 test('Admin workspace keeps the selected Contest while changing section',()=>{
@@ -27,7 +27,7 @@ test('Admin section navigation starts a fresh render for every click',()=>{
   const shell=index.slice(index.indexOf('const renderAdminShell='),index.indexOf('const adminQuickLaunchSurfaceBase='));
   assert.match(shell,/adminSection=button\.dataset\.adminSection;currentTab='admin';render\(\)/);
   assert.doesNotMatch(shell,/adminView\(requestId\)/);
-  assert.match(index,/async function render\(\)\{const requestId=\+\+renderRequestSeq;activeRenderRequestId=requestId/);
+  assert.match(index,/async function render\(\)\{[\s\S]*?const requestId=\+\+renderRequestSeq;[\s\S]*?activeRenderRequestId=requestId/);
 });
 
 test('Overview CTA preserves the selected Contest and routes through the fresh render',()=>{

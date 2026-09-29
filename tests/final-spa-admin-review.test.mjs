@@ -40,7 +40,7 @@ test('manual Admin UI copy contains no technical identity/participation labels',
 
 test('closed manual submission is compact and does not keep the full form',()=>{
   const renderer = html.slice(html.indexOf('const renderAdminSubmissionsSectionAuthoritative='),html.indexOf('const renderAdminResultsSectionAuthoritative='));
-  assert.match(renderer,/publicContest\.status==='DRAFT'/);
+  assert.match(renderer,/adminSelectedContest\.status==='DRAFT'/);
   assert.match(renderer,/adminSectionEmpty\('Candidature'/);
   assert.match(renderer,/adminManualSubmissionClosed/);
   assert.match(renderer,/Inserimento manuale non disponibile/);
@@ -48,7 +48,7 @@ test('closed manual submission is compact and does not keep the full form',()=>{
 
 test('open manual submission keeps the full form only when the window is enabled',()=>{
   const renderer = html.slice(html.indexOf('const renderAdminSubmissionsSectionAuthoritative='),html.indexOf('const renderAdminResultsSectionAuthoritative='));
-  assert.match(renderer,/publicContest\.status==='SUBMISSIONS_OPEN'&&submissionWindowState\(\)==='OPEN'/);
+  assert.match(renderer,/adminSelectedContest\.status==='SUBMISSIONS_OPEN'&&submissionWindowStateAt\(adminSelectedContest\)==='OPEN'/);
   assert.match(renderer,/windowOpen\?adminManualSubmissionForm/);
   assert.match(renderer,/if\(windowOpen\).*bindAdminManualSubmission\(\)/);
   assert.match(html,/id="adminManualSubmission"/);
@@ -57,7 +57,7 @@ test('open manual submission keeps the full form only when the window is enabled
 test('all runtime gallery definitions accept ownership and vote callback does not use an undefined token',()=>{
   assert.doesNotMatch(html,/async function galleryView\(\)/);
   assert.match(html,/async function galleryView\(renderRequestId=activeRenderRequestId\)/);
-  assert.match(html,/voteInFlight\.delete\(key\);await galleryView\(\)\}/);
+  assert.match(html,/voteInFlight\.delete\(key\);await galleryView\(activeRenderRequestId\)\}/);
   assert.doesNotMatch(html,/voteInFlight\.delete\(key\);await galleryView\(requestId\)\}/);
 });
 

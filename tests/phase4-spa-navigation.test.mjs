@@ -5,15 +5,17 @@ import test from 'node:test';
 const index=await readFile(new URL('../index.html',import.meta.url),'utf8');
 const runtime=index.slice(index.indexOf('<script>'));
 
-test('top-level router reloads public state on every public entry and resets Admin to Overview',()=>{
+test('top-level router keeps public state reusable and resets Admin to Overview',()=>{
   assert.match(index,/let publicContest=null,publicCategories=\[\],publicActiveContest=null,publicActiveCategories=\[\]/);
   assert.match(runtime,/publicActiveContest=nextContest;publicActiveCategories=result\.data\|\|\[\];publicContest=nextContest;publicCategories=publicActiveCategories/);
-  assert.match(runtime,/const renderLegacyLoop=render;[\s\S]*?render=async function\(\)\{[\s\S]*?requestedTab==='home'[\s\S]*?loadPublicContest\(requestId\)/);
+  assert.doesNotMatch(runtime,/renderLegacyLoop|render=async function/);
+  assert.match(runtime,/const requestId=\+\+renderRequestSeq;[\s\S]*?const requestedTab=currentTab/);
+  assert.doesNotMatch(runtime,/async function render\(\)[\s\S]*?loadPublicContest\(requestId\)/);
   assert.match(runtime,/bindNav=\(\)=>\{document\.querySelectorAll\('\[data-tab\]'\)[\s\S]*?if\(nextTab==='admin'\)adminSection='overview'/);
 });
 
 test('final public view remains request-owned after its async load',()=>{
-  assert.match(runtime,/const homeViewStable=homeView;[\s\S]*?homeView=async function\(requestId=activeRenderRequestId\)\{if\(!renderIsCurrent\(requestId\)\)return;await loadPublicGallery\(true\);if\(!renderIsCurrent\(requestId\)\)return;[\s\S]*?await galleryView\(requestId\)\}/);
+  assert.match(runtime,/homeView=async function\(requestId\)\{if\(!renderIsCurrent\(requestId\)\)return;await loadPublicGallery\(requestId\);if\(!renderIsCurrent\(requestId\)\)return;[\s\S]*?await galleryView\(requestId\)\}/);
 });
 
 test('Admin configuration exposes explicit category labels',()=>{
