@@ -53,3 +53,10 @@ test('safe editing and date ordering remain regression-covered without new migra
   assert.match(index,/voting_open_at/);
   assert.equal(index.includes('create or replace function public.admin_update_contest_configuration'),false);
 });
+
+test('Admin temporal labels receive the full Contest object',()=>{
+  assert.match(index,/adminReadableStatus\(c\)/);
+  assert.doesNotMatch(index,/adminReadableStatus\(c\.status\)/);
+  assert.doesNotMatch(index,/adminReadableStatus\(adminSelectedContest\.status\)/);
+  assert.doesNotMatch(index,/adminReadableStatus\(adminSelectedContest\?\.status\)/);
+});
