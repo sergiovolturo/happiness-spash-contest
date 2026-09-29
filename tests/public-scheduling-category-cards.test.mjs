@@ -43,11 +43,14 @@ test('public home puts the summary and categories before the compact date block'
 });
 
 test('public desktop surface uses CSS grid without DOM reparenting and preserves mobile order',()=>{
-  assert.match(index,/\.gallerySection\.publicDesktopSurface\{display:grid;grid-template-columns:minmax\(220px,\.8fr\) minmax\(480px,1\.6fr\) minmax\(260px,\.8fr\)/);
-  assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title\{grid-column:1\/3;display:grid/);
+  assert.match(index,/\.gallerySection\.publicDesktopSurface\{display:grid;grid-template-columns:minmax\(220px,\.8fr\) minmax\(0,1\.8fr\) minmax\(260px,\.8fr\)/);
+  assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title\{grid-column:1;grid-row:1;display:block/);
+  assert.match(index,/\.gallerySection\.publicDesktopSurface>\.publicCategoryGrid\{grid-column:2;grid-row:1/);
   assert.match(index,/\.gallerySection\.publicDesktopSurface>#publicContestSchedule\{grid-column:3;grid-row:1/);
+  assert.match(index,/\.gallerySection\.publicDesktopSurface>#publicGalleryArea\{grid-column:1\/-1;grid-row:2/);
+  assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title:has\(> \.publicCategoryGrid\)>#publicContestSchedule\{grid-column:3;grid-row:1/);
   assert.match(index,/@media\(max-width:760px\)\{\.gallerySection\.publicDesktopSurface\{display:flex;flex-direction:column/);
-  assert.match(index,/\.gallerySection\.publicDesktopSurface>#publicContestSchedule\{order:2/);
+  assert.match(index,/\.gallerySection\.publicDesktopSurface>#publicContestSchedule\{order:3/);
   const ensure=index.slice(index.indexOf('const ensurePublicScheduleSurface='),index.indexOf('const homeViewWithPublicSchedule='));
   assert.doesNotMatch(ensure,/append\(title\)|append\(grid\)|prepend\(composition\)/);
   assert.match(ensure,/holder\?\.after\(schedule\.firstElementChild\)/);
