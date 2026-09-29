@@ -7,6 +7,10 @@ const migration = await readFile(
   new URL('../supabase/migrations/20260922000200_step2_submissions.sql', import.meta.url),
   'utf8',
 );
+const capacityMigration = await readFile(
+  new URL('../supabase/migrations/20260930000400_rejected_releases_capacity.sql', import.meta.url),
+  'utf8',
+);
 
 test('domain contract mirrors submission states and required ownership keys', () => {
   assert.deepEqual(SUBMISSION_STATUSES, ['PENDING', 'APPROVED', 'REJECTED', 'WITHDRAWN', 'CANCELLED']);
@@ -40,11 +44,11 @@ test('submission schema preserves category ownership and historical rows', () =>
   assert.match(migration, /updated_at timestamptz not null default now\(\)/i);
 });
 
-test('partial uniqueness keeps rejected submissions in the cap and frees withdrawn/cancelled', () => {
-  assert.match(migration, /create unique index submissions_active_pair_uidx/i);
-  assert.match(migration, /on public\.submissions \(participation_id, category_id\)[\s\S]*?where status in \('PENDING', 'APPROVED', 'REJECTED'\)/i);
-  assert.match(migration, /status in \('PENDING', 'APPROVED', 'REJECTED'\)/i);
-  assert.doesNotMatch(migration, /unique \(participation_id, category_id\)/i);
+test('partial uniqueness releases rejected, withdrawn and cancelled submissions', () => {
+  assert.match(capacityMigration, /create unique index submissions_active_pair_uidx/i);
+  assert.match(capacityMigration, /on public\.submissions \(participation_id, category_id\)[\s\S]*?where status in \('PENDING', 'APPROVED'\)/i);
+  assert.doesNotMatch(capacityMigration, /where status in \('PENDING', 'APPROVED', 'REJECTED'\)/i);
+  assert.doesNotMatch(capacityMigration, /unique \(participation_id, category_id\)/i);
 });
 
 test('RLS allows reads only to owner/admin and blocks generic player writes', () => {
