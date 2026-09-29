@@ -15,8 +15,10 @@ test('Candidature cards retain private video playback and real candidate/categor
 
 test('Voting open keeps candidature cards visible and removes the separate voting grid', () => {
   const active = index.slice(index.indexOf('async function renderAdmin('));
-  assert.match(active, /adminContestSurfaceLegacyFinal\(requestId\)/);
-  assert.match(active, /adminRemoveLegacyComposition/);
+  const candidature = index.slice(index.indexOf('const renderAdminSubmissionsSectionAuthoritative='), index.indexOf('const renderAdminResultsSectionAuthoritative='));
+  assert.match(active, /renderAdminSubmissionsSectionAuthoritative/);
+  assert.match(candidature, /adminSubmissionCardHtml/);
+  assert.doesNotMatch(active, /adminContestSurfaceLegacyFinal\(requestId\)|adminRemoveLegacyComposition/);
   assert.doesNotMatch(runtime, /adminVotingVideoGrid|Video in votazione/);
 });
 

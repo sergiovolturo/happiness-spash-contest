@@ -33,16 +33,17 @@ test('Admin selection is independent from publicContest and preserves valid prio
 
 test('Admin selection explicitly loads the selected Contest categories', () => {
   assert.match(index, /const selected=adminContestRows\.find/);
-  assert.match(index, /publicContest\?\.id!==selected\.id/);
+  assert.match(index, /publicContest=selected/);
   assert.match(index, /admin_list_contest_categories',\{p_contest_id:selected\.id\}/);
 });
 
-test('RESULTS removes whole configuration, category and manual surfaces', () => {
-  assert.match(index, /adminRemoveLegacyComposition/);
-  assert.match(index, /adminManualSubmission/);
-  assert.match(index, /adminCurrentContestConfiguration/);
-  assert.match(index, /adminSection==='results'/);
-  assert.match(index, /view\.querySelectorAll\(':scope > section:not\(\.adminResults\)'\)/);
+test('RESULTS renders from an empty view without legacy configuration surfaces', () => {
+  const active=index.slice(index.indexOf('async function renderAdmin('));
+  const results=index.slice(index.indexOf('const renderAdminResultsSectionAuthoritative='),index.indexOf('const adminRenderAuthoritativeShell='));
+  assert.match(active, /view\.innerHTML=''/);
+  assert.match(active, /adminSection==='results'.*renderAdminResultsSectionAuthoritative/);
+  assert.match(results, /renderAdminResults\(view\)/);
+  assert.doesNotMatch(results, /adminManualSubmission|adminCurrentContestConfiguration|adminContestSurfaceLegacyFinal|adminRemoveLegacyComposition/);
 });
 
 test('Global manager, timeline, results and audit remain present', () => {

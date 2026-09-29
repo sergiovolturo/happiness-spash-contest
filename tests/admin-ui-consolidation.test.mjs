@@ -9,7 +9,7 @@ test('Admin has one authoritative renderer and no historical assignments',()=>{
   assert.equal((index.match(/adminView=async function/g)||[]).length,0);
   assert.match(index,/adminView=renderAdmin/);
   assert.match(index,/adminRenderAuthoritativeShell/);
-  assert.doesNotMatch(renderer,/adminContestManager()|adminGlobalContestManager/);
+  assert.doesNotMatch(renderer,/adminContestManager\(\)|adminGlobalContestManager|adminContestSurfaceLegacyFinal\(|adminRemoveLegacyComposition/);
 });
 
 test('overview creation is compact and auto-selects the created Contest',()=>{
@@ -25,9 +25,13 @@ test('workspace routes sections without direct nested Admin renders',()=>{
   assert.doesNotMatch(renderer,/await adminView\(/);
 });
 
-test('legacy surfaces are removed before the authoritative section is shown',()=>{
-  assert.match(index,/adminRemoveLegacyComposition/);
-  assert.match(index,/adminCurrentContestConfiguration/);
+test('authoritative sections render directly from an empty view',()=>{
+  assert.match(renderer,/view\.innerHTML=''/);
+  assert.match(renderer,/renderAdminContestSectionAuthoritative/);
+  assert.match(renderer,/renderAdminSubmissionsSectionAuthoritative/);
+  assert.match(renderer,/renderAdminResultsSectionAuthoritative/);
+  assert.match(renderer,/renderAdminSettingsSection/);
+  assert.doesNotMatch(renderer,/adminContestSurfaceLegacyFinal\(|adminRemoveLegacyComposition/);
   assert.match(index,/adminManualSubmissionClosed/);
   assert.match(index,/I risultati saranno disponibili dopo la chiusura/);
 });

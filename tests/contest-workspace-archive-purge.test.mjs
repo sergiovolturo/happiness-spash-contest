@@ -7,12 +7,12 @@ const index=fs.readFileSync(path.join(process.cwd(),'index.html'),'utf8');
 const migration=fs.readFileSync(path.join(process.cwd(),'supabase/migrations/20260929000200_contest_workspace_archive_purge.sql'),'utf8');
 const aclMigration=fs.readFileSync(path.join(process.cwd(),'supabase/migrations/20260929000300_restrict_admin_contest_list_acl.sql'),'utf8');
 
-test('Admin overview uses Contest cards and keeps the legacy selector hidden',()=>{
-  assert.match(index,/data-admin-new-contest/);
+test('Admin overview uses Contest cards without the legacy selector',()=>{
+  const renderer=index.slice(index.indexOf('const renderAdminOverview='),index.indexOf('const renderAdminContestSection='));
+  assert.match(renderer,/id="adminNewContestToggle"/);
   assert.match(index,/data-admin-overview-contest/);
   assert.match(index,/details class="adminArchive"/);
-  assert.match(index,/id="adminContestSelect" class="input"/);
-  assert.match(index,/<select hidden aria-hidden="true" id="adminContestSelect"/);
+  assert.doesNotMatch(renderer,/adminContestSelect|data-admin-overview-action="archive"/);
   assert.match(index,/adminContestRows\.filter\(c=>!c\.archived_at\)/);
   assert.match(index,/adminContestRows\.filter\(c=>!!c\.archived_at\)/);
 });

@@ -29,29 +29,32 @@ test('Admin opening prerequisites block zero categories and accept a valid windo
 });
 
 test('DRAFT composition keeps configuration and hides operational surfaces',()=>{
-  const active=index.slice(index.indexOf('async function renderAdmin('));
-  assert.match(active,/publicContest\.status==='DRAFT'/);
-  assert.match(active,/adminDraftQuickLaunch/);
-  assert.match(active,/adminRemoveLegacyComposition/);
+  const renderer=index.slice(index.indexOf('const renderAdminContestSectionAuthoritative='),index.indexOf('const renderAdminSubmissionsSectionAuthoritative='));
+  assert.match(renderer,/publicContest\.status==='DRAFT'/);
+  assert.match(renderer,/adminDraftQuickLaunch/);
+  assert.doesNotMatch(renderer,/adminContestSurfaceLegacyFinal|adminRemoveLegacyComposition/);
   assert.match(index,/adminOpeningPrerequisites\(publicContest,publicCategories\)/);
 });
 
 test('SUBMISSIONS_OPEN composition keeps moderation and collapses manual entry',()=>{
-  const active=index.slice(index.indexOf('async function renderAdmin('));
-  assert.match(active,/publicContest\.status==='SUBMISSIONS_OPEN'/);
-  assert.match(active,/adminManualToggle\(/);
-  assert.match(index,/adminModerationGroup/);
+  const renderer=index.slice(index.indexOf('const renderAdminSubmissionsSectionAuthoritative='),index.indexOf('const renderAdminResultsSectionAuthoritative='));
+  assert.match(renderer,/publicContest\.status==='SUBMISSIONS_OPEN'/);
+  assert.match(renderer,/submissionWindowState\(\)==='OPEN'/);
+  assert.match(renderer,/adminManualToggle\(/);
+  assert.match(index,/adminSubmissionGrid/);
   assert.match(index,/\+ Inserisci candidatura/);
 });
 
 test('VOTING_OPEN and RESULTS compositions foreground the correct surfaces',()=>{
   const active=index.slice(index.indexOf('async function renderAdmin('));
-  assert.match(active,/adminVotingStatusSurface/);
+  const contestRenderer=index.slice(index.indexOf('const renderAdminContestSectionAuthoritative='),index.indexOf('const renderAdminSubmissionsSectionAuthoritative='));
+  const resultsRenderer=index.slice(index.indexOf('const renderAdminResultsSectionAuthoritative='),index.indexOf('const adminRenderAuthoritativeShell='));
+  assert.match(contestRenderer,/adminVotingStatusSurface/);
   assert.match(index,/contest\?\.status==='VOTING_OPEN'/);
   assert.match(index,/cast_contest_vote/);
-  assert.match(active,/adminVotingStatusSurface/);
-  assert.match(active,/adminResults/);
-  assert.match(index,/renderAdminResults/);
+  assert.match(resultsRenderer,/renderAdminResults/);
+  assert.match(resultsRenderer,/removeAdminVoteVerificationSurface/);
+  assert.match(active,/renderAdminResultsSectionAuthoritative/);
 });
 
 test('Admin lifecycle copy is translated at the final active surface',()=>{
@@ -63,10 +66,13 @@ test('Admin lifecycle copy is translated at the final active surface',()=>{
 });
 
 
-test('lifecycle wrapper captures the previous Admin view instead of recursively calling itself',()=>{
+test('authoritative renderer dispatches directly without a legacy wrapper',()=>{
   const active=index.slice(index.indexOf('async function renderAdmin('));
   assert.match(index,/adminView=renderAdmin/);
-  assert.match(active,/adminContestSurfaceLegacyFinal\(requestId\)/);
+  assert.match(active,/renderAdminContestSectionAuthoritative/);
+  assert.match(active,/renderAdminSubmissionsSectionAuthoritative/);
+  assert.match(active,/renderAdminResultsSectionAuthoritative/);
+  assert.doesNotMatch(active,/adminContestSurfaceLegacyFinal\(requestId\)|adminRemoveLegacyComposition/);
   assert.doesNotMatch(index,/adminView=async function/);
 });
 
