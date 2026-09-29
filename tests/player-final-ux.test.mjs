@@ -40,6 +40,22 @@ test('Player statuses and submitted-video copy avoid technical terminology', () 
   assert.match(index, /<b>Categoria:<\/b>/);
 });
 
+test('Player submission cards stay compact and avoid technical media wording', () => {
+  assert.match(index, /playerSubmissionCard/);
+  assert.match(index, /playerSubmissionHeader/);
+  assert.match(index, /playerSubmissionStatus/);
+  assert.match(index, /playerSubmissionCategory/);
+  assert.match(index, /playerSubmissionMediaState/);
+  assert.doesNotMatch(index, /mediaStatusLabel\[m\.status\].*corrente/);
+  assert.match(index, /Stato video non disponibile/);
+});
+
+test('Player mobile card gives the category line priority over the compact status badge', () => {
+  assert.match(index, /\.playerSubmissionCategory\{white-space:nowrap;overflow:hidden;text-overflow:ellipsis/);
+  assert.match(index, /\.playerSubmissionStatus\{flex:0 1 auto;max-width:150px/);
+  assert.match(index, /@media\(max-width:760px\).*playerSubmissionStatus\{max-width:128px/s);
+});
+
 test('Voter confirmation states one definitive vote per category', () => {
   assert.match(index, /Puoi votare una sola volta in questa categoria\. Il voto è definitivo\./);
   assert.match(index, /Verifica la tua email per votare/);

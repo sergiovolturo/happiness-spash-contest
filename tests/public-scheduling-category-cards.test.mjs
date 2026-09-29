@@ -31,6 +31,22 @@ test('category CTA never promises videos that are not published',()=>{
   assert.match(index,/publicContestSchedule/);
 });
 
+test('public home puts the summary and categories before the compact date block',()=>{
+  const home=index.slice(index.indexOf('const renderPublicHomeShell='),index.indexOf('homeView=async function',index.indexOf('const renderPublicHomeShell=')));
+  assert.match(home,/publicContestSummary muted/);
+  assert.match(index,/const publicScheduleSurfaceHtml=.*Date del Contest/s);
+  assert.match(index,/holder\.after\(schedule\)/);
+  assert.match(index,/\.publicScheduleSurface\{padding:12px 16px/);
+});
+
+test('empty public category state is informative and not an actionable button',()=>{
+  assert.match(index,/document\.createElement\('article'\)/);
+  assert.match(index,/categoryInfoPill/);
+  assert.match(index,/\.categoryCardInformative\{cursor:default!important;pointer-events:none\}/);
+  assert.match(index,/Nessun video pubblicato/);
+  assert.match(index,/Guarda i video/);
+});
+
 test('public and Admin category surfaces use the 3:1 image slot and responsive compact grid',()=>{
   assert.match(index,/\.categoryVisualSlot\{aspect-ratio:3\/1/);
   assert.match(index,/\.publicCategoryGrid\{grid-template-columns:repeat\(auto-fit/);
