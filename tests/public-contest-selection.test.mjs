@@ -33,7 +33,7 @@ test('Admin selection is independent from publicContest and preserves valid prio
 
 test('Admin selection explicitly loads the selected Contest categories', () => {
   assert.match(index, /const selected=adminContestRows\.find/);
-  assert.match(index, /publicContest=selected/);
+  assert.match(index, /adminSelectedContest=selected/);
   assert.match(index, /admin_list_contest_categories',\{p_contest_id:selected\.id\}/);
 });
 

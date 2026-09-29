@@ -35,7 +35,7 @@ test('video cards are placeholders with on-demand playback; opening the gallery 
 });
 
 test('every public gallery visit refreshes publication view so revoked media disappear', () => {
-  assert.match(index, /async function homeView\(\)\{await loadPublicGallery\(true\)/);
+  assert.match(index, /homeView=async function\(requestId\)\{if\(!renderIsCurrent\(requestId\)\)return;await loadPublicGallery\(requestId\)/);
   assert.match(index, /published_submission_media/);
   assert.match(index, /clearGalleryObjectUrls\(\)/);
 });

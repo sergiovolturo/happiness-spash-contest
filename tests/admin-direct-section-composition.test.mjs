@@ -36,7 +36,7 @@ const adminSectionEmpty=compile('adminSectionEmpty');
 test('overview final composition has one create control and no archive action on cards',async()=>{
   const rows=[{id:'one',name:'Contest corrente',status:'DRAFT',archived_at:null},{id:'old',name:'Contest storico',status:'CLOSED',archived_at:'2026-09-20T10:00:00Z'}];
   const view=new FakeView();
-  const renderOverview=compile('renderAdminOverview',{renderIsCurrent,adminContestRows:rows,publicContest:rows[0],publicCategories:[],esc,fmt,adminReadableStatus,adminOverviewAction,adminOverviewMessage});
+  const renderOverview=compile('renderAdminOverview',{renderIsCurrent,adminContestRows:rows,adminSelectedContest:rows[0],adminSelectedCategories:[],esc,fmt,adminReadableStatus,adminOverviewAction,adminOverviewMessage});
   const bindCreate=compile('adminBindOverviewCreate',{supabase:{rpc(){throw new Error('submit was not requested')}},adminSlugify:value=>value,adminSelectedContestId:null,adminSection:'overview',currentTab:'admin',render:async()=>{},msg:()=>''});
   await renderOverview(view,1);
   bindCreate(view);
@@ -50,23 +50,23 @@ test('Contest DRAFT final composition contains only the preparation workflow',as
   const contest={id:'contest',name:'Contest',description:'',slug:'contest',status:'DRAFT'};
   const view=new FakeView();
   const document={querySelector:()=>null};
-  const draft=compile('adminDraftQuickLaunch',{publicContest:contest,renderIsCurrent,document,adminQuickLaunchValues:()=>({submissionOpenAt:'',submissionCloseAt:'',votingOpenAt:'',votingCloseAt:''}),adminOpeningPrerequisites:()=>({name:true,categories:true,submissionPeriod:true,votingPeriod:true,ordering:true,valid:true}),publicCategories:[],esc,adminQuickChecklist:()=>'<div>✓ Pronto</div>',msg:()=>'',adminActionsInFlight:new Set(),romeLocalToTimestamptz:value=>value,supabase:{rpc:async()=>({data:null,error:null})},adminQuickCategorySlug:value=>value,adminQuickRefresh:async()=>{},confirm:()=>false,loadAdminContests:async()=>{},adminContestRows:[],adminView:async()=>{}});
-  const renderer=compile('renderAdminContestSectionAuthoritative',{renderIsCurrent,publicContest:contest,adminDraftQuickLaunch:draft,adminVotingStatusSurface:()=>'',adminCloseVoting:()=>{}});
+  const draft=compile('adminDraftQuickLaunch',{adminSelectedContest:contest,renderIsCurrent,document,adminQuickLaunchValues:()=>({submissionOpenAt:'',submissionCloseAt:'',votingOpenAt:'',votingCloseAt:''}),adminOpeningPrerequisites:()=>({name:true,categories:true,submissionPeriod:true,votingPeriod:true,ordering:true,valid:true}),adminSelectedCategories:[],esc,adminQuickChecklist:()=>'<div>✓ Pronto</div>',msg:()=>'',adminActionsInFlight:new Set(),romeLocalToTimestamptz:value=>value,supabase:{rpc:async()=>({data:null,error:null})},adminQuickCategorySlug:value=>value,adminQuickRefresh:async()=>{},confirm:()=>false,loadAdminContests:async()=>{},adminContestRows:[],adminView:async()=>{}});
+  const renderer=compile('renderAdminContestSectionAuthoritative',{renderIsCurrent,adminSelectedContest:contest,adminDraftQuickLaunch:draft,adminVotingStatusSurface:()=>'',adminCloseVoting:()=>{}});
   await renderer(view,1);
   assert.equal(count(view.html,/Prepara il Contest/g),1);
   for(const legacy of ['Moderazione Contest','Inserisci candidatura','Risultati e finalisti','Voti da verificare'])assert.equal(count(view.html,new RegExp(legacy,'g')),0,legacy);
 });
 
 test('DRAFT Candidature and Results render only their empty states',async()=>{
-  const publicContest={status:'DRAFT'};
+  const adminSelectedContest={status:'DRAFT'};
   const candidatureView=new FakeView();
-  const candidature=compile('renderAdminSubmissionsSectionAuthoritative',{renderIsCurrent,publicContest,adminSectionEmpty});
+  const candidature=compile('renderAdminSubmissionsSectionAuthoritative',{renderIsCurrent,adminSelectedContest,adminSectionEmpty});
   await candidature(candidatureView,1);
   assert.match(candidatureView.html,/Le candidature non sono ancora aperte/);
   assert.doesNotMatch(candidatureView.html,/adminSubmissionGrid|adminManualSubmission/);
 
   const resultsView=new FakeView();
-  const results=compile('renderAdminResultsSectionAuthoritative',{renderIsCurrent,publicContest,adminSectionEmpty});
+  const results=compile('renderAdminResultsSectionAuthoritative',{renderIsCurrent,adminSelectedContest,adminSectionEmpty});
   await results(resultsView,1);
   assert.match(resultsView.html,/I risultati saranno disponibili dopo la chiusura/);
   assert.doesNotMatch(resultsView.html,/Risultati e finalisti|Voti da verificare/);
@@ -76,7 +76,7 @@ test('Settings final composition owns archive and permanent deletion controls',a
   const result={data:[],error:null};
   const chain={select(){return this},in(){return this},eq(){return this},then(resolve){resolve(result)}};
   const view=new FakeView();
-  const settings=compile('renderAdminSettingsSection',{renderIsCurrent,publicContest:{id:'contest',name:'Contest',status:'DRAFT',archived_at:null},document:{querySelector:()=>null},adminClearLegacyAdminSurfaces:()=>{},adminHideElement:()=>{},publicCategories:[{id:'category'}],supabase:{from:()=>Object.create(chain)},esc,fmt,adminReadableStatus,adminArchiveContest:()=>{},adminRestoreContest:()=>{},adminDeleteContest:()=>{}});
+  const settings=compile('renderAdminSettingsSection',{renderIsCurrent,adminSelectedContest:{id:'contest',name:'Contest',status:'DRAFT',archived_at:null},document:{querySelector:()=>null},adminClearLegacyAdminSurfaces:()=>{},adminHideElement:()=>{},adminSelectedCategories:[{id:'category'}],supabase:{from:()=>Object.create(chain)},esc,fmt,adminReadableStatus,adminArchiveContest:()=>{},adminRestoreContest:()=>{},adminDeleteContest:()=>{}});
   await settings(view,1);
   assert.equal(count(view.html,/data-admin-archive-contest/g),1);
   assert.equal(count(view.html,/data-admin-delete-contest/g),1);

@@ -30,16 +30,16 @@ test('Admin opening prerequisites block zero categories and accept a valid windo
 
 test('DRAFT composition keeps configuration and hides operational surfaces',()=>{
   const renderer=index.slice(index.indexOf('const renderAdminContestSectionAuthoritative='),index.indexOf('const renderAdminSubmissionsSectionAuthoritative='));
-  assert.match(renderer,/publicContest\.status==='DRAFT'/);
+  assert.match(renderer,/adminSelectedContest\.status==='DRAFT'/);
   assert.match(renderer,/adminDraftQuickLaunch/);
   assert.doesNotMatch(renderer,/adminContestSurfaceLegacyFinal|adminRemoveLegacyComposition/);
-  assert.match(index,/adminOpeningPrerequisites\(publicContest,publicCategories\)/);
+  assert.match(index,/adminOpeningPrerequisites\(adminSelectedContest,adminSelectedCategories\)/);
 });
 
 test('SUBMISSIONS_OPEN composition keeps moderation and collapses manual entry',()=>{
   const renderer=index.slice(index.indexOf('const renderAdminSubmissionsSectionAuthoritative='),index.indexOf('const renderAdminResultsSectionAuthoritative='));
-  assert.match(renderer,/publicContest\.status==='SUBMISSIONS_OPEN'/);
-  assert.match(renderer,/submissionWindowState\(\)==='OPEN'/);
+  assert.match(renderer,/adminSelectedContest\.status==='SUBMISSIONS_OPEN'/);
+  assert.match(renderer,/submissionWindowStateAt\(adminSelectedContest\)==='OPEN'/);
   assert.match(renderer,/adminManualToggle\(/);
   assert.match(index,/adminSubmissionGrid/);
   assert.match(index,/\+ Inserisci candidatura/);

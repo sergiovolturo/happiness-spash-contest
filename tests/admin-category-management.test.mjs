@@ -61,7 +61,7 @@ test('Admin UI supports dynamic categories and hides Player tab from Admin navig
 });
 
 test('Admin category mutations refresh the public Contest/category read surface', () => {
-  assert.match(index, /refresh=async\(\)=>\{await loadAdminContests\(\);const selected=adminContestRows\.find\(c=>c\.id===adminSelectedContestId\);if\(selected\)await selectAdminContest\(selected\);else await adminView\(\)\}/);
+  assert.match(index, /refresh=async\(\)=>\{await loadAdminContests\(\);const selected=adminContestRows\.find\(c=>c\.id===adminSelectedContestId\);if\(selected\)await selectAdminContest\(selected\);else await render\(\)\}/);
 });
 
 test('category slugs are generated from the name and hidden from the main Admin UI', () => {

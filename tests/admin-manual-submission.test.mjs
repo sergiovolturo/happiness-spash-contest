@@ -68,7 +68,7 @@ test('Admin manual upload retries transient finalize visibility errors and prese
   assert.match(index, /adminFileMetadata/);
   assert.match(index, /adminMimeAliases/);
   assert.match(index, /storage_object_missing\|storage_object_type_mismatch\|storage_object_size_mismatch/);
-  assert.match(index, /await adminView\(\);const currentBox=document\.querySelector\('#adminMsg'\)/);
+  assert.match(index, /await adminAwait\(adminView\(\),'adminView refresh'\)/);
   assert.match(index, /finally\{adminActionsInFlight\.delete\(key\);if\(document\.body\.contains\(button\)\)button\.disabled=false\}/);
 });
 

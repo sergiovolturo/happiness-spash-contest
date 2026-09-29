@@ -37,7 +37,7 @@ test('no results or counts are rendered', () => assert.doesNotMatch(votingFlow, 
 test('participant participation is not created by voter flow', () => assert.doesNotMatch(votingFlow, /ensure_contest_participation|create_submission/));
 test('OTP/session restore does not auto-create participation', () => {
   assert.doesNotMatch(index.slice(index.indexOf('async function boot'), index.indexOf('function authView')), /loadParticipantContext\(\)/);
-  assert.match(index, /if\(currentTab==='upload'\)\{if\(session&&!participantId\)await renderStep\(loadParticipantContext\(\),'participant'\)/);
+  assert.match(index, /if\(requestedTab==='upload'\)\{[\s\S]*?if\(session&&!participantId\)await renderStep\(loadParticipantContext\(\),'participant',requestId,requestedTab\)/);
 });
 test('participant context is loaded only when entering Candidatura', () => assert.match(index, /currentTab==='upload'.*loadParticipantContext/s));
 test('session restore reloads per-category state from backend', () => assert.match(index, /onAuthStateChange[\s\S]*loadVoteState\(\)[\s\S]*render\(\)/));
