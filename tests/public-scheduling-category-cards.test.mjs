@@ -35,8 +35,25 @@ test('public home puts the summary and categories before the compact date block'
   const home=index.slice(index.indexOf('const renderPublicHomeShell='),index.indexOf('homeView=async function',index.indexOf('const renderPublicHomeShell=')));
   assert.match(home,/publicContestSummary muted/);
   assert.match(index,/const publicScheduleSurfaceHtml=.*Date del Contest/s);
-  assert.match(index,/holder\.after\(schedule\)/);
+  assert.match(index,/publicDesktopComposition/);
+  assert.match(index,/publicDesktopInfo/);
+  assert.match(index,/publicDesktopCategories/);
+  assert.match(index,/publicDesktopDates/);
+  assert.match(index,/composition\.append\(info,categories,dates\)/);
+  assert.match(index,/append\(schedule\)/);
   assert.match(index,/\.publicScheduleSurface\{padding:12px 16px/);
+});
+
+test('public desktop composition is three-column and preserves mobile content order',()=>{
+  assert.match(index,/\.publicDesktopComposition\{display:grid;grid-template-columns:minmax\(220px,\.8fr\) minmax\(480px,1\.6fr\) minmax\(260px,\.8fr\)/);
+  assert.match(index,/\.publicDesktopCategories \.publicCategoryGrid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)/);
+  assert.match(index,/\.publicDesktopDates \.publicScheduleGrid\{grid-template-columns:1fr\}/);
+  assert.match(index,/@media\(max-width:760px\)\{\.publicDesktopComposition\{display:block\}/);
+  const ensure=index.slice(index.indexOf('const ensurePublicScheduleSurface='),index.indexOf('const homeViewWithPublicSchedule='));
+  assert.ok(ensure.indexOf("info.append(title)")<ensure.indexOf("categories.append(grid)"));
+  assert.ok(ensure.indexOf("categories.append(grid)")<ensure.indexOf("composition.append(info,categories,dates)"));
+  assert.match(ensure,/if\(schedule\)dates\.append\(schedule\)/);
+  assert.match(ensure,/composition\.append\(info,categories,dates\)/);
 });
 
 test('empty public category state is informative and not an actionable button',()=>{
