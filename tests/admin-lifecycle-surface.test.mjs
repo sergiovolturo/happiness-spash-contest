@@ -29,7 +29,7 @@ test('Admin opening prerequisites block zero categories and accept a valid windo
 });
 
 test('DRAFT composition keeps configuration and hides operational surfaces',()=>{
-  const renderer=index.slice(index.indexOf('const renderAdminContestSectionAuthoritative='),index.indexOf('const renderAdminSubmissionsSectionAuthoritative='));
+  const renderer=index.slice(index.indexOf('const renderAdminContestSectionAuthoritativeLegacy='),index.indexOf('const renderAdminSubmissionsSectionAuthoritative='))+index.slice(index.indexOf('const renderAdminContestSectionAuthoritative=',index.indexOf('const renderAdminSubmissionsSectionAuthoritative=')),index.indexOf('boot();'));
   assert.match(renderer,/adminSelectedContest\.status==='DRAFT'/);
   assert.match(renderer,/adminDraftQuickLaunch/);
   assert.doesNotMatch(renderer,/adminContestSurfaceLegacyFinal|adminRemoveLegacyComposition/);
@@ -47,7 +47,7 @@ test('SUBMISSIONS_OPEN composition keeps moderation and collapses manual entry',
 
 test('VOTING_OPEN and RESULTS compositions foreground the correct surfaces',()=>{
   const active=index.slice(index.indexOf('async function renderAdmin('));
-  const contestRenderer=index.slice(index.indexOf('const renderAdminContestSectionAuthoritative='),index.indexOf('const renderAdminSubmissionsSectionAuthoritative='));
+  const contestRenderer=index.slice(index.indexOf('const renderAdminContestSectionAuthoritativeLegacy='),index.indexOf('const renderAdminSubmissionsSectionAuthoritative='))+index.slice(index.indexOf('const renderAdminContestSectionAuthoritative=',index.indexOf('const renderAdminSubmissionsSectionAuthoritative=')),index.indexOf('boot();'));
   const resultsRenderer=index.slice(index.indexOf('const renderAdminResultsSectionAuthoritative='),index.indexOf('const adminRenderAuthoritativeShell='));
   assert.match(contestRenderer,/adminVotingStatusSurface/);
   assert.match(index,/contest\?\.status==='VOTING_OPEN'/);
