@@ -4,11 +4,9 @@ import { readFile } from 'node:fs/promises';
 
 const index = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 
-const helperStart = index.indexOf('const adminSubmissionPhaseAt=');
-const helperEnd = index.indexOf('const adminVotingStatusSurface=', helperStart);
-const actionSource = index.match(/^const adminOverviewAction=.*$/m)?.[0];
-assert.ok(helperStart >= 0 && helperEnd > helperStart && actionSource, 'Admin lifecycle helpers must remain extractable');
-const helpers = new Function(`${index.slice(helperStart, helperEnd)}\n${actionSource}\nreturn {adminSubmissionPhaseAt,adminVotingPhaseAt,adminReadableStatus,adminOverviewAction};`)();
+const declarations = ['votingWindowStateAt', 'adminSubmissionPhaseAt', 'adminVotingPhaseAt', 'adminReadableStatus', 'adminVotingLabelAt', 'adminOverviewAction'].map(name => index.match(new RegExp(`^const ${name}=.*$`, 'm'))?.[0]);
+assert.ok(declarations.every(Boolean), 'Admin lifecycle helpers must remain extractable');
+const helpers = new Function(`${declarations.join('\n')}\nreturn {adminSubmissionPhaseAt,adminVotingPhaseAt,adminVotingLabelAt,adminReadableStatus,adminOverviewAction};`)();
 
 const contest = {
   status: 'SUBMISSIONS_OPEN',
@@ -57,6 +55,37 @@ test('Admin desktop surfaces use wide grids while category editing remains prese
   assert.match(index, /admin_update_category_definition/);
   assert.match(index, /categoryEditPreview/);
   assert.match(index, /category-images/);
+});
+
+test('Admin configuration categories use compact four-column desktop rows with responsive fallback', () => {
+  assert.match(index, /\.adminEditableCategory\{display:grid;grid-template-columns:minmax\(220px,2fr\) repeat\(3,minmax\(110px,1fr\)/);
+  assert.match(index, /\.adminEditableCategoryField/);
+  assert.match(index, /@media\(max-width:900px\)\{\.adminEditableCategory\{grid-template-columns:repeat\(2/);
+  assert.match(index, /@media\(max-width:560px\)\{\.adminEditableCategory\{grid-template-columns:1fr\}/);
+  const configuration = index.slice(index.indexOf('const adminContestConfigurationSurface='), index.indexOf('const renderAdminContestSectionAuthoritative=', index.indexOf('const adminContestConfigurationSurface=')));
+  for (const field of ['categoryName', 'categoryCap', 'categoryFinalists', 'categoryOrder']) assert.match(configuration, new RegExp(`adminEditableCategoryField.*${field}`));
+  assert.match(configuration, /admin_update_contest_category/);
+  assert.match(configuration, /admin_reorder_contest_categories/);
+});
+
+test('Voting status surface uses voting lifecycle labels, not submissions labels', () => {
+  const before = Date.parse('2026-10-01T11:00:00Z');
+  const open = Date.parse('2026-10-02T14:00:00Z');
+  const closed = Date.parse('2026-10-05T13:00:00Z');
+  assert.equal(helpers.adminVotingLabelAt(contest, before), 'Votazione programmata');
+  assert.equal(helpers.adminVotingLabelAt({...contest, status: 'VOTING_OPEN'}, open), 'Votazione aperta');
+  assert.equal(helpers.adminVotingLabelAt({...contest, status: 'VOTING_OPEN'}, closed), 'Votazione conclusa');
+  const surface = index.slice(index.indexOf('const adminVotingStatusSurface='), index.indexOf('const adminContestConfigurationSurface='));
+  assert.match(surface, /adminVotingLabelAt\(contest\)/);
+  assert.doesNotMatch(surface, /adminReadableStatus\(contest\)/);
+  assert.doesNotMatch(surface, /Candidature programmate/);
+});
+
+test('Safe edit RPC wiring remains unchanged', () => {
+  const configuration = index.slice(index.indexOf('const adminContestConfigurationSurface='), index.indexOf('const renderAdminContestSectionAuthoritative=', index.indexOf('const adminContestConfigurationSurface=')));
+  assert.match(configuration, /admin_update_contest_configuration/);
+  assert.match(configuration, /safeEdit/);
+  assert.match(configuration, /Categorie, cap, finalisti e ordine proteggono lo storico esistente/);
 });
 
 test('final render sanitizes technical lifecycle labels from visible text', () => {
