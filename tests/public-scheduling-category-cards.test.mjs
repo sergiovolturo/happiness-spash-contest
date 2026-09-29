@@ -28,18 +28,23 @@ test('category CTA never promises videos that are not published',()=>{
   assert.deepEqual(helpers.publicCategoryCtaAt(contest,2,during),{label:'Guarda i video',enabled:true});
   assert.match(index,/publicCategoryCtaAt\(publicContest,count\)/);
   assert.match(index,/Candidature programmate/);
-  assert.match(index,/publicContestSchedule/);
 });
 
-test('public home puts the summary and categories before the compact date block',()=>{
+test('public Contest header is one compact block with both dynamic date ranges',()=>{
   const home=index.slice(index.indexOf('const renderPublicHomeShell='),index.indexOf('homeView=async function',index.indexOf('const renderPublicHomeShell=')));
   assert.match(home,/publicContestSummary muted/);
-  assert.match(index,/const publicScheduleSurfaceHtml=.*Date del Contest/s);
+  assert.match(index,/const publicContestScheduleInlineHtml=.*Candidature.*Votazioni/s);
+  assert.match(index,/title\.querySelectorAll\('\.publicContestSummary'\)\.forEach\(node=>node\.remove\(\)\)/);
+  assert.match(index,/title\.insertAdjacentHTML\('beforeend',publicContestScheduleInlineHtml\(publicContest\)\)/);
+  assert.doesNotMatch(index,/holder\?\.after\(schedule\.firstElementChild\)/);
   assert.match(index,/gallerySection\.publicDesktopSurface/);
   assert.match(index,/section\.classList\.add\('publicDesktopSurface'\)/);
-  assert.doesNotMatch(index,/info\.append\(title\)/);
-  assert.doesNotMatch(index,/categories\.append\(grid\)/);
-  assert.match(index,/\.publicScheduleSurface\{padding:12px 16px/);
+  assert.match(index,/\.publicContestScheduleInline\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)/);
+  assert.match(index,/\.publicContestScheduleInline \.muted\{display:block;white-space:nowrap/);
+  assert.match(index,/@media\(max-width:760px\)\{\.publicContestScheduleInline\{grid-template-columns:1fr/);
+  const activePublicComposition=index.slice(index.indexOf('const publicContestScheduleInlineHtml='));
+  assert.doesNotMatch(activePublicComposition,/Date del Contest/);
+  assert.doesNotMatch(activePublicComposition,/Le candidature sono aperte fino al/);
 });
 
 test('anonymous top-level Candidatura navigation binds a real click handler',()=>{
@@ -52,18 +57,13 @@ test('public desktop surface uses CSS grid without DOM reparenting and preserves
   assert.match(index,/\.gallerySection\.publicDesktopSurface\{display:grid;grid-template-columns:minmax\(220px,\.8fr\) minmax\(0,1\.8fr\) minmax\(260px,\.8fr\)/);
   assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title\{grid-column:1;grid-row:1;display:block/);
   assert.match(index,/\.gallerySection\.publicDesktopSurface>\.publicCategoryGrid\{grid-column:2;grid-row:1/);
-  assert.match(index,/\.gallerySection\.publicDesktopSurface>#publicContestSchedule\{grid-column:3;grid-row:1/);
   assert.match(index,/\.gallerySection\.publicDesktopSurface>#publicGalleryArea\{grid-column:1\/-1;grid-row:2/);
-  assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title:has\(> \.publicCategoryGrid\)>#publicContestSchedule\{grid-column:3;grid-row:1/);
   assert.match(index,/@media\(min-width:1100px\)\{\.gallerySection\.publicDesktopSurface\{display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(480px,1fr\)/);
   assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title:has\(> \.publicCategoryGrid\)> \.publicCategoryGrid\{grid-column:1\/-1;grid-row:2/);
-  assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title:has\(> \.publicCategoryGrid\)>#publicContestSchedule\{grid-column:2;grid-row:1/);
-  assert.match(index,/\.section-title:has\(> \.publicCategoryGrid\)>#publicContestSchedule \.publicScheduleGrid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)/);
   assert.match(index,/@media\(max-width:760px\)\{\.gallerySection\.publicDesktopSurface\{display:flex;flex-direction:column/);
-  assert.match(index,/\.gallerySection\.publicDesktopSurface>#publicContestSchedule\{order:3/);
   const ensure=index.slice(index.indexOf('const ensurePublicScheduleSurface='),index.indexOf('const homeViewWithPublicSchedule='));
-  assert.doesNotMatch(ensure,/append\(title\)|append\(grid\)|prepend\(composition\)/);
-  assert.match(ensure,/holder\?\.after\(schedule\.firstElementChild\)/);
+  assert.doesNotMatch(ensure,/publicScheduleSurfaceHtml|after\(schedule/);
+  assert.match(ensure,/publicContestScheduleInlineHtml/);
 });
 
 test('empty public category state is informative and not an actionable button',()=>{
