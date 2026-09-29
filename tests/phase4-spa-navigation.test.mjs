@@ -11,11 +11,18 @@ test('top-level router keeps public state reusable and resets Admin to Overview'
   assert.doesNotMatch(runtime,/renderLegacyLoop|render=async function/);
   assert.match(runtime,/const requestId=\+\+renderRequestSeq;[\s\S]*?const requestedTab=currentTab/);
   assert.doesNotMatch(runtime,/async function render\(\)[\s\S]*?loadPublicContest\(requestId\)/);
-  assert.match(runtime,/bindNav=\(\)=>\{document\.querySelectorAll\('\[data-tab\]'\)[\s\S]*?if\(nextTab==='admin'\)adminSection='overview'/);
+  const navStart=runtime.lastIndexOf('function bindNav()');
+  assert.ok(navStart>=0);
+  const finalNav=runtime.slice(navStart,runtime.indexOf('\nlet renderRequestSeq',navStart));
+  assert.match(finalNav,/function bindNav\(\)\{[\s\S]*?currentTab=b\.dataset\.tab;render\(\)/);
+  assert.match(runtime,/if\(isAdmin&&currentTab==='upload'\)currentTab='admin'/);
 });
 
 test('final public view remains request-owned after its async load',()=>{
-  assert.match(runtime,/homeView=async function\(requestId\)\{if\(!renderIsCurrent\(requestId\)\)return;await loadPublicGallery\(requestId\);if\(!renderIsCurrent\(requestId\)\)return;[\s\S]*?await galleryView\(requestId\)\}/);
+  assert.match(runtime,/homeView=async function\(requestId\)\{if\(!renderIsCurrent\(requestId\)\)return;const view=document\.querySelector\('#view'\)/);
+  assert.match(runtime,/renderPublicHomeShell\(view,requestId\)/);
+  assert.match(runtime,/void loadPublicGallery\(requestId\)\.then/);
+  assert.doesNotMatch(runtime,/homeView=async function\(requestId\)\{[\s\S]*?await loadPublicGallery\(requestId\)/);
 });
 
 test('Admin configuration exposes explicit category labels',()=>{
