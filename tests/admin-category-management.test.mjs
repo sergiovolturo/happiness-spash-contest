@@ -52,7 +52,7 @@ test('category cap, finalist snapshots, publication and historical delete are pr
 });
 
 test('Admin UI supports dynamic categories and hides Player tab from Admin navigation', () => {
-  assert.match(index, /function nav\(\)\{const tabs=isAdmin\?\[\['home','Contest'\],\['admin','Amministra'\]\]/);
+  assert.match(index, /function nav\(\)\{const tabs=isAdmin\?\[\['home','Vista pubblica'\],\['admin','Amministra'\]\]/);
   assert.match(index, /admin_create_contest_category/);
   assert.match(index, /admin_update_contest_category/);
   assert.match(index, /admin_reorder_contest_categories/);

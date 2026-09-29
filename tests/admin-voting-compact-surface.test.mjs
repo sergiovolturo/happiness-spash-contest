@@ -7,7 +7,7 @@ const runtime = index.slice(index.indexOf('<script>'));
 
 test('Admin has no separate voting workspace or duplicate voting grid', () => {
   assert.doesNotMatch(runtime, /renderAdminVotingSection|adminVotingVideos|adminVotingVideoGrid|adminVotingFilters/);
-  assert.match(index, /adminSectionLabels=\{overview:'Panoramica',contest:'Contest',submissions:'Candidature',results:'Risultati',settings:'Impostazioni'\}/);
+  assert.match(index, /adminSectionLabels=\{overview:'Panoramica',contest:'Configurazione',submissions:'Candidature',results:'Risultati',settings:'Impostazioni'\}/);
 });
 
 test('Voting status is shown in Contest and candidature cards remain the video surface', () => {
