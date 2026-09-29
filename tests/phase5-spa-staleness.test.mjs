@@ -17,7 +17,7 @@ test('Phase 5 keeps one request-scoped top-level render',()=>{
 });
 
 test('public gallery reuses loaded state and propagates the active request token',()=>{
-  assert.match(source,/async function loadPublicGallery\(requestId\)/);
+  assert.match(source,/async function loadPublicGallery\(requestId,signal=/);
   assert.match(source,/if\(galleryLoadedContestId===publicContest\.id\)return/);
   assert.match(source,/loadPublicGallery\(requestId\)/);
   assert.match(source,/galleryView\(requestId\)/);

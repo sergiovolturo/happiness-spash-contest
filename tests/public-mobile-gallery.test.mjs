@@ -34,8 +34,10 @@ test('video cards are placeholders with on-demand playback; opening the gallery 
   assert.doesNotMatch(gallery.slice(0, gallery.indexOf('if(galleryActiveMediaId){')), /<video/);
 });
 
-test('every public gallery visit refreshes publication view so revoked media disappear', () => {
-  assert.match(index, /homeView=async function\(requestId\)\{if\(!renderIsCurrent\(requestId\)\)return;await loadPublicGallery\(requestId\)/);
+test('public gallery loading is background and cache-aware so revoked media disappear on refresh', () => {
+  assert.match(index, /renderPublicHomeShell\(view,requestId\)/);
+  assert.match(index, /void loadPublicGallery\(requestId\)\.then/);
+  assert.match(index, /galleryLoadedContestId===publicContest\.id/);
   assert.match(index, /published_submission_media/);
   assert.match(index, /clearGalleryObjectUrls\(\)/);
 });
