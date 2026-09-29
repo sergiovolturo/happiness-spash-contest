@@ -39,7 +39,8 @@ test('public Contest header is one compact block with both dynamic date ranges',
   assert.doesNotMatch(index,/holder\?\.after\(schedule\.firstElementChild\)/);
   assert.match(index,/gallerySection\.publicDesktopSurface/);
   assert.match(index,/section\.classList\.add\('publicDesktopSurface'\)/);
-  assert.match(index,/\.section-title>\.publicContestScheduleInline\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)/);
+  assert.match(index,/\.section-title>\.publicContestScheduleInline\{display:grid;grid-template-columns:1fr/);
+  assert.doesNotMatch(index,/\.section-title>\.publicContestScheduleInline\{display:grid;grid-template-columns:repeat\(2,/);
   assert.match(index,/\.section-title>\.publicContestScheduleInline[^}]*margin-top:8px[^}]*padding-top:0[^}]*border-top:0/);
   assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title\{display:block;text-align:left\}/);
   assert.match(index,/\.section-title:has\(> \.publicCategoryGrid\)\{display:grid;grid-template-columns:minmax\(0,1fr\);grid-template-rows:auto auto auto/);
