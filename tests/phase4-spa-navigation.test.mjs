@@ -14,7 +14,7 @@ test('top-level router keeps public state reusable and resets Admin to Overview'
   const navStart=runtime.lastIndexOf('function bindNav()');
   assert.ok(navStart>=0);
   const finalNav=runtime.slice(navStart,runtime.indexOf('\nlet renderRequestSeq',navStart));
-  assert.match(finalNav,/function bindNav\(\)\{[\s\S]*?currentTab=b\.dataset\.tab;render\(\)/);
+  assert.match(finalNav,/function bindNav\(\)\{[\s\S]*?currentTab=b\.dataset\.tab;(?:void )?render\(\)/);
   assert.match(runtime,/if\(isAdmin&&currentTab==='upload'\)currentTab='admin'/);
 });
 

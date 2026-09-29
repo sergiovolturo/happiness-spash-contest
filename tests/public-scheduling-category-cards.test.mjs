@@ -42,6 +42,12 @@ test('public home puts the summary and categories before the compact date block'
   assert.match(index,/\.publicScheduleSurface\{padding:12px 16px/);
 });
 
+test('anonymous top-level Candidatura navigation binds a real click handler',()=>{
+  const nav=index.slice(index.indexOf('function nav()'),index.indexOf('function bindNavStable='));
+  assert.match(nav,/\['home','Vista pubblica'\],\['upload','Candidatura'\]/);
+  assert.match(index,/function bindNav\(\)\{document\.querySelectorAll\('\[data-tab\]'\)\.forEach\(b=>b\.addEventListener\('click',event=>\{event\.preventDefault\(\);currentTab=b\.dataset\.tab;void render\(\)\}\)\)\}/);
+});
+
 test('public desktop surface uses CSS grid without DOM reparenting and preserves mobile order',()=>{
   assert.match(index,/\.gallerySection\.publicDesktopSurface\{display:grid;grid-template-columns:minmax\(220px,\.8fr\) minmax\(0,1\.8fr\) minmax\(260px,\.8fr\)/);
   assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title\{grid-column:1;grid-row:1;display:block/);
