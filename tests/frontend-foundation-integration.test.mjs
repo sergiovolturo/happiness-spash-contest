@@ -27,7 +27,7 @@ test('frontend uses backend category identity and ordering', () => {
   assert.match(participantFlow, /publicCategories\.map/);
   assert.match(participantFlow, /value="\$\{esc\(c\.id\)\}/);
   assert.match(participantFlow, /c\.name/);
-  assert.match(participantFlow, /c\.submission_cap/);
+  assert.match(participantFlow, /c\.available_submission_count|categoryCapacityLabel/);
 });
 
 test('frontend resolves identity and participation through the single RPC', () => {
