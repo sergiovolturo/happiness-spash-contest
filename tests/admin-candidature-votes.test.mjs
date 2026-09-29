@@ -7,7 +7,7 @@ const index=fs.readFileSync(path.join(process.cwd(),'index.html'),'utf8');
 const migration=fs.readFileSync(path.join(process.cwd(),'supabase/migrations/20260929000400_admin_candidature_vote_counts.sql'),'utf8');
 
 test('workspace navigation has no separate voting tab',()=>{
-  assert.match(index,/adminSectionLabels=\{overview:'Panoramica',contest:'Contest',submissions:'Candidature',results:'Risultati',settings:'Impostazioni'\}/);
+  assert.match(index,/adminSectionLabels=\{overview:'Panoramica',contest:'Configurazione',submissions:'Candidature',results:'Risultati',settings:'Impostazioni'\}/);
   assert.doesNotMatch(index,/adminSectionLabels=\{[^}]*voting:/);
   assert.doesNotMatch(index,/adminSection==='voting'/);
 });
