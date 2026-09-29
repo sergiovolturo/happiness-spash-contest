@@ -67,3 +67,9 @@ test('public category cards show received candidature and available places', () 
   assert.match(index, /categoryCapacity/);
 });
 
+test('gallery hydration restores capacity text after replacing the public home shell', () => {
+  assert.match(index, /querySelectorAll\('\.publicCategoryCard,\[data-home-category\]'\)/);
+  assert.match(index, /!card\.querySelector\('\.categoryCapacity'\)/);
+  assert.match(index, /capacity\.textContent=categoryCapacityLabel\(category\)/);
+});
+
