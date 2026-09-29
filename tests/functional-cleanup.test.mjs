@@ -14,8 +14,8 @@ test('submission window is configured and enforced before, during and after the 
   assert.match(migration, /now\(\) < c\.submissions_close_at/);
   assert.match(migration, /submission_window_required/);
   assert.match(index, /submissionWindowState/);
-  assert.match(index, /Il periodo di candidatura non è ancora aperto/);
-  assert.match(index, /Il periodo di candidatura è terminato/);
+  assert.match(index, /Candidature programmate/);
+  assert.match(index, /Candidature chiuse/);
 });
 
 test('player and admin submissions require an explicit contestant display name', () => {
@@ -86,7 +86,7 @@ test('final wrapper audit preserves the new behavior', () => {
   assert.match(index, /async function renderAdmin\(/);
   assert.match(index, /adminView=renderAdmin/);
   assert.doesNotMatch(index, /adminView=async function/);
-  assert.match(index.slice(index.lastIndexOf('galleryView=')), /publicGalleryWithUx/);
+  assert.match(index.slice(index.lastIndexOf('galleryView=')), /galleryViewWithSingleCategorySchedule/);
   assert.match(index.slice(index.lastIndexOf('bindAdminContestManager=')), /bindAdminContestManagerBase/);
 });
 
@@ -134,9 +134,9 @@ test('Admin manual submission follows lifecycle window state', () => {
 });
 
 test('Player window message remains phase-specific', () => {
-  assert.match(index, /Il periodo di candidatura non è ancora aperto/);
+  assert.match(index, /Candidature programmate\. Candidature aprono il/);
   assert.match(index, /Candidature aperte fino al/);
-  assert.match(index, /Il periodo di candidatura è terminato/);
+  assert.match(index, /Candidature chiuse\. Il periodo è terminato/);
 });
 
 

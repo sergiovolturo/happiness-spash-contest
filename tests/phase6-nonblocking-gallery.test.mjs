@@ -4,12 +4,13 @@ import fs from 'node:fs';
 
 const source=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const activeHome=source.slice(source.lastIndexOf('homeView=async function'));
+const homeFlow=source.slice(source.indexOf('const homeViewStable='),source.indexOf('const adminCategoryDefinitionCard='));
 const activeGallery=source.slice(source.lastIndexOf('async function galleryView('),source.indexOf('const renderPublicGalleryCards='));
 
 test('public home does not await gallery loading from the top-level render',()=>{
   assert.doesNotMatch(activeHome,/await loadPublicGallery\(requestId\)/);
-  assert.match(activeHome,/renderPublicHomeShell\(view,requestId\)/);
-  assert.match(activeHome,/void loadPublicGallery\(requestId\)\.then/);
+  assert.match(homeFlow,/renderPublicHomeShell\(view,requestId\)/);
+  assert.match(homeFlow,/void loadPublicGallery\(requestId\)\.then/);
   assert.match(source,/id=\\?"publicGalleryArea/);
 });
 
