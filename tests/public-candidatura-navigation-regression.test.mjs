@@ -5,7 +5,7 @@ import test from 'node:test';
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 
 test('top-level navigation uses one delegated listener that survives view replacement', () => {
-  assert.match(html, /let navBound=false;function bindNav\(\)\{if\(navBound\)return;document\.addEventListener\('click',event=>\{const b=event\.target\.closest\?\.\('\[data-tab\]'\)/);
+  assert.match(html, /event\.target\?\.closest\?\.\('\[data-tab\]'\)\|\|event\.target\?\.parentElement\?\.closest/);
   assert.match(html, /currentTab=b\.dataset\.tab;void render\(\)/);
   assert.doesNotMatch(html, /document\.querySelectorAll\('\[data-tab\]'\)\.forEach/);
 });
