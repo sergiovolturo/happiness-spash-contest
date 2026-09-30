@@ -69,4 +69,3 @@ test('Admin reads and actions handle network exceptions without false success', 
   assert.match(adminFlow, /catch\(error\)\{const box=document\.querySelector\('#adminMsg'\)/);
 });
 
-
