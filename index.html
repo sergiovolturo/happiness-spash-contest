@@ -209,7 +209,6 @@ async function render(){
   renderTrace('start',requestId,requestedTab);
   syncAuthButtons();
   app.innerHTML=nav()+'<div id="view"><div class="spinner"></div></div>';
-  bindNav();
   try{
     if(requestedTab==='home')await renderStep(homeView(requestId),'home',requestId,requestedTab);
     if(requestedTab==='upload'){
@@ -466,6 +465,7 @@ adminRevoke=async function(id,voteCount=null){
 const renderAdminVotingSafetyBase=renderAdmin;
 renderAdmin=async function(requestId=activeRenderRequestId){await renderAdminVotingSafetyBase(requestId);if(!renderIsCurrent(requestId)||adminSection!=='submissions')return;const view=document.querySelector('#view');if(!view)return;view.querySelectorAll('.adminRevoke').forEach(button=>button.onclick=()=>{const match=button.closest('.adminSubmission')?.textContent.match(/(\d+) voti\b/);adminRevoke(button.dataset.id,match?Number(match[1]):null)});if(adminSelectedContest?.status==='VOTING_OPEN')view.querySelectorAll('[data-media-delete]').forEach(button=>button.remove())};
 adminView=renderAdmin;
+ bindNav();
  boot();
 </script>
 </body></html>
