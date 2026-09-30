@@ -26,7 +26,9 @@ test('moderation cards include participant/source, state, media/publication stat
   assert.match(index, /\.adminSubmission video\{width:100%;max-width:640px;aspect-ratio:16\/9/);
   assert.match(index, /\.adminSubmissionGrid\{grid-template-columns:repeat\(auto-fit,minmax\(420px,1fr\)/);
   assert.match(index, /\.adminSubmissionInfo \.actions\{margin-top:auto/);
-  assert.match(index, /Apri player grande/);
+  const card = index.slice(index.indexOf('const adminSubmissionCardHtml='), index.indexOf('const adminAddCategoryFieldLabels='));
+  assert.match(card, /adminSubmissionMedia/);
+  assert.doesNotMatch(card, /Apri player grande/);
 });
 
 test('moderation remains Admin-gated and keeps the existing readiness RPC', () => {
