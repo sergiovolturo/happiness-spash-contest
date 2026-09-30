@@ -30,12 +30,15 @@ test('late render A cannot commit after render B owns the token',async()=>{
   assert.equal(dom,'B');
 });
 
-test('manual Admin UI copy contains no technical identity/participation labels',()=>{
+test('manual Admin UI copy contains human participant labels and no technical terms',()=>{
   const visibleCopy=manualUi.replace(/name="identity"/g,'').replace(/'participation:'/g,'').replace(/'identity:'/g,'');
   assert.doesNotMatch(visibleCopy,/Nuova identity|nuova identity|\bIdentity\b|\bparticipation\b/i);
   assert.match(manualUi,/Crea nuovo partecipante/);
+  assert.match(manualUi,/>Partecipante<\/label>/);
+  assert.match(manualUi,/La persona che presenta o gestisce questa candidatura/);
   assert.match(manualUi,/Nome del partecipante/);
-  assert.match(manualUi,/partecipazione esistente/i);
+  assert.match(manualUi,/Partecipante esistente/);
+  assert.match(manualUi,/Usata solo come contatto\. Non crea un account e non invia codici di accesso/);
 });
 
 test('closed manual submission is compact and does not keep the full form',()=>{
