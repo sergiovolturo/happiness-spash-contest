@@ -50,4 +50,32 @@ test('participant session may vote without creating participation from gallery',
   assert.match(votingFlow, /voterSessionVerified/);
   assert.doesNotMatch(votingFlow, /ensure_contest_participation/);
 });
+test('verified voters use a server-validated Auth user before opening the vote gate', () => {
+  assert.match(votingFlow, /supabase\.auth\.getSession\(\)/);
+  assert.match(votingFlow, /supabase\.auth\.getUser\(\)/);
+  assert.match(votingFlow, /async function openVoteDialog\(row\)/);
+  assert.match(votingFlow, /getCurrentVoterSession\(\)/);
+});
+test('verified voters skip email OTP and already-voted categories stay blocked', () => {
+  assert.match(votingFlow, /if\(voter\?\.verified\)\{session=voter\.session;await loadVoteState\(\);if\(votedCategoryIds\.has\(row\.category_id\)\)/);
+  assert.match(votingFlow, /Hai già votato in questa categoria/);
+  assert.match(votingFlow, /verifiedVoterSession=data\.session/);
+});
+test('verified voters in another category retain independent vote access', () => {
+  assert.match(index, /p_contest_id:publicContest\.id/);
+  assert.match(votingFlow, /votedCategoryIds\.has\(row\.category_id\)/);
+  assert.match(votingFlow, /p_category_id:voteTarget\.category_id/);
+});
+test('anonymous voters retain the email OTP branch', () => {
+  assert.match(votingFlow, /needsOtp=!session\|\|!voterSessionVerified\(\)/);
+  assert.match(votingFlow, /id="otpRequestForm"/);
+  assert.match(votingFlow, /id="otpVerifyForm"/);
+});
+test('vote submission remains server-authoritative for duplicate prevention', () => {
+  assert.match(votingFlow, /supabase\.rpc\('cast_contest_vote'/);
+  assert.match(votingFlow, /vote_already_cast/);
+});
+test('anonymous vote flow has no email-based vote-status lookup', () => {
+  assert.doesNotMatch(votingFlow, /eq\(['"]email['"]|voter_email|has_voted_by_email|verified_voter_identities/);
+});
 test('voter state refreshes after successful cast', () => assert.match(votingFlow, /await loadVoteState\(\);voteTarget=null/));
