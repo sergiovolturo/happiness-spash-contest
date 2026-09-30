@@ -86,7 +86,7 @@ test('final wrapper audit preserves the new behavior', () => {
   assert.match(index, /async function renderAdmin\(/);
   assert.match(index, /adminView=renderAdmin/);
   assert.doesNotMatch(index, /adminView=async function/);
-  assert.match(index.slice(index.lastIndexOf('galleryView=')), /galleryViewWithSingleCategorySchedule/);
+  assert.match(index.slice(index.lastIndexOf('galleryView=')), /galleryViewBeforeFunctionalResults|galleryViewWithSingleCategorySchedule/);
   assert.match(index.slice(index.lastIndexOf('bindAdminContestManager=')), /bindAdminContestManagerBase/);
 });
 
@@ -144,9 +144,10 @@ test('final Player submission wrapper respects guest window state', () => {
   const start = index.lastIndexOf('const playerSubmissionViewBase=submissionView');
   const wrapper = index.slice(start);
   assert.match(wrapper, /windowOpen=submissionWindowState\(\)==='OPEN'/);
-  assert.match(wrapper, /button\.disabled=!windowOpen/);
-  assert.match(wrapper, /if\(windowOpen\)\{button\.textContent='Continua con la tua email'/);
-  assert.match(wrapper, /else\{form\.onsubmit=null\}/);
+  assert.match(wrapper, /if\(!windowOpen\|\|!available\.length\)/);
+  assert.match(wrapper, /form\)form\.remove\(\)/);
+  assert.match(wrapper, /button\.disabled=false;button\.textContent='Continua con la tua email'/);
+  assert.match(wrapper, /if\(form\)form\.remove\(\)/);
   const stateStart = index.indexOf('const submissionWindowStateAt=');
   const stateEnd = index.indexOf('const submissionWindowMessage=()=>', stateStart);
   const state = new Function(index.slice(stateStart, stateEnd) + '; return {submissionWindowStateAt};')();
