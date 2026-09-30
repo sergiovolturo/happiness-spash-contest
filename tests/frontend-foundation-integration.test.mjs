@@ -85,7 +85,7 @@ test('public entrypoint exposes the existing email/password auth view without a 
   assert.match(index, /renderStep\(homeView\(requestId\)/);
   assert.match(index, /renderStep\(submissionView\(requestId\)/);
   assert.match(index, /renderStep\(voteView\(requestId\)/);
-  assert.match(index, /renderStep\(adminView\(requestId\)/);
+  assert.match(index, /renderStep\(renderAdmin\(requestId\)/);
 });
 
 test('auth buttons follow session state and stale authenticated responses are ignored', () => {

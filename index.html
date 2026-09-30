@@ -214,7 +214,7 @@ async function render(){
       if(renderIsCurrent(requestId))await renderStep(submissionView(requestId),'submission',requestId,requestedTab);
     }
     if(requestedTab==='vote'&&renderIsCurrent(requestId))await renderStep(voteView(requestId),'vote',requestId,requestedTab);
-    if(requestedTab==='admin'&&renderIsCurrent(requestId))await renderStep(adminView(requestId),'admin',requestId,requestedTab);
+    if(requestedTab==='admin'&&renderIsCurrent(requestId))await renderStep(renderAdmin(requestId),'admin',requestId,requestedTab);
     if(renderIsCurrent(requestId)){adminHumanizeStatusLabels(document.querySelector('#view'));renderTrace('complete',requestId,requestedTab)}else renderTrace('stale',requestId,requestedTab);
   }catch(error){
     if(renderIsCurrent(requestId)){activeRenderRequestId=0;const view=document.querySelector('#view');if(view)view.innerHTML=msg(error?.code==='render_timeout'?'La schermata sta impiegando troppo tempo. Riprova.':'Impossibile caricare la schermata. Riprova.','error');console.error('[spa-render]',error)}

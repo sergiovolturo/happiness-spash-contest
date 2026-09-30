@@ -12,7 +12,7 @@ test('Admin shell exposes the four operational workspace sections only inside Am
   assert.match(index,/aria-label="Navigazione Amministra"/);
   for(const label of ['Contest','Candidature','Risultati','Impostazioni'])assert.match(index,new RegExp(label));
   assert.doesNotMatch(index,/adminSectionLabels=\{[^}]*voting:/);
-  assert.match(index,/if\(requestedTab==='admin'&&renderIsCurrent\(requestId\)\)await renderStep\(adminView\(requestId\),'admin'/);
+  assert.match(index,/if\(requestedTab==='admin'&&renderIsCurrent\(requestId\)\)await renderStep\(renderAdmin\(requestId\),'admin'/);
 });
 
 test('Admin workspace keeps the selected Contest while changing section',()=>{

@@ -11,7 +11,7 @@ test('render ownership is request-scoped, not a boolean global',()=>{
   assert.match(html,/renderStep\(homeView\(requestId\)/);
   assert.match(html,/renderStep\(submissionView\(requestId\)/);
   assert.match(html,/renderStep\(voteView\(requestId\)/);
-  assert.match(html,/renderStep\(adminView\(requestId\)/);
+  assert.match(html,/renderStep\(renderAdmin\(requestId\)/);
   assert.doesNotMatch(html,/const renderIsCurrent=\(\)=>activeRenderRequestId!==0/);
 });
 
