@@ -57,8 +57,8 @@ test('public Contest header is one compact block with both dynamic date ranges',
 test('anonymous top-level Candidatura navigation binds a real click handler',()=>{
   const nav=index.slice(index.indexOf('function nav()'),index.indexOf('function bindNavStable='));
   assert.match(nav,/\['home','Vista pubblica'\],\['upload','Candidatura'\]/);
-  assert.match(index,/let navBound=false;function bindNav\\(\\)\\{if\\(navBound\\)return;document\\.addEventListener\\('click',event=>\\{const b=event\\.target\\.closest\\?\\.\\('\[data-tab\\]'\\)/);
-  assert.match(index,/currentTab=b\\.dataset\\.tab;void render\\(\\)/);
+  assert.ok(index.includes("let navBound=false;function bindNav(){if(navBound)return;document.addEventListener('click'"));
+  assert.ok(index.includes('currentTab=b.dataset.tab;void render()'));
 });
 
 test('public desktop surface uses CSS grid without DOM reparenting and preserves mobile order',()=>{
