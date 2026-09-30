@@ -5,12 +5,27 @@ import test from 'node:test';
 const index = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const active = index.slice(index.lastIndexOf('const submissionViewWithPublicWindow='));
 const gate = index.slice(index.indexOf('const playerOtpError='), index.indexOf('const submissionViewWithPublicWindow='));
+const activeGate = index.slice(index.lastIndexOf('playerOtpGateView=async function'));
 
 test('anonymous Candidatura starts with email verification only', () => {
   assert.match(gate, /Presenta la tua candidatura/);
   assert.match(gate, /Per inviare e controllare la tua candidatura, verifica prima la tua email/);
   assert.match(gate, /id="playerOtpRequestForm"/);
   assert.doesNotMatch(gate, /contestantDisplayName|id="category"/);
+});
+
+test('closed candidature window renders only the existing informational message', () => {
+  assert.match(activeGate, /if\(submissionWindowState\(\)==='OPEN'\)\{await playerOtpGateViewOpen\(requestId\);return\}/);
+  assert.match(activeGate, /view\.innerHTML=`<section class="card playerOtpGate"><div class="notice">\$\{esc\(submissionWindowMessage\(\)\)\}<\/div><\/section>`/);
+  const closedRender = activeGate.slice(activeGate.indexOf("view.innerHTML=`<section"), activeGate.indexOf('\nconst submissionViewWithPublicWindow='));
+  assert.doesNotMatch(closedRender, /playerOtpRequestForm|playerOtpVerifyForm|playerOtpEmail|Invia codice/);
+});
+
+test('open candidature window keeps the anonymous OTP gate', () => {
+  assert.match(index, /const playerOtpGateViewOpen=playerOtpGateView/);
+  assert.match(gate, /id="playerOtpRequestForm"/);
+  assert.match(gate, /id="playerOtpEmail"/);
+  assert.match(gate, /Invia codice/);
 });
 
 test('Player candidature requests passwordless OTP', () => {
