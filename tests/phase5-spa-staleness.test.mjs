@@ -13,7 +13,7 @@ test('Phase 5 keeps one request-scoped top-level render',()=>{
   assert.match(source,/homeView\(requestId\)/);
   assert.match(source,/submissionView\(requestId\)/);
   assert.match(source,/voteView\(requestId\)/);
-  assert.match(source,/adminView\(requestId\)/);
+  assert.match(source,/renderAdmin\(requestId\)/);
 });
 
 test('public gallery reuses loaded state and propagates the active request token',()=>{
