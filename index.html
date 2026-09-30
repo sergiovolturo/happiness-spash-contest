@@ -450,6 +450,21 @@ renderAdmin=async function(requestId=activeRenderRequestId){if(adminSection==='o
 adminView=renderAdmin;
 const galleryViewBeforeFunctionalResults=galleryView;
 galleryView=async function(requestId=activeRenderRequestId){await galleryViewBeforeFunctionalResults(requestId);if(!renderIsCurrent(requestId)||!publicContest)return;const votingClosed=publicContest.voting_close_at&&Date.now()>=Date.parse(publicContest.voting_close_at);if(!votingClosed||!publicResultRows.length)return;document.querySelectorAll('[data-open-public-media]').forEach(card=>{if(card.querySelector('.publicResultSummary'))return;const row=galleryRows.find(item=>item.media_id===card.dataset.openPublicMedia),result=publicResultRows.find(item=>item.submission_id===row?.submission_id);if(!result)return;const summary=document.createElement('span');summary.className='muted publicResultSummary';summary.textContent='Voti: '+result.vote_count+(result.is_finalist?' · Top 4 · Finalissima Instagram':'');card.append(summary)});const detail=document.querySelector('.publicVideoDetail');if(detail&&!detail.querySelector('.publicResultSummary')){const row=galleryRows.find(item=>item.media_id===galleryActiveMediaId),result=publicResultRows.find(item=>item.submission_id===row?.submission_id);if(result){const summary=document.createElement('div');summary.className='muted publicResultSummary';summary.textContent='Voti: '+result.vote_count+(result.is_finalist?' · Top 4 · Finalissima Instagram':'');detail.append(summary)}}};
+const adminRevokeBeforeVotingSafety=adminRevoke;
+adminRevoke=async function(id,voteCount=null){
+  if(adminSelectedContest?.status!=='VOTING_OPEN')return adminRevokeBeforeVotingSafety(id,voteCount);
+  const key=`revoke:${id}`;
+  if(adminActionsInFlight.has(key))return;
+  const reason=prompt('Motivo obbligatorio della revoca:');
+  if(!reason||!reason.trim())return;
+  const count=Number.isFinite(Number(voteCount))?Number(voteCount):null;
+  const voteCopy=count===null?'I voti già registrati resteranno conservati per audit.':`Il video ha già ricevuto ${count} voti. I voti già registrati resteranno conservati per audit.`;
+  if(!confirm(`Revocare questa candidatura durante la votazione? Il video non sarà più visibile né votabile e sarà escluso dai risultati finali. ${voteCopy}`))return;
+  adminActionsInFlight.add(key);
+  try{const {error}=await supabase.rpc('revoke_published_submission',{p_publication_id:id,p_revoke_reason:reason.trim()});if(error){const box=document.querySelector('#adminMsg');if(box)box.innerHTML=msg(adminErrorLabel(error),'error');return}await render()}catch(error){const box=document.querySelector('#adminMsg');if(box)box.innerHTML=msg('Connessione interrotta. Riprova.','error')}finally{adminActionsInFlight.delete(key)}
+};
+const renderAdminVotingSafetyBase=renderAdmin;
+renderAdmin=async function(requestId=activeRenderRequestId){await renderAdminVotingSafetyBase(requestId);if(!renderIsCurrent(requestId)||adminSection!=='submissions')return;const view=document.querySelector('#view');if(!view)return;view.querySelectorAll('.adminRevoke').forEach(button=>button.onclick=()=>{const match=button.closest('.adminSubmission')?.textContent.match(/(\d+) voti\b/);adminRevoke(button.dataset.id,match?Number(match[1]):null)});if(adminSelectedContest?.status==='VOTING_OPEN')view.querySelectorAll('[data-media-delete]').forEach(button=>button.remove())};
 adminView=renderAdmin;
  boot();
 </script>
