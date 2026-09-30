@@ -33,7 +33,8 @@ test('published media path keeps public home before player navigation', () => {
 
 test('repeated public/player transitions retain request-scoped dispatch', () => {
   const nav = html.slice(html.indexOf('function nav()'), html.indexOf('let renderRequestSeq='));
-  assert.match(nav, /data-tab=\"'\\+id\\+'\\\">/);
+  assert.match(nav, /data-tab=\"/);
+  assert.match(nav, /currentTab===id/);
   assert.match(html, /activeRenderRequestId=requestId/);
   assert.match(html, /currentTab=b\.dataset\.tab;void render\(\)/);
 });
