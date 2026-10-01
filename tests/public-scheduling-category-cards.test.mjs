@@ -34,21 +34,16 @@ test('public Contest header is one compact block with both dynamic date ranges',
   const home=index.slice(index.indexOf('const renderPublicHomeShell='),index.indexOf('homeView=async function',index.indexOf('const renderPublicHomeShell=')));
   assert.match(home,/publicContestSummary muted/);
   assert.match(index,/const publicContestScheduleInlineHtml=.*Candidature.*Votazioni/s);
-  assert.match(index,/title\.querySelectorAll\('\.publicContestSummary'\)\.forEach\(node=>node\.remove\(\)\)/);
-  assert.match(index,/title\.insertAdjacentHTML\('beforeend',publicContestScheduleInlineHtml\(publicContest\)\)/);
+  assert.match(index,/title\.querySelectorAll\('\.publicContestSummary'\)\.forEach\(node=>node\.textContent=publicContestStatusLabelAt\(publicContest\)\)/);
+  assert.match(index,/section\.insertAdjacentHTML\('beforeend',publicContestScheduleInlineHtml\(publicContest\)\)/);
   assert.doesNotMatch(index,/holder\?\.after\(schedule\.firstElementChild\)/);
   assert.match(index,/gallerySection\.publicDesktopSurface/);
   assert.match(index,/section\.classList\.add\('publicDesktopSurface'\)/);
-  assert.match(index,/\.section-title>\.publicContestScheduleInline\{display:grid;grid-template-columns:1fr/);
-  assert.doesNotMatch(index,/\.section-title>\.publicContestScheduleInline\{display:grid;grid-template-columns:repeat\(2,/);
-  assert.match(index,/\.section-title>\.publicContestScheduleInline[^}]*margin-top:8px[^}]*padding-top:0[^}]*border-top:0/);
-  assert.match(index,/\.gallerySection\.publicDesktopSurface>\.section-title\{display:block;text-align:left\}/);
-  assert.match(index,/\.section-title:has\(> \.publicCategoryGrid\)\{display:grid;grid-template-columns:minmax\(0,1fr\);grid-template-rows:auto auto auto/);
-  assert.match(index,/\.section-title:has\(> \.publicCategoryGrid\)>\.publicContestScheduleInline\{[^}]*width:100%;margin-top:8px/);
-  assert.match(index,/\.publicCategoryGrid\{display:grid;grid-column:1;grid-row:3;grid-template-columns:repeat\(2,minmax\(0,1fr\)/);
-  assert.match(index,/@media\(max-width:760px\)\{\.gallerySection\.publicDesktopSurface>\.section-title:has\(> \.publicCategoryGrid\)\{display:flex;flex-direction:column/);
-  assert.match(index,/\.publicContestScheduleInline \.muted\{display:block;white-space:nowrap/);
-  assert.match(index,/@media\(max-width:760px\)\{\.gallerySection\.publicDesktopSurface>\.section-title>\.publicContestScheduleInline\{grid-template-columns:1fr/);
+  assert.match(index,/\.gallerySection\.publicDesktopSurface>\.publicContestScheduleInline\{grid-column:1\/-1;order:5;width:100%/);
+  assert.match(index,/\.scheduleRange\{display:flex;align-items:center;gap:5px;flex-wrap:wrap\}/);
+  assert.match(index,/\.scheduleIcon\{width:14px;height:14px/);
+  assert.match(index,/publicScheduleDate=value=>value\?esc\(fmt\(value\)\.split\(', '\)\[0\]\)/);
+  assert.match(index,/publicScheduleIcon=type=>type==='calendar'/);
   const activePublicComposition=index.slice(index.indexOf('const publicContestScheduleInlineHtml='));
   assert.doesNotMatch(activePublicComposition,/Date del Contest/);
   assert.doesNotMatch(activePublicComposition,/Le candidature sono aperte fino al/);
@@ -56,7 +51,7 @@ test('public Contest header is one compact block with both dynamic date ranges',
 
 test('anonymous top-level Candidatura navigation binds a real click handler',()=>{
   const nav=index.slice(index.indexOf('function nav()'),index.indexOf('function bindNavStable='));
-  assert.match(nav,/\['home','Vista pubblica'\],\['upload','Candidatura'\]/);
+  assert.match(nav,/\['home','Contest'\],\['upload','Candidatura'\]/);
   assert.ok(index.includes("let navBound=false;function bindNav(){if(navBound)return;document.addEventListener('click'"));
   assert.ok(index.includes('currentTab=b.dataset.tab;void render()'));
 });

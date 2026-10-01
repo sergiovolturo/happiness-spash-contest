@@ -124,7 +124,7 @@ test('private submissions remain scoped to the authenticated participation', () 
 });
 
 test('public and candidature navigation remains wired', () => {
-  assert.match(index, /\['home','Vista pubblica'\],\['upload','Candidatura'\]/);
+  assert.match(index, /\['home','Contest'\],\['upload','Candidatura'\]/);
   assert.match(index, /data-tab=\"'\+id\+'/);
   assert.match(index, /currentTab==='upload'/);
 });

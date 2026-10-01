@@ -28,7 +28,7 @@ test('final public view remains request-owned after its async load',()=>{
 test('Admin configuration exposes explicit category labels',()=>{
   assert.match(runtime,/const adminAddCategoryFieldLabels=view=>\{[\s\S]*?'Nome categoria','Numero massimo candidature','Numero finalisti'/);
   assert.match(runtime,/adminSectionLabels=\{overview:'Panoramica',contest:'Configurazione',submissions:'Candidature',results:'Risultati',settings:'Impostazioni'\}/);
-  assert.match(index,/Vista pubblica/);
+  assert.match(index,/\['home','Contest'\]/);
 });
 
 test('ten repeated public/Admin transitions keep one owned render and the expected section',async()=>{

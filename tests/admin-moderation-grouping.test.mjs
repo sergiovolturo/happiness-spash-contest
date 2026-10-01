@@ -38,7 +38,7 @@ test('moderation remains Admin-gated and keeps the existing readiness RPC', () =
 });
 
 test('Admin navigation hides the Player Candidatura tab and recovery upload stays Admin-side', () => {
-  assert.match(index, /function nav\(\)\{const tabs=isAdmin\?\[\['home','Vista pubblica'\],\['admin','Amministra'\]\]/);
+  assert.match(index, /function nav\(\)\{const tabs=isAdmin\?\[\['home','Contest'\],\['admin','Amministra'\]\]/);
   assert.match(index, /adminPreparedUpload/);
 });
 
