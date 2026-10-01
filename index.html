@@ -127,6 +127,8 @@ body{background:linear-gradient(150deg,var(--theme-bg) 0%,var(--theme-surface) 5
 .categoryInfoPill{border-color:var(--theme-line);color:var(--theme-muted)}.categoryCardInformative .btn.primary{background:var(--theme-surface-2);color:var(--theme-muted);border-color:var(--theme-line)}.adminVideoModal{background:#000000cc}.adminVideoModalCard{background:var(--theme-surface);color:var(--theme-ink)}
 html[data-theme="dark"] .brandLogoHeading{background:#f7f6f0;border-radius:14px;padding:5px 10px}
 .scheduleIcon{color:var(--theme-ink)}.adminRevoke,[data-category-delete-definition]{display:none!important}
+.publicContestBanner{width:100%;margin:0 0 18px;overflow:hidden;border:1px solid var(--theme-line);border-radius:18px;background:var(--theme-surface);box-shadow:var(--theme-shadow)}.publicContestBanner img{display:block;width:100%;height:auto;object-fit:contain}
+@media(min-width:761px){.gallerySection.publicDesktopSurface>.publicContestBanner{grid-column:1/-1;grid-row:1!important}.gallerySection.publicDesktopSurface>.section-title{grid-row:2!important}.gallerySection.publicDesktopSurface>.publicCategoryGrid{grid-row:3!important}.gallerySection.publicDesktopSurface>.publicContestScheduleInline{grid-column:1/-1;grid-row:4!important}.gallerySection.publicDesktopSurface>#publicGalleryArea{grid-row:5!important}}
 </style>
 <script>document.documentElement.dataset.theme=new URLSearchParams(location.search).get('theme')==='dark'?'dark':'light';</script>
 </head>
@@ -490,6 +492,8 @@ adminRevoke=async function(id,voteCount=null){
 const renderAdminVotingSafetyBase=renderAdmin;
 renderAdmin=async function(requestId=activeRenderRequestId){await renderAdminVotingSafetyBase(requestId);if(!renderIsCurrent(requestId)||adminSection!=='submissions')return;const view=document.querySelector('#view');if(!view)return;view.querySelectorAll('.adminRevoke').forEach(button=>button.onclick=()=>{const match=button.closest('.adminSubmission')?.textContent.match(/(\d+) voti\b/);adminRevoke(button.dataset.id,match?Number(match[1]):null)});if(adminSelectedContest?.status==='VOTING_OPEN')view.querySelectorAll('[data-media-delete]').forEach(button=>button.remove())};
 adminView=renderAdmin;
+const galleryViewBeforeFunctionalResultsWithBanner=galleryView;
+galleryView=async function(requestId){await galleryViewBeforeFunctionalResultsWithBanner(requestId);if(!renderIsCurrent(requestId)||currentTab!=='home')return;const section=document.querySelector('#view .gallerySection');if(section&&!section.querySelector('.publicContestBanner'))section.insertAdjacentHTML('afterbegin','<div class="publicContestBanner" aria-label="STEAL THE SHOW"><img src="assets/steal-the-show-banner.png" alt="STEAL THE SHOW. Fai qualcosa che merita di essere visto."></div>')};
  bindNav();
  boot();
 </script>
