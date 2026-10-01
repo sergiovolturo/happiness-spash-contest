@@ -8,7 +8,7 @@
 :root{--brand:#0097b2;--brand2:#06b6d4;--ink:#071b22;--muted:#61747b;--line:#dbe8eb;--bg:#f3fafb;--white:#fff;--danger:#c2414d;--ok:#16835b}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(150deg,#e9f9fb 0%,#fff 42%,#f2fafb 100%);color:var(--ink);min-height:100vh}
 button,input,textarea{font:inherit}button{cursor:pointer}.shell{max-width:1120px;margin:auto;padding:20px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 0 24px}
-.brand{display:flex;align-items:center;gap:12px}.mark{width:46px;height:46px;border-radius:16px;background:var(--brand);display:grid;place-items:center;color:#fff;font-weight:900;font-size:21px;box-shadow:0 10px 25px #0097b233}.brand h1{font-size:18px;margin:0;line-height:1.1}.brand small{color:var(--muted)}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}.mark{width:46px;height:46px;border-radius:16px;background:var(--brand);display:grid;place-items:center;color:#fff;font-weight:900;font-size:21px;box-shadow:0 10px 25px #0097b233}.brand h1{font-size:18px;margin:0;line-height:1.1}.brand small{color:var(--muted)}.brandLogoHeading{margin:0;line-height:0;min-width:0}.brandLogo{display:block;width:clamp(190px,24vw,320px);height:clamp(50px,5.5vw,64px);object-fit:contain;object-position:left center;max-width:100%}
 .card{background:#ffffffdd;border:1px solid var(--line);border-radius:24px;box-shadow:0 18px 50px #075f7012;padding:24px}.auth{max-width:480px;margin:5vh auto}.auth h2{font-size:32px;margin:0 0 8px}.auth p{color:var(--muted);margin:0 0 24px}
 label{display:block;font-weight:700;font-size:14px;margin:14px 0 7px}.input{width:100%;border:1px solid #bfd5da;border-radius:14px;background:#fff;padding:13px 14px;outline:none}.input:focus{border-color:var(--brand);box-shadow:0 0 0 4px #0097b21c}
 .btn{border:0;border-radius:14px;padding:12px 17px;font-weight:800;background:#e8f5f7;color:var(--ink)}.btn.primary{background:var(--brand);color:#fff;box-shadow:0 8px 20px #0097b232}.btn.danger{background:#fff0f1;color:var(--danger)}.btn:disabled{opacity:.48;cursor:not-allowed}.wide{width:100%;margin-top:18px}.link{border:0;background:none;color:var(--brand);font-weight:800;padding:8px}
@@ -112,7 +112,7 @@ label{display:block;font-weight:700;font-size:14px;margin:14px 0 7px}.input{widt
 </head>
 <body>
 <div class="shell">
-<header class="top"><div class="brand"><div class="mark">H</div><div><h1>HAPPINESS SPASH CONTEST</h1></div></div><div class="actions"><button id="login" class="btn">Accedi</button><button id="logout" class="btn hidden">Esci</button></div></header>
+<header class="top"><div class="brand"><div class="mark">H</div><h1 class="brandLogoHeading"><img class="brandLogo" src="assets/logo-happiness-spash-contest.png" alt="HAPPINESS SPASH CONTEST"></h1></div><div class="actions"><button id="login" class="btn">Accedi</button><button id="logout" class="btn hidden">Esci</button></div></header>
 <main id="app"><div class="spinner"></div></main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js" onerror="document.getElementById('app').innerHTML='<div class=&quot;notice error&quot;>Impossibile caricare l’app. Aggiorna la pagina oppure prova senza blocco pubblicità.</div>'"></script>
