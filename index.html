@@ -109,6 +109,30 @@ label{display:block;font-weight:700;font-size:14px;margin:14px 0 7px}.input{widt
 .gallerySection.publicDesktopSurface>.publicContestScheduleInline{grid-column:1/-1;order:5;width:100%;margin-top:0}.scheduleRange{display:flex;align-items:center;gap:5px;flex-wrap:wrap}.scheduleIcon{width:14px;height:14px;flex:0 0 14px;color:var(--brand);vertical-align:-2px}
 #backPublicCategories{background:transparent;color:var(--brand);border-radius:0;padding:4px 0;font-size:14px;font-weight:700;box-shadow:none;text-align:left;text-decoration:none}
 </style>
+<style id="visualThemePass">
+:root{--brand:#FFD400;--brand2:#FFC800;--ink:#111111;--muted:#6B6B6B;--line:#E9E7E1;--bg:#F7F7F5;--white:#FFFFFF;--theme-brand:#FFD400;--theme-brand-soft:#FFC800;--theme-ink:#111111;--theme-muted:#6B6B6B;--theme-line:#E9E7E1;--theme-bg:#F7F7F5;--theme-surface:#FFFFFF;--theme-surface-2:#E9E7E1;--theme-danger:#8f3438;--theme-ok:#176b4b;--theme-shadow:0 18px 50px #11111112}
+html{color-scheme:light}
+body{background:linear-gradient(150deg,var(--theme-bg) 0%,var(--theme-surface) 52%,var(--theme-bg) 100%);color:var(--theme-ink)}
+.mark{background:var(--theme-brand);color:#111;box-shadow:0 10px 25px #00000022}.brand small,.muted,.stat span,.empty{color:var(--theme-muted)}
+.card{background:var(--theme-surface);border-color:var(--theme-line);box-shadow:var(--theme-shadow)}
+.input{border-color:var(--theme-line);background:var(--theme-surface);color:var(--theme-ink)}.input:focus{border-color:var(--theme-brand);box-shadow:0 0 0 4px var(--theme-brand-soft)}
+.btn{background:var(--theme-surface-2);color:var(--theme-ink)}#login{background:var(--theme-surface-2);color:var(--theme-ink)}.btn.primary{background:var(--theme-brand);color:#111;box-shadow:0 8px 20px #00000026}.btn.danger{background:#3a1f20;color:var(--theme-danger)}.link{color:var(--theme-brand)}
+.nav .btn.active{background:var(--theme-brand)!important;color:#111111!important;border:1px solid #111111;box-shadow:0 0 0 2px var(--theme-brand)}.adminLifecycleStep.active,.adminVotingFilter.active{background:var(--theme-brand);color:#111111}
+.hero{background:var(--theme-ink);color:var(--theme-surface)}.hero p{color:var(--theme-muted)}.eyebrow{color:var(--theme-ink)}
+.badge{background:var(--theme-surface-2);color:var(--theme-muted)}.badge.pending{background:var(--theme-brand-soft);color:var(--theme-ink)}.badge.approved{background:#d9f2e5;color:var(--theme-ok)}.badge.rejected{background:#3a1f20;color:var(--theme-danger)}
+.upload-zone{border-color:var(--theme-line);background:var(--theme-surface-2)}.notice{background:var(--theme-surface-2);color:var(--theme-ink)}.error{background:#3a1f20;color:var(--theme-danger)}.success{background:#17382b;color:var(--theme-ok)}.spinner{border-color:var(--theme-line);border-top-color:var(--theme-brand)}
+.adminCategoryRow,.adminCategoryReadonly,.closedCategory,.publicScheduleGrid>div,.adminCategorySummary>div{background:var(--theme-surface);border-color:var(--theme-line)}.adminModerationGroup>header{background:color-mix(in srgb,var(--theme-bg) 94%,transparent);border-color:var(--theme-line)}
+.categoryVisualSlot{background:linear-gradient(135deg,var(--theme-surface-2),var(--theme-bg))}.publicVideoPoster,.adminVotingVideoPreview{background:linear-gradient(135deg,var(--theme-ink),#4a3d00)}.galleryItem video,.publicVideoDetail video,.adminSubmission video,.adminVideoModal video{background:var(--theme-ink)}
+.categoryInfoPill{border-color:var(--theme-line);color:var(--theme-muted)}.categoryCardInformative .btn.primary{background:var(--theme-surface-2);color:var(--theme-muted);border-color:var(--theme-line)}.adminVideoModal{background:#000000cc}.adminVideoModalCard{background:var(--theme-surface);color:var(--theme-ink)}
+.scheduleIcon{color:var(--theme-ink)}.adminRevoke,[data-category-delete-definition]{display:none!important}
+.publicContestBanner{width:100%;margin:0 0 18px;overflow:hidden;border:1px solid var(--theme-line);border-radius:18px;background:var(--theme-surface);box-shadow:var(--theme-shadow)}.publicContestBanner img{display:block;width:100%;height:auto;object-fit:contain}
+html[data-theme="light"] .publicContestBanner{border:0;border-radius:18px;background:transparent;box-shadow:none;padding:0;aspect-ratio:3.1;overflow:hidden}html[data-theme="light"] .publicContestBanner img{width:100%;height:100%;object-fit:cover;object-position:center;border-radius:18px}
+html[data-theme="light"] #forgotPassword,html[data-theme="light"] #backToContest{color:#111111}
+html[data-theme="light"] #backPublicCategories,html[data-theme="light"] #backPublicVideos{background:transparent;color:#111111;border-radius:0;padding:4px 0;font-size:14px;font-weight:700;box-shadow:none;text-align:left;text-decoration:none}html[data-theme="light"] .publicCategoryCard>.btn.primary,html[data-theme="light"] .categoryCard>.btn.primary,html[data-theme="light"] .votePublicBtn{border:1px solid #111111}
+html[data-theme="light"] .playerOtpGate:has(> .notice:only-child){background:#FFFFFF;border-color:#E9E7E1;box-shadow:none;color:#111111}html[data-theme="light"] .playerOtpGate:has(> .notice:only-child)>.notice{background:transparent;border:0;color:#111111;margin:0;padding:0}
+@media(min-width:761px){.gallerySection.publicDesktopSurface>.publicContestBanner{grid-column:1/-1;grid-row:1!important}.gallerySection.publicDesktopSurface>.section-title{grid-row:2!important}.gallerySection.publicDesktopSurface>.publicCategoryGrid{grid-row:3!important}.gallerySection.publicDesktopSurface>.publicContestScheduleInline{grid-column:1/-1;grid-row:4!important}.gallerySection.publicDesktopSurface>#publicGalleryArea{grid-row:5!important}}
+</style>
+<script>document.documentElement.dataset.theme='light';</script>
 </head>
 <body>
 <div class="shell">
@@ -470,6 +494,8 @@ adminRevoke=async function(id,voteCount=null){
 const renderAdminVotingSafetyBase=renderAdmin;
 renderAdmin=async function(requestId=activeRenderRequestId){await renderAdminVotingSafetyBase(requestId);if(!renderIsCurrent(requestId)||adminSection!=='submissions')return;const view=document.querySelector('#view');if(!view)return;view.querySelectorAll('.adminRevoke').forEach(button=>button.onclick=()=>{const match=button.closest('.adminSubmission')?.textContent.match(/(\d+) voti\b/);adminRevoke(button.dataset.id,match?Number(match[1]):null)});if(adminSelectedContest?.status==='VOTING_OPEN')view.querySelectorAll('[data-media-delete]').forEach(button=>button.remove())};
 adminView=renderAdmin;
+const galleryViewBeforeFunctionalResultsWithBanner=galleryView;
+galleryView=async function(requestId){await galleryViewBeforeFunctionalResultsWithBanner(requestId);if(!renderIsCurrent(requestId)||currentTab!=='home')return;const section=document.querySelector('#view .gallerySection');if(section&&!section.querySelector('.publicContestBanner'))section.insertAdjacentHTML('afterbegin','<div class="publicContestBanner" aria-label="STEAL THE SHOW"><img src="assets/steal-the-show-banner.png" alt="STEAL THE SHOW. Fai qualcosa che merita di essere visto."></div>')};
  bindNav();
  boot();
 </script>
