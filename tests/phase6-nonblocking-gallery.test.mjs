@@ -31,8 +31,9 @@ test('initial public gallery does not download media files',()=>{
 });
 
 test('gallery fallback messages stay inside the public gallery area',()=>{
+  assert.doesNotMatch(baseGallery,/view\.innerHTML/);
   assert.match(baseGallery,/galleryArea=view\?\.querySelector\('#publicGalleryArea'\)/);
-  assert.match(baseGallery,/renderGalleryFallback=html=>\{if\(galleryArea\)\{galleryArea\.innerHTML=html/);
+  assert.match(baseGallery,/renderGalleryFallback=html=>\{galleryArea\.innerHTML=html/);
   assert.doesNotMatch(baseGallery,/return view\.innerHTML=msg\(/);
   assert.doesNotMatch(baseGallery,/return view\.innerHTML='<section class="card empty"/);
 });
