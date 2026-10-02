@@ -5,7 +5,7 @@ import { handleInviteAdminRequest } from '../supabase/functions/invite-admin/log
 
 const index = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const edgeSource = fs.readFileSync(new URL('../supabase/functions/invite-admin/index.ts', import.meta.url), 'utf8');
-const functionConfig = fs.readFileSync(new URL('../supabase/functions/invite-admin/config.toml', import.meta.url), 'utf8');
+const functionConfig = fs.readFileSync(new URL('../supabase/config.toml', import.meta.url), 'utf8');
 
 const makeRequest = (body, token = null) => new Request('https://example.test/functions/v1/invite-admin', {
   method: 'POST',
