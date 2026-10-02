@@ -498,7 +498,7 @@ const renderAdminVotingSafetyBase=renderAdmin;
 renderAdmin=async function(requestId=activeRenderRequestId){await renderAdminVotingSafetyBase(requestId);if(!renderIsCurrent(requestId)||adminSection!=='submissions')return;const view=document.querySelector('#view');if(!view)return;view.querySelectorAll('.adminRevoke').forEach(button=>button.onclick=()=>{const match=button.closest('.adminSubmission')?.textContent.match(/(\d+) voti\b/);adminRevoke(button.dataset.id,match?Number(match[1]):null)});if(adminSelectedContest?.status==='VOTING_OPEN')view.querySelectorAll('[data-media-delete]').forEach(button=>button.remove())};
 adminView=renderAdmin;
 const galleryViewBeforeFunctionalResultsWithBanner=galleryView;
-galleryView=async function(requestId){await galleryViewBeforeFunctionalResultsWithBanner(requestId);if(!renderIsCurrent(requestId)||currentTab!=='home')return;const section=document.querySelector('#view .gallerySection');if(section&&!section.querySelector('.publicContestBanner'))section.insertAdjacentHTML('afterbegin','<div class="publicContestBanner" aria-label="STEAL THE SHOW"><img src="assets/steal-the-show-banner.png" alt="STEAL THE SHOW. Fai qualcosa che merita di essere visto."></div>')};
+galleryView=async function(requestId){await galleryViewBeforeFunctionalResultsWithBanner(requestId);if(!renderIsCurrent(requestId)||currentTab!=='home')return;const section=document.querySelector('#view .gallerySection');if(section&&!section.querySelector('.publicContestBanner'))section.insertAdjacentHTML('afterbegin','<div class="publicContestBanner" aria-label="STEAL THE SHOW"><img src="assets/steal-the-show-banner.png?v=39227d1" alt="STEAL THE SHOW. Fai qualcosa che merita di essere visto."></div>')};
  bindNav();
  boot();
 </script>
