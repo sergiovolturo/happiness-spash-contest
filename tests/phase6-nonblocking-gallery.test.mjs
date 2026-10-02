@@ -47,11 +47,13 @@ test('all gallery implementations in the final chain render only inside the gall
   assert.doesNotMatch(finalGalleryChain,/view\.innerHTML/);
 });
 
-test('multi-contest home does not duplicate categories or show an empty archive CTA',()=>{
+test('multi-contest home does not duplicate categories and exposes no public archive',()=>{
   const directoryHome=source.slice(source.indexOf('const renderPublicHomeWithDirectory='),source.indexOf('homeView=renderPublicHomeWithDirectory'));
+  const directoryLoader=source.slice(source.indexOf('const loadPublicContestDirectory='),source.indexOf('const loadPublicContestSelection='));
   assert.match(secondGallery,/if\(!gallerySelectedCategoryId\)\{galleryArea\.innerHTML='';galleryArea\.hidden=true;return\}/);
   assert.match(directoryHome,/id="publicGalleryArea" class="card" hidden/);
-  assert.match(directoryHome,/publicArchiveRows\.length\?/);
+  assert.doesNotMatch(directoryHome,/Archivio Contest|openPublicArchive|renderPublicArchive/);
+  assert.doesNotMatch(directoryLoader,/get_public_contest_archive/);
 });
 
 test('auth refresh and duplicate same-user sign-in do not trigger render',()=>{
