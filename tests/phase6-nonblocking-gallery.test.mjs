@@ -47,6 +47,13 @@ test('all gallery implementations in the final chain render only inside the gall
   assert.doesNotMatch(finalGalleryChain,/view\.innerHTML/);
 });
 
+test('multi-contest home does not duplicate categories or show an empty archive CTA',()=>{
+  const directoryHome=source.slice(source.indexOf('const renderPublicHomeWithDirectory='),source.indexOf('homeView=renderPublicHomeWithDirectory'));
+  assert.match(secondGallery,/if\(!gallerySelectedCategoryId\)\{galleryArea\.innerHTML='';galleryArea\.hidden=true;return\}/);
+  assert.match(directoryHome,/id="publicGalleryArea" class="card" hidden/);
+  assert.match(directoryHome,/publicArchiveRows\.length\?/);
+});
+
 test('auth refresh and duplicate same-user sign-in do not trigger render',()=>{
   const auth=source.slice(source.indexOf('supabase.auth.onAuthStateChange'),source.indexOf('login.onclick'));
   assert.doesNotMatch(auth,/event==='TOKEN_REFRESHED'[^|&]*render\(\)/);
