@@ -17,7 +17,7 @@ test('Admin authorization remains server-backed by admin_users', () => {
   assert.match(index, /if\(!isAdmin\|\|!session\)\{view\.innerHTML=msg\('Accesso non autorizzato\.'/);
 });
 
-test('Admin recovery copy stays generic and does not enumerate accounts', () => {
+test('Recovery copy stays neutral and does not enumerate accounts', () => {
   assert.match(index, /resetPasswordForEmail\(email,\{redirectTo:AUTH_REDIRECT_URL\}\)/);
-  assert.match(index, /Se l’indirizzo è associato a un account Admin, riceverai le istruzioni\./);
+  assert.match(index, /Se esiste un account associato a questa email, riceverai le istruzioni per reimpostare la password\./);
 });

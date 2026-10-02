@@ -10,7 +10,7 @@ test('login exposes the password recovery entry point and neutral email form', (
   assert.match(index, /id="recoveryRequestForm"/);
   assert.match(index, /Invia link di recupero/);
   assert.match(index, /← Torna al login/);
-  assert.match(index, /Se l’indirizzo è associato a un account Admin, riceverai le istruzioni\./);
+  assert.match(index, /Se esiste un account associato a questa email, riceverai le istruzioni per reimpostare la password\./);
 });
 
 test('password reset request uses the Production redirect and no obsolete runtime redirect remains', () => {
