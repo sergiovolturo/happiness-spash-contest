@@ -1,2 +1,5 @@
 [functions.invite-admin]
 verify_jwt = true
+
+[functions.retain-finalist-media]
+verify_jwt = true
