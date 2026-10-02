@@ -19,10 +19,11 @@ test('top-level router keeps public state reusable and resets Admin to Overview'
 });
 
 test('final public view remains request-owned after its async load',()=>{
-  assert.match(runtime,/homeView=async function\(requestId\)\{if\(!renderIsCurrent\(requestId\)\)return;const view=document\.querySelector\('#view'\)/);
-  assert.match(runtime,/renderPublicHomeShell\(view,requestId\)/);
-  assert.match(runtime,/void loadPublicGallery\(requestId\)\.then/);
-  assert.doesNotMatch(runtime,/homeView=async function\(requestId\)\{[\s\S]*?await loadPublicGallery\(requestId\)/);
+  assert.match(runtime,/homeView=async function\(requestId=activeRenderRequestId\)\{if\(!renderIsCurrent\(requestId\)\)return/);
+  assert.match(runtime,/renderPublicHomeDirectory\(view,requestId\)/);
+  assert.match(runtime,/await loadPublicContestDirectory\(requestId\)/);
+  const finalHome=runtime.slice(runtime.lastIndexOf('homeView=async function'));
+  assert.doesNotMatch(finalHome,/await loadPublicGallery\(requestId\)/);
 });
 
 test('Admin configuration exposes explicit category labels',()=>{

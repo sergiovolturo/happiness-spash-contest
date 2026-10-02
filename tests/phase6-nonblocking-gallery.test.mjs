@@ -6,6 +6,8 @@ const source=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const activeHome=source.slice(source.lastIndexOf('homeView=async function'));
 const homeFlow=source.slice(source.indexOf('const homeViewStable='),source.indexOf('const adminCategoryDefinitionCard='));
 const activeGallery=source.slice(source.lastIndexOf('async function galleryView('),source.indexOf('const renderPublicGalleryCards='));
+const finalGalleryStart=source.lastIndexOf('galleryView=async function(requestId=activeRenderRequestId){');
+const finalGallery=source.slice(finalGalleryStart,source.indexOf('submissionView=async function',finalGalleryStart));
 
 test('public home does not await gallery loading from the top-level render',()=>{
   assert.doesNotMatch(activeHome,/await loadPublicGallery\(requestId\)/);
@@ -54,4 +56,27 @@ test('twenty hanging gallery transitions never block the next shell',async()=>{
   }
   assert.equal(renderedTab,'admin');
   assert.equal(startedGallery,10);
+});
+
+test('public home is a vertical active-contest directory with dates below categories',()=>{
+  assert.match(source,/get_public_contests/);
+  assert.match(source,/publicContestRows\.map/);
+  assert.match(source,/publicContestPhaseOrder=\{SUBMISSIONS_OPEN:0,VOTING_OPEN:1/);
+  assert.match(source,/data-public-contest-surface/);
+  assert.match(source,/publicContestScheduleInlineHtml\(contest\)/);
+  assert.doesNotMatch(source,/get_public_archive_contest_categories|get_public_archive_contest_results/);
+  assert.doesNotMatch(source,/Archivio Contest/);
+});
+
+test('submission flow selects a contest with an actually open window',()=>{
+  assert.match(source,/const openSubmissionContests=\(\)=>publicContestRows\.filter/);
+  assert.match(source,/contest\.status==='SUBMISSIONS_OPEN'&&submissionWindowStateAt\(contest\)==='OPEN'/);
+  assert.match(source,/ensureSubmissionContest/);
+  assert.match(source,/submissionContestSelect/);
+});
+
+test('the active public gallery is scoped to #publicGalleryArea',()=>{
+  assert.match(finalGallery,/const galleryArea=document\.querySelector\('#publicGalleryArea'\)/);
+  assert.doesNotMatch(finalGallery,/view\.innerHTML/);
+  assert.match(finalGallery,/galleryArea\.innerHTML/);
 });
