@@ -20,7 +20,7 @@ const admin = createClient(url, serviceKey, {
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-retention-worker-token',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
@@ -37,6 +37,21 @@ const callerIsAdmin = async (request: Request) => {
   const { data: row, error: adminError } = await admin
     .from('admin_users').select('user_id').eq('user_id', user.id).maybeSingle();
   return !adminError && !!row;
+};
+
+const sameSecret = (provided: string, expected: string) => {
+  if (!provided || provided.length !== expected.length) return false;
+  let difference = 0;
+  for (let index = 0; index < expected.length; index += 1) {
+    difference |= provided.charCodeAt(index) ^ expected.charCodeAt(index);
+  }
+  return difference === 0;
+};
+
+const hasWorkerToken = (request: Request) => {
+  const expected = Deno.env.get('RETENTION_WORKER_TOKEN') || '';
+  const provided = request.headers.get('x-retention-worker-token') || '';
+  return sameSecret(provided, expected);
 };
 
 const runRetention = async (contestId?: string) => {
@@ -70,7 +85,7 @@ const runRetention = async (contestId?: string) => {
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers });
   if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
-  if (!await callerIsAdmin(request)) return json({ error: 'not_authorized' }, 403);
+  if (!hasWorkerToken(request) && !await callerIsAdmin(request)) return json({ error: 'not_authorized' }, 403);
   try {
     const body = await request.json().catch(() => ({}));
     const result = await runRetention(typeof body.contest_id === 'string' ? body.contest_id : undefined);

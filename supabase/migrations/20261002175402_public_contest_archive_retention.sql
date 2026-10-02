@@ -2,6 +2,21 @@
 -- Contest lifecycle statuses remain authoritative: FROZEN/CONFIRMED/PUBLISHED
 -- belong to contest_result_snapshots, not public.contests.
 
+-- Canonical source for the current snapshot of each category. The newest
+-- frozen snapshot wins; invalidation is evaluated on that current row rather
+-- than on an arbitrary historical finalist row.
+create or replace function public._current_contest_result_snapshots(p_contest_id uuid)
+returns table(category_id uuid, snapshot_id uuid, status public.contest_result_status, invalidated_at timestamptz)
+language sql stable security definer set search_path=''
+as $function$
+  select distinct on (rs.category_id)
+    rs.category_id,rs.id,rs.status,rs.invalidated_at
+  from public.contest_result_snapshots rs
+  where rs.contest_id=p_contest_id
+  order by rs.category_id,rs.frozen_at desc,rs.id desc;
+$function$;
+revoke all on function public._current_contest_result_snapshots(uuid) from public,anon,authenticated,service_role;
+
 create or replace function public.get_public_contests()
 returns table (
   id uuid, slug text, name text, description text,
@@ -50,10 +65,10 @@ as $function$
     c.voting_open_at,c.voting_close_at,c.created_at,c.updated_at
   from public.contests c
   where c.deletion_locked_at is null
-    and (c.archived_at is not null or c.status in (
+    and c.status in (
       'VOTING_CLOSED'::public.contest_status,
       'CLOSED'::public.contest_status
-    ))
+    )
   order by coalesce(c.updated_at,c.created_at) desc,c.created_at desc,c.id desc;
 $function$;
 
@@ -83,10 +98,10 @@ as $function$
   where cc.contest_id=p_contest_id
     and cc.is_active
     and c.deletion_locked_at is null
-    and (c.archived_at is not null or c.status in (
+    and c.status in (
       'VOTING_CLOSED'::public.contest_status,
       'CLOSED'::public.contest_status
-    ))
+    )
   order by cc.display_order,cc.id;
 $function$;
 
@@ -99,16 +114,17 @@ declare v_contest public.contests%rowtype;
 begin
   select * into v_contest from public.contests c
    where c.id=p_contest_id and c.deletion_locked_at is null
-     and (c.archived_at is not null or c.status in ('VOTING_CLOSED','CLOSED'));
+     and c.status in ('VOTING_CLOSED','CLOSED');
   if not found then return; end if;
-  if not exists(select 1 from public.contest_result_snapshots rs
-    where rs.contest_id=p_contest_id and rs.status='PUBLISHED' and rs.invalidated_at is null) then return; end if;
+  if exists(select 1 from public.contest_categories cc
+    where cc.contest_id=p_contest_id and not exists(
+      select 1 from public._current_contest_result_snapshots(p_contest_id) rs
+      where rs.category_id=cc.id and rs.status='PUBLISHED' and rs.invalidated_at is null)) then return; end if;
   return query
   with latest as (
-    select distinct on (rs.category_id) rs.id,rs.category_id
-    from public.contest_result_snapshots rs
-    where rs.contest_id=p_contest_id and rs.status='PUBLISHED' and rs.invalidated_at is null
-    order by rs.category_id,rs.published_at desc nulls last,rs.id desc
+    select rs.snapshot_id as id,rs.category_id
+    from public._current_contest_result_snapshots(p_contest_id) rs
+    where rs.status='PUBLISHED' and rs.invalidated_at is null
   )
   select e.submission_id,s.category_id,d.name,s.contestant_display_name,
     e.vote_count,e.rank_position,
@@ -145,9 +161,8 @@ begin
   if v_contest.status <> 'CLOSED' then raise exception using errcode='P0001',message='retention_contest_not_closed'; end if;
   if exists(select 1 from public.contest_categories cc
     where cc.contest_id=p_contest_id and not exists(
-      select 1 from public.contest_result_snapshots rs
-      where rs.contest_id=p_contest_id and rs.category_id=cc.id
-        and rs.status='PUBLISHED' and rs.invalidated_at is null)) then
+      select 1 from public._current_contest_result_snapshots(p_contest_id) rs
+      where rs.category_id=cc.id and rs.status='PUBLISHED' and rs.invalidated_at is null)) then
     raise exception using errcode='P0001',message='finalists_not_definitive';
   end if;
   for v_media in
@@ -155,8 +170,15 @@ begin
     join public.submissions s on s.id=sm.submission_id
     join public.contest_categories cc on cc.id=s.category_id and cc.contest_id=p_contest_id
     where sm.status='FINALIZED' and sm.is_current
-      and not exists(select 1 from public.contest_finalists f
-        where f.contest_id=p_contest_id and f.submission_id=s.id)
+      and not exists(
+        select 1
+        from public.contest_finalists f
+        join public._current_contest_result_snapshots(p_contest_id) current_snapshot
+          on current_snapshot.snapshot_id=f.snapshot_id
+         and current_snapshot.status='PUBLISHED'
+         and current_snapshot.invalidated_at is null
+        where f.contest_id=p_contest_id and f.submission_id=s.id
+      )
   loop
     select r.id into v_request from public.contest_media_deletion_requests r
       where r.media_id=v_media.id and r.status='PENDING' for update;
@@ -189,7 +211,15 @@ begin
   if v_request.status='COMPLETED' then return jsonb_build_object('status','COMPLETED'); end if;
   select * into v_contest from public.contests where id=v_request.contest_id for update;
   if not found or v_contest.status <> 'CLOSED' then raise exception using errcode='P0001',message='retention_contest_not_closed'; end if;
-  if exists(select 1 from public.contest_finalists f where f.contest_id=v_request.contest_id and f.submission_id=v_request.submission_id) then raise exception using errcode='P0001',message='finalist_media_protected'; end if;
+  if exists(
+    select 1
+    from public.contest_finalists f
+    join public._current_contest_result_snapshots(v_request.contest_id) current_snapshot
+      on current_snapshot.snapshot_id=f.snapshot_id
+     and current_snapshot.status='PUBLISHED'
+     and current_snapshot.invalidated_at is null
+    where f.contest_id=v_request.contest_id and f.submission_id=v_request.submission_id
+  ) then raise exception using errcode='P0001',message='finalist_media_protected'; end if;
   if exists(select 1 from public.storage.objects where bucket_id=v_request.storage_bucket and name=v_request.storage_path) then raise exception using errcode='P0001',message='storage_delete_required'; end if;
   update public.submission_publications set revoked_at=coalesce(revoked_at,now()),revoked_by_auth_user_id=auth.uid(),revoke_reason='NON_FINALIST_CLEANUP'
     where media_id=v_request.media_id and revoked_at is null;

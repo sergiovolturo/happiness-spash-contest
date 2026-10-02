@@ -2,4 +2,4 @@
 verify_jwt = true
 
 [functions.retain-finalist-media]
-verify_jwt = true
+verify_jwt = false
