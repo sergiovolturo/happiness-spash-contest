@@ -6,6 +6,8 @@ const source=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const activeHome=source.slice(source.lastIndexOf('homeView=async function'));
 const homeFlow=source.slice(source.indexOf('const homeViewStable='),source.indexOf('const adminCategoryDefinitionCard='));
 const activeGallery=source.slice(source.lastIndexOf('async function galleryView('),source.indexOf('const renderPublicGalleryCards='));
+const baseGalleryStart=source.indexOf('async function galleryView(renderRequestId=activeRenderRequestId)');
+const baseGallery=source.slice(baseGalleryStart,source.indexOf('async function homeViewLegacy',baseGalleryStart));
 
 test('public home does not await gallery loading from the top-level render',()=>{
   assert.doesNotMatch(activeHome,/await loadPublicGallery\(requestId\)/);
@@ -26,6 +28,13 @@ test('initial public gallery does not download media files',()=>{
   assert.match(activeGallery,/if\(galleryActiveMediaId\)/);
   const beforeMediaBranch=activeGallery.slice(0,activeGallery.indexOf('if(galleryActiveMediaId)'));
   assert.doesNotMatch(beforeMediaBranch,/resolveGalleryMedia\(/);
+});
+
+test('gallery fallback messages stay inside the public gallery area',()=>{
+  assert.match(baseGallery,/galleryArea=view\?\.querySelector\('#publicGalleryArea'\)/);
+  assert.match(baseGallery,/renderGalleryFallback=html=>\{if\(galleryArea\)\{galleryArea\.innerHTML=html/);
+  assert.doesNotMatch(baseGallery,/return view\.innerHTML=msg\(/);
+  assert.doesNotMatch(baseGallery,/return view\.innerHTML='<section class="card empty"/);
 });
 
 test('auth refresh and duplicate same-user sign-in do not trigger render',()=>{
