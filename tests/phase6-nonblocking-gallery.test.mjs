@@ -8,6 +8,9 @@ const homeFlow=source.slice(source.indexOf('const homeViewStable='),source.index
 const activeGallery=source.slice(source.lastIndexOf('async function galleryView('),source.indexOf('const renderPublicGalleryCards='));
 const baseGalleryStart=source.indexOf('async function galleryView(renderRequestId=activeRenderRequestId)');
 const baseGallery=source.slice(baseGalleryStart,source.indexOf('async function homeViewLegacy',baseGalleryStart));
+const secondGalleryStart=source.indexOf('async function galleryView(renderRequestId=activeRenderRequestId)',baseGalleryStart+1);
+const secondGallery=source.slice(secondGalleryStart,source.indexOf('async function updateSettings',secondGalleryStart));
+const finalGalleryChain=source.slice(source.indexOf('const renderPublicGalleryCards='),source.indexOf('function adminLifecycleActions'));
 
 test('public home does not await gallery loading from the top-level render',()=>{
   assert.doesNotMatch(activeHome,/await loadPublicGallery\(requestId\)/);
@@ -36,6 +39,12 @@ test('gallery fallback messages stay inside the public gallery area',()=>{
   assert.match(baseGallery,/renderGalleryFallback=html=>\{galleryArea\.innerHTML=html/);
   assert.doesNotMatch(baseGallery,/return view\.innerHTML=msg\(/);
   assert.doesNotMatch(baseGallery,/return view\.innerHTML='<section class="card empty"/);
+});
+
+test('all gallery implementations in the final chain render only inside the gallery area',()=>{
+  assert.match(secondGallery,/galleryArea=view\?\.querySelector\('#publicGalleryArea'\)/);
+  assert.doesNotMatch(secondGallery,/view\.innerHTML/);
+  assert.doesNotMatch(finalGalleryChain,/view\.innerHTML/);
 });
 
 test('auth refresh and duplicate same-user sign-in do not trigger render',()=>{
