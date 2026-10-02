@@ -44,7 +44,29 @@ test('gallery fallback messages stay inside the public gallery area',()=>{
 test('all gallery implementations in the final chain render only inside the gallery area',()=>{
   assert.match(secondGallery,/galleryArea=view\?\.querySelector\('#publicGalleryArea'\)/);
   assert.doesNotMatch(secondGallery,/view\.innerHTML/);
+  assert.doesNotMatch(secondGallery,/class="section-title"[^`]*publicContest\.name/);
+  assert.doesNotMatch(secondGallery,/<div class="eyebrow">\$\{esc\(category\.name\)\}/);
   assert.doesNotMatch(finalGalleryChain,/view\.innerHTML/);
+});
+
+test('multi-contest home does not duplicate categories and exposes no public archive',()=>{
+  const directoryHome=source.slice(source.indexOf('const renderPublicHomeWithDirectory='),source.indexOf('homeView=renderPublicHomeWithDirectory'));
+  const directoryLoader=source.slice(source.indexOf('const loadPublicContestDirectory='),source.indexOf('const loadPublicContestSelection='));
+  assert.match(secondGallery,/if\(!gallerySelectedCategoryId\)\{galleryArea\.innerHTML='';galleryArea\.hidden=true;return\}/);
+  assert.match(directoryHome,/id="publicGalleryArea" class="card" hidden/);
+  assert.match(directoryHome,/publicContestRows\.map\(contest=>/);
+  assert.match(directoryHome,/data-public-contest-surface/);
+  assert.doesNotMatch(directoryHome,/publicContestPicker|data-public-contest=/);
+  assert.doesNotMatch(directoryHome,/Archivio Contest|openPublicArchive|renderPublicArchive/);
+  assert.doesNotMatch(directoryLoader,/get_public_contest_archive/);
+});
+
+test('submission flow selects a contest with an actually open candidature window',()=>{
+  const submission=source.slice(source.lastIndexOf('const submissionViewWithPublicWindow='));
+  assert.match(submission,/openSubmissionContests=\(\)=>publicContestRows\.filter/);
+  assert.match(submission,/status==='SUBMISSIONS_OPEN'&&submissionWindowStateAt\(contest\)==='OPEN'/);
+  assert.match(submission,/loadPublicContestSelection\(selected,false\)/);
+  assert.match(submission,/candidates\.length>1/);
 });
 
 test('auth refresh and duplicate same-user sign-in do not trigger render',()=>{
