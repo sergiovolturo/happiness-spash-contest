@@ -80,7 +80,8 @@ test('Admin internal navigation highlights the section selected by adminSection'
 });
 
 test('Contest lifecycle badges use an emphasized brand treatment', () => {
-  assert.match(index, /\.adminContestOverviewCard \.badge,\.adminWorkspaceHeader \.badge,\.adminSettingsSurface \.badge\{background:#fff3b0;color:#111111;border:1px solid #111111;padding:7px 11px;font-weight:900\}/);
+  assert.match(index, /\.adminContestOverviewCard \.badge\{background:#FFFFFF;color:#111111;border:1px solid #111111;padding:7px 11px;font-weight:900\}/);
+  assert.match(index, /\.adminWorkspaceHeader \.badge,\.adminSettingsSurface \.badge\{background:#fff3b0;color:#111111;border:1px solid #111111;padding:7px 11px;font-weight:900\}/);
   assert.match(index, /adminReadableStatus\(adminSelectedContest\)/);
   assert.match(index, /adminReadableStatus\(c\)/);
 });
