@@ -35,18 +35,16 @@ test('archive is a separate public surface restricted to concluded lifecycle sta
   assert.equal(archiveEligible({ status: 'DRAFT', archived_at: '2026-10-02T00:00:00Z' }), false, 'archived DRAFT must stay private');
   assert.equal(archiveEligible({ status: 'VOTING_CLOSED', archived_at: null }), true);
   assert.equal(archiveEligible({ status: 'CLOSED', archived_at: null }), true);
-  assert.match(index, /Archivio Contest/);
-  assert.match(index, /get_public_archive_contest_categories/);
-  assert.match(index, /get_public_archive_contest_results/);
+  assert.doesNotMatch(index, /Archivio Contest/);
+  assert.doesNotMatch(index, /get_public_archive_contest_categories/);
+  assert.doesNotMatch(index, /get_public_archive_contest_results/);
 });
 
-test('archive returns restore the active contest and realign authenticated context', () => {
-  assert.match(index, /const returnToActiveHome=async\(requestId\)=>/);
-  assert.match(index, /returnToActiveHome\(requestId\)/);
-  assert.match(index, /loadPublicContestSelection\(contest,false\)/);
-  assert.match(index, /if\(session\)\{await loadParticipantContext\(\);await loadVoteState\(\)\}/);
-  assert.match(index, /publicArchiveCategories=\[\];publicArchiveResults=\[\];publicResultRows=\[\]/);
-  assert.doesNotMatch(index, /backPublicHome.*homeView\(requestId\)/);
+test('public archive is absent while Admin archive retention remains covered', () => {
+  assert.doesNotMatch(index, /const returnToActiveHome=async\(requestId\)=>/);
+  assert.doesNotMatch(index, /returnToActiveHome\(requestId\)/);
+  assert.match(index, /adminArchive/);
+  assert.match(index, /admin_archive_contest/);
 });
 
 test('current snapshot is canonical and blocks retention when latest snapshot is not definitive', () => {

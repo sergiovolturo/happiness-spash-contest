@@ -82,11 +82,16 @@ test('submission window state transitions are deterministic before, during and a
 });
 
 test('final wrapper audit preserves the new behavior', () => {
-  assert.match(index.slice(index.lastIndexOf('submissionView=')), /playerSubmissionViewBase/);
+  assert.match(index.slice(index.lastIndexOf('submissionView=')), /openSubmissionContests/);
+  assert.match(index.slice(index.lastIndexOf('submissionView=')), /submissionContestSelect/);
   assert.match(index, /async function renderAdmin\(/);
   assert.match(index, /adminView=renderAdmin/);
   assert.doesNotMatch(index, /adminView=async function/);
-  assert.match(index.slice(index.lastIndexOf('galleryView=')), /galleryViewBeforeFunctionalResults|galleryViewWithSingleCategorySchedule/);
+  const finalGallery=index.slice(index.lastIndexOf('galleryView='),index.lastIndexOf('submissionView='));
+  assert.match(finalGallery, /const view=document\.querySelector\('#view'\)/);
+  assert.match(finalGallery, /id="backToPublicContests"/);
+  assert.match(finalGallery, /homeView\(activeRenderRequestId\)/);
+  assert.doesNotMatch(finalGallery, /publicGalleryArea/);
   assert.match(index.slice(index.lastIndexOf('bindAdminContestManager=')), /bindAdminContestManagerBase/);
 });
 
