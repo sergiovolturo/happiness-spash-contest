@@ -244,7 +244,7 @@ async function render(){
     if(requestedTab==='home')await renderStep(homeView(requestId),'home',requestId,requestedTab);
     if(requestedTab==='upload'){
       if(typeof ensureSubmissionContest==='function')await renderStep(ensureSubmissionContest(requestId),'submission-contest',requestId,requestedTab);
-      if(session&&!participantId)await renderStep(loadParticipantContext(),'participant',requestId,requestedTab);
+      if(session)await renderStep(loadParticipantContext(),'participant',requestId,requestedTab);
       if(renderIsCurrent(requestId))await renderStep(submissionView(requestId),'submission',requestId,requestedTab);
     }
     if(requestedTab==='vote'&&renderIsCurrent(requestId))await renderStep(voteView(requestId),'vote',requestId,requestedTab);

@@ -75,8 +75,12 @@ test('final Player wrapper keeps the pending category state defined', () => {
 });
 
 test('voter Auth session can enter Candidatura without another OTP', () => {
-  assert.match(index, /if\(session&&!participantId\)await renderStep\(loadParticipantContext\(\),'participant'/);
+  assert.match(index, /if\(session\)await renderStep\(loadParticipantContext\(\),'participant'/);
   assert.doesNotMatch(active, /signInWithOtp/);
+});
+
+test('Candidatura reloads participation after switching Contest context', () => {
+  assert.match(index, /ensureSubmissionContest\(requestId\)[\s\S]*?if\(session\)await renderStep\(loadParticipantContext\(\),'participant'/);
 });
 
 test('post-Auth form still requires candidate name and category', () => {
