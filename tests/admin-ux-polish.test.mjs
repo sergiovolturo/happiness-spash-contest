@@ -71,3 +71,16 @@ test('Danger actions use readable, distinct visual treatments', () => {
   assert.match(index, /adminConfirmOverlay \[data-admin-close-voting-confirm\],\.danger-zone \[data-admin-delete-contest\]\{background:#fff;color:#8F1D1D;border:1px solid #8F1D1D/);
   assert.match(index, /data-admin-close-voting-confirm\]:hover,\.danger-zone \[data-admin-delete-contest\]:hover\{background:#fff;color:#7F1D1D;border-color:#7F1D1D/);
 });
+
+test('Admin internal navigation highlights the section selected by adminSection', () => {
+  assert.match(index, /adminSection===id\?'active':''/);
+  assert.match(index, /data-admin-section=/);
+  assert.match(index, /\.adminSectionNavigation \.btn\.active\{background:#FFD900;color:#111111;border:1px solid #111111\}/);
+  assert.match(index, /\.adminSectionNavigation \.btn:hover\{background:#ece7d9;color:#111111\}/);
+});
+
+test('Contest lifecycle badges use an emphasized brand treatment', () => {
+  assert.match(index, /\.adminContestOverviewCard \.badge,\.adminWorkspaceHeader \.badge,\.adminSettingsSurface \.badge\{background:#fff3b0;color:#111111;border:1px solid #111111;padding:7px 11px;font-weight:900\}/);
+  assert.match(index, /adminReadableStatus\(adminSelectedContest\)/);
+  assert.match(index, /adminReadableStatus\(c\)/);
+});
