@@ -16,7 +16,7 @@ const contest = {
   voting_close_at: '2026-10-05T12:00:00Z'
 };
 
-test('Admin overview derives readable status and lifecycle-aware CTA', () => {
+test('Admin overview uses one standard workspace CTA for every lifecycle state', () => {
   const before = Date.parse('2026-10-01T11:00:00Z');
   const open = Date.parse('2026-10-01T13:00:00Z');
   const closed = Date.parse('2026-10-02T12:00:00Z');
@@ -25,9 +25,9 @@ test('Admin overview derives readable status and lifecycle-aware CTA', () => {
   assert.equal(helpers.adminSubmissionPhaseAt(contest, closed), 'CLOSED');
   assert.equal(helpers.adminReadableStatus(contest, before), 'Candidature programmate');
   assert.equal(helpers.adminReadableStatus(contest, open), 'Candidature aperte');
-  assert.deepEqual(helpers.adminOverviewAction(contest, before), ['Apri Contest', 'contest']);
-  assert.deepEqual(helpers.adminOverviewAction(contest, open), ['Gestisci candidature', 'submissions']);
-  assert.deepEqual(helpers.adminOverviewAction(contest, closed), ['Apri Contest', 'contest']);
+  for (const status of ['DRAFT','SUBMISSIONS_OPEN','SUBMISSIONS_CLOSED','MODERATION','READY_FOR_VOTING','VOTING_OPEN','VOTING_CLOSED','FROZEN','CONFIRMED','PUBLISHED','CLOSED']) {
+    assert.deepEqual(helpers.adminOverviewAction({...contest,status}, before), ['Apri Contest', 'contest']);
+  }
 });
 
 test('Admin overview does not render raw lifecycle codes or duplicate status copy', () => {
@@ -38,6 +38,8 @@ test('Admin overview does not render raw lifecycle codes or duplicate status cop
   assert.match(overview, /adminReadableStatus\(c\)/);
   assert.match(overview, /adminOverviewMessage\(c\)/);
   assert.doesNotMatch(overview, /adminReadableStatus\(c\)\s*\+\s*['"] · ['"]\s*\+\s*adminSubmissionWindowMessageAt/);
+  assert.doesNotMatch(overview, /Gestisci candidature|Gestisci risultati|Configura Contest|Gestisci votazione/);
+  assert.match(overview, /data-admin-overview-section="\$\{section\}"[\s\S]*\$\{label\}/);
 });
 
 test('Public schedule and cards use mobile-first single-column layout', () => {
