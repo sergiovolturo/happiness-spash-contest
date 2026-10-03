@@ -54,7 +54,10 @@ test('Contest purge is explicit, Admin-only, ordered and blocked during voting',
   assert.match(migration,/v_contest\.status='VOTING_OPEN'/);
   assert.match(migration,/if exists\(select 1 from public\.submission_media[\s\S]*storage\.objects/);
   for(const table of ['contest_finalists','contest_tie_resolutions','contest_result_entries','contest_result_snapshots','contest_votes','submission_publications','submission_moderation_events','submission_media','submissions','contest_participations','contest_categories'])assert.match(migration,new RegExp('delete from public\\.'+table));
-  assert.match(index,/Scrivi esattamente il nome del Contest/);
+  assert.match(index,/Digita/);
+  assert.match(index,/per confermare/);
+  assert.match(index,/data-admin-delete-confirm disabled/);
+  assert.match(index,/input\.value!==contestName/);
   assert.match(index,/admin_prepare_contest_deletion/);
   assert.match(index,/admin_finalize_contest_deletion/);
 });

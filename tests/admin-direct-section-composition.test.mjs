@@ -4,7 +4,8 @@ import test from 'node:test';
 
 const index=fs.readFileSync('index.html','utf8');
 const sourceLine=name=>{
-  const line=index.split(/\r?\n/).find(candidate=>candidate.startsWith(`const ${name}=`));
+  const raw=index.split(/\r?\n/).find(candidate=>candidate.includes(`const ${name}=`));
+  const line=raw?.slice(raw.indexOf(`const ${name}=`));
   assert.ok(line,`missing ${name}`);
   return line;
 };
@@ -76,7 +77,7 @@ test('Settings final composition owns archive and permanent deletion controls',a
   const result={data:[],error:null};
   const chain={select(){return this},in(){return this},eq(){return this},then(resolve){resolve(result)}};
   const view=new FakeView();
-  const settings=compile('renderAdminSettingsSection',{renderIsCurrent,adminSelectedContest:{id:'contest',name:'Contest',status:'DRAFT',archived_at:null},document:{querySelector:()=>null},adminClearLegacyAdminSurfaces:()=>{},adminHideElement:()=>{},adminSelectedCategories:[{id:'category'}],supabase:{from:()=>Object.create(chain)},esc,fmt,adminReadableStatus,adminArchiveContest:()=>{},adminRestoreContest:()=>{},adminDeleteContest:()=>{}});
+  const settings=compile('renderAdminSettingsSection',{renderIsCurrent,adminSelectedContest:{id:'contest',name:'Contest',status:'DRAFT',archived_at:null},document:{querySelector:()=>null},adminClearLegacyAdminSurfaces:()=>{},adminHideElement:()=>{},adminSelectedCategories:[{id:'category'}],supabase:{from:()=>Object.create(chain)},esc,fmt,adminReadableStatus,adminResultStatusLabel:()=>'',adminSettingsCategorySummary:()=>'',adminArchiveContest:()=>{},adminRestoreContest:()=>{},adminDeleteContest:()=>{}});
   await settings(view,1);
   assert.equal(count(view.html,/data-admin-archive-contest/g),1);
   assert.equal(count(view.html,/data-admin-delete-contest/g),1);

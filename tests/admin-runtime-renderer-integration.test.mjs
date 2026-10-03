@@ -18,8 +18,9 @@ test('authoritative runtime card cannot fall back to the legacy large-player/del
   assert.ok(start >= 0 && end > start);
   const renderer = index.slice(start, end);
   assert.doesNotMatch(renderer, /Apri player grande|Eliminazione definitiva video|Elimina definitivamente video/);
-  assert.match(renderer, /data-media-delete/);
-  assert.match(renderer, /adminSubmissionCardHtml/);
+  const card = index.slice(index.indexOf('const adminSubmissionCardHtml='), index.indexOf('const adminAddCategoryFieldLabels='));
+  assert.match(card, /data-media-delete/);
+  assert.match(renderer, /adminSubmissionGroupsHtml/);
 });
 
 test('the real Admin route preserves the two-column card contract with published media present', () => {

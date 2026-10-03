@@ -13,7 +13,10 @@ test('Admin results reads backend snapshots and entries', () => {
 });
 test('close voting uses the approved RPC', () => assert.match(adminResults, /rpc\('close_contest_voting'/));
 test('close voting requires explicit confirmation and explains its consequence', () => {
-  assert.match(index, /Chiudere anticipatamente la votazione\? Dopo la chiusura non saranno accettati altri voti\./);
+  assert.match(index, /Chiudere anticipatamente la votazione\?/);
+  assert.match(index, /Dopo la chiusura non saranno più accettati nuovi voti\. La votazione verrà chiusa prima della scadenza prevista\./);
+  assert.match(index, /data-admin-close-voting-cancel/);
+  assert.match(index, /data-admin-close-voting-confirm/);
 });
 test('freeze results uses the approved RPC', () => assert.match(adminResults, /rpc\('freeze_contest_results'/));
 test('close and freeze are Admin surface only', () => assert.match(index, /if\(!isAdmin\|\|!session\)return view\.innerHTML/));

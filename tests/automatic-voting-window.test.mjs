@@ -54,6 +54,7 @@ test('READY_FOR_VOTING is automatic and exposes the configured schedule', () => 
 });
 
 test('manual early close keeps the explicit confirmation and RPC', () => {
-  assert.match(index, /Chiudere anticipatamente la votazione\? Dopo la chiusura non saranno accettati altri voti\./);
+  assert.match(index, /Chiudere anticipatamente la votazione\?/);
+  assert.match(index, /Dopo la chiusura non saranno più accettati nuovi voti\. La votazione verrà chiusa prima della scadenza prevista\./);
   assert.match(index, /rpc\('close_contest_voting'/);
 });
