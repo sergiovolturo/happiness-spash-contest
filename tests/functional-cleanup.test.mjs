@@ -82,8 +82,10 @@ test('submission window state transitions are deterministic before, during and a
 });
 
 test('final wrapper audit preserves the new behavior', () => {
-  assert.match(index.slice(index.lastIndexOf('submissionView=')), /openSubmissionContests/);
-  assert.match(index.slice(index.lastIndexOf('submissionView=')), /submissionContestSelect/);
+  assert.match(index.slice(index.lastIndexOf('submissionView=')), /playerOtpInlineMarkup/);
+  assert.match(index.slice(index.lastIndexOf('submissionView=')), /pendingSubmissionRequest/);
+  assert.match(index, /openSubmissionContests/);
+  assert.match(index, /submissionContestSelect/);
   assert.match(index, /async function renderAdmin\(/);
   assert.match(index, /adminView=renderAdmin/);
   assert.doesNotMatch(index, /adminView=async function/);

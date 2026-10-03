@@ -14,9 +14,10 @@ test('anonymous Candidatura starts with email verification only', () => {
   assert.doesNotMatch(gate, /contestantDisplayName|id="category"/);
 });
 
-test('Candidatura cannot mount or submit create_submission without an Auth session', () => {
-  assert.match(index, /if\(!session\)\{await renderStep\(playerOtpGateView\(requestId\),'participant-auth'/);
-  assert.match(index, /async function createSubmission[\s\S]*?if\(!session\)\{void playerOtpGateView\(activeRenderRequestId\);return\}/);
+test('Candidatura can be completed before Auth and gates only at submit time', () => {
+  assert.doesNotMatch(index, /if\(!session\)\{await renderStep\(playerOtpGateView\(requestId\),'participant-auth'/);
+  assert.match(index, /async function createSubmission[\s\S]*?pendingSubmissionRequest=\{contestId:publicContest\?\.id,categoryId,contestantDisplayName\}/);
+  assert.match(index, /playerOtpInlineMarkup\(\)/);
   assert.match(index, /permission:'La sessione non è valida\. Verifica di nuovo la tua email\.'/);
 });
 
@@ -64,13 +65,14 @@ test('invalid Player OTP remains retryable with readable copy', () => {
   assert.match(gate, /if\(button\)button\.disabled=false/);
 });
 
-test('anonymous Player does not show the candidature form before Auth', () => {
-  assert.match(active, /if\(!session\)\{await playerOtpGateView\(requestId\);return\}/);
-  assert.doesNotMatch(active, /authView\(\)/);
+test('anonymous Player sees the candidature form and no automatic OTP request', () => {
+  assert.match(active, /id=\"submissionForm\"/);
+  assert.match(active, /if\(!session&&pendingSubmissionRequest\)/);
+  assert.doesNotMatch(active, /signInWithOtp/);
 });
 
 test('authenticated Player bypasses OTP and uses the existing submission flow', () => {
-  assert.match(active, /if\(!session\)\{await playerOtpGateView\(requestId\);return\}/);
+  assert.match(index, /if\(session\)await renderStep\(loadParticipantContext\(\),'participant'/);
   assert.match(active, /submissionViewWithPublicWindow\(requestId\)/);
   assert.match(index, /ensure_contest_participation/);
 });
@@ -83,6 +85,22 @@ test('final Player wrapper keeps the pending category state defined', () => {
 test('voter Auth session can enter Candidatura without another OTP', () => {
   assert.match(index, /if\(session\)await renderStep\(loadParticipantContext\(\),'participant'/);
   assert.doesNotMatch(active, /signInWithOtp/);
+});
+
+test('submission OTP starts only from the explicit send-code action and is serialized', () => {
+  assert.match(index, /playerOtpRequestForm/);
+  assert.match(index, /requestPlayerOtp/);
+  assert.match(index, /if\(playerOtpRequestInFlight\)return/);
+  assert.match(index, /playerOtpPending=true;render\(\)/);
+  const renderSource=index.slice(index.indexOf('async function render'), index.indexOf('const adminHumanizeStatusLabels'));
+  assert.doesNotMatch(renderSource, /signInWithOtp/);
+});
+
+test('pending candidature survives OTP and resumes automatically after verification', () => {
+  assert.match(index, /pendingSubmissionRequest=null/);
+  assert.match(index, /pendingSubmissionRequest=\{contestId:publicContest\?\.id,categoryId,contestantDisplayName\}/);
+  assert.match(index, /const pending=pendingSubmissionRequest;[\s\S]*?submitSubmissionValues\(pending\)/);
+  assert.match(index, /playerOtpInlineMarkup=\(\)=>/);
 });
 
 test('Candidatura reloads participation after switching Contest context', () => {
