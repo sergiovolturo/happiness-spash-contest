@@ -69,5 +69,5 @@ test('Contest deletion uses a strong modal and preserves the guarded backend flo
 
 test('Danger actions use readable, distinct visual treatments', () => {
   assert.match(index, /adminConfirmOverlay \[data-admin-close-voting-confirm\],\.danger-zone \[data-admin-delete-contest\]\{background:#fff;color:#8F1D1D;border:1px solid #8F1D1D/);
-  assert.match(index, /data-admin-close-voting-confirm\]:hover,\.danger-zone \[data-admin-delete-contest\]:hover\{background:#fff0f1;color:#8F1D1D/);
+  assert.match(index, /data-admin-close-voting-confirm\]:hover,\.danger-zone \[data-admin-delete-contest\]:hover\{background:#fff;color:#7F1D1D;border-color:#7F1D1D/);
 });
