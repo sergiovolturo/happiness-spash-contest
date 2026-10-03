@@ -120,6 +120,30 @@ test('submission still uses the existing create/upload/finalize pipeline', () =>
   assert.match(index, /finalize_submission_media_upload/);
 });
 
+test('active PENDING or APPROVED candidature is blocked before OTP or create_submission', () => {
+  assert.match(index, /activeSubmissionForCategory=categoryId=>categoryId&&submissionRows\.some\(row=>row\.category_id===categoryId&&\['PENDING','APPROVED'\]\.includes\(String\(row\.status\|\|''\)\.toUpperCase\(\)\)\)/);
+  assert.match(index, /submitSubmissionValues\(request\)[\s\S]*?loadParticipantContext\(\)[\s\S]*?activeSubmissionForCategory\(categoryId\)[\s\S]*?submission_already_exists[\s\S]*?supabase\.rpc\('create_submission'/);
+});
+
+test('selected active category disables the candidature CTA and shows the approved copy', () => {
+  const wrapper = index.slice(index.lastIndexOf('submissionView=async function(requestId=activeRenderRequestId){await submissionViewWithDeferredOtp'));
+  assert.match(index, /id="submissionCategoryGuard"/);
+  assert.match(index, /Hai già una candidatura attiva in questa categoria\./);
+  assert.match(wrapper, /category\?\.addEventListener\('change',syncCategoryGuard\)/);
+  assert.match(wrapper, /if\(button\)button\.disabled=blocked/);
+});
+
+test('rejected, withdrawn and cancelled submissions do not enter the active guard', () => {
+  assert.match(index, /\['PENDING','APPROVED'\]\.includes\(String\(row\.status\|\|''\)\.toUpperCase\(\)\)/);
+  assert.doesNotMatch(index, /\['PENDING','APPROVED','REJECTED','WITHDRAWN','CANCELLED'\]\.includes/);
+});
+
+test('anonymous OTP completion checks the participant context before resuming submission', () => {
+  const otp = index.slice(index.indexOf('async function verifyPlayerOtp'), index.indexOf('const playerOtpGateView='));
+  assert.match(otp, /await loadParticipantContext\(\);if\(activeSubmissionForCategory\(pending\.categoryId\)\)\{await render\(\);return\}/);
+  assert.match(otp, /activeSubmissionForCategory\(pending\.categoryId\)[\s\S]*?submitSubmissionValues\(pending\)/);
+});
+
 test('capacity and closed-window guards remain in the Player flow', () => {
   assert.match(index, /available_submission_count/);
   assert.match(index, /category_full/);
