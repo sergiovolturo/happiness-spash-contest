@@ -4,7 +4,7 @@ import test from 'node:test';
 
 const index=fs.readFileSync('index.html','utf8');
 const sourceLine=name=>{
-  const line=index.split(/\r?\n/).find(candidate=>candidate.startsWith(`const ${name}=`));
+  const line=index.split(/\r?\n/).find(candidate=>candidate.trimStart().startsWith(`const ${name}=`));
   assert.ok(line,`missing ${name}`);
   return line;
 };

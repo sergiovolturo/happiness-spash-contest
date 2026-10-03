@@ -7,8 +7,9 @@ const authView = index.slice(index.indexOf('function authView()'), index.indexOf
 
 test('Admin login surface uses explicit Admin copy', () => {
   assert.match(authView, /<div class="eyebrow">HAPPINESS SPASH CONTEST<\/div>/);
-  assert.match(authView, /<h2 id="authTitle">Accesso Admin<\/h2>/);
-  assert.match(authView, /<p id="authSub">Accedi per configurare e gestire i contest\.<\/p>/);
+  assert.match(authView, /<h2 id="authTitle">Accesso area Admin<\/h2>/);
+  assert.match(authView, /<p id="authSub">Riservato agli amministratori per configurare e gestire i Contest\.<\/p>/);
+  assert.match(authView, /Per vedere i Contest, candidarti o votare non serve questo accesso\./);
   assert.match(authView, /id="email" type="email"/);
   assert.match(authView, /id="password" type="password"/);
   assert.match(authView, /id="authSubmit">Accedi<\/button>/);
@@ -16,7 +17,7 @@ test('Admin login surface uses explicit Admin copy', () => {
 
 test('Admin login surface has recovery and discreet return link, without signup copy', () => {
   assert.match(authView, /id="forgotPassword">Password dimenticata\?<\/button>/);
-  assert.match(authView, /class="link wide" id="backToContest">← Torna al contest<\/button>/);
+  assert.match(authView, /class="link wide" id="backToContest">← Torna ai Contest<\/button>/);
   assert.doesNotMatch(authView, /Entra nel contest\.|Accedi per caricare i tuoi highlight e votare\.|Non hai un account\? Registrati/);
   assert.doesNotMatch(authView, /id="toggleAuth"/);
   assert.match(index, /supabase\.auth\.signUp/);
