@@ -68,6 +68,21 @@ test('public home is a vertical active-contest directory with dates below catego
   assert.doesNotMatch(source,/Archivio Contest/);
 });
 
+test('public contest cards render optional description and no redundant eyebrow',()=>{
+  const homeStart=source.lastIndexOf('const renderPublicHomeDirectory='),home=source.slice(homeStart,source.indexOf('homeView=async function',homeStart));
+  assert.match(home,/String\(contest\.description\|\|'\'\)\.trim\(\)/);
+  assert.match(home,/publicContestDescription/);
+  assert.doesNotMatch(home,/<div class="eyebrow">Contest<\/div>/);
+  assert.match(home,/publicContestScheduleInlineHtml\(contest\)/);
+});
+
+test('category video status uses one informative presentation when videos are unavailable',()=>{
+  const helper=source.slice(source.indexOf('const publicDirectoryCategoryHtml='),source.indexOf('const renderPublicHomeDirectory='));
+  assert.match(helper,/categoryInfoPill categoryVideoStatus/);
+  assert.match(helper,/publicCategoryCtaAt\(contest,published\)/);
+  assert.match(source,/label:'Nessun video pubblicato'/);
+});
+
 test('submission flow selects a contest with an actually open window',()=>{
   assert.match(source,/const openSubmissionContests=\(\)=>publicContestRows\.filter/);
   assert.match(source,/contest\.status==='SUBMISSIONS_OPEN'&&submissionWindowStateAt\(contest\)==='OPEN'/);
