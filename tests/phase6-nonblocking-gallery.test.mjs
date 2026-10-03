@@ -13,7 +13,7 @@ test('public home does not await gallery loading from the top-level render',()=>
   assert.doesNotMatch(activeHome,/await loadPublicGallery\(requestId\)/);
   assert.match(homeFlow,/renderPublicHomeShell\(view,requestId\)/);
   assert.match(homeFlow,/void loadPublicGallery\(requestId\)\.then/);
-  assert.match(source,/id=\\?"publicGalleryArea/);
+  assert.doesNotMatch(source.slice(source.lastIndexOf('const renderPublicHomeDirectory='),source.lastIndexOf('galleryView=async function')),/publicGalleryArea/);
 });
 
 test('gallery query is abortable and reports local lifecycle phases',()=>{
@@ -75,8 +75,16 @@ test('submission flow selects a contest with an actually open window',()=>{
   assert.match(source,/submissionContestSelect/);
 });
 
-test('the active public gallery is scoped to #publicGalleryArea',()=>{
-  assert.match(finalGallery,/const galleryArea=document\.querySelector\('#publicGalleryArea'\)/);
-  assert.doesNotMatch(finalGallery,/view\.innerHTML/);
-  assert.match(finalGallery,/galleryArea\.innerHTML/);
+test('the active public gallery is a dedicated view opened only by an explicit category action',()=>{
+  const finalHome=source.slice(source.lastIndexOf('const renderPublicHomeDirectory='),finalGalleryStart);
+  assert.doesNotMatch(finalHome,/publicGalleryArea/);
+  assert.match(finalHome,/await loadPublicGallery\(requestId\);await galleryView\(requestId\)/);
+  assert.match(finalGallery,/const view=document\.querySelector\('#view'\)/);
+  assert.match(finalGallery,/view\.innerHTML/);
+  assert.match(finalGallery,/id="backToPublicContests"/);
+  assert.match(finalGallery,/homeView\(activeRenderRequestId\)/);
+  assert.match(finalGallery,/data-gallery-category/);
+  assert.match(finalGallery,/data-open-public-media/);
+  assert.match(finalGallery,/voteControls\(row,category\)/);
+  assert.doesNotMatch(finalGallery,/renderPublicHomeDirectory/);
 });

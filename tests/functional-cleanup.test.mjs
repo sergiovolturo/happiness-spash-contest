@@ -87,8 +87,11 @@ test('final wrapper audit preserves the new behavior', () => {
   assert.match(index, /async function renderAdmin\(/);
   assert.match(index, /adminView=renderAdmin/);
   assert.doesNotMatch(index, /adminView=async function/);
-  assert.match(index.slice(index.lastIndexOf('galleryView=')), /const galleryArea=document\.querySelector\('#publicGalleryArea'\)/);
-  assert.doesNotMatch(index.slice(index.lastIndexOf('galleryView='),index.lastIndexOf('submissionView=')), /view\.innerHTML/);
+  const finalGallery=index.slice(index.lastIndexOf('galleryView='),index.lastIndexOf('submissionView='));
+  assert.match(finalGallery, /const view=document\.querySelector\('#view'\)/);
+  assert.match(finalGallery, /id="backToPublicContests"/);
+  assert.match(finalGallery, /homeView\(activeRenderRequestId\)/);
+  assert.doesNotMatch(finalGallery, /publicGalleryArea/);
   assert.match(index.slice(index.lastIndexOf('bindAdminContestManager=')), /bindAdminContestManagerBase/);
 });
 
