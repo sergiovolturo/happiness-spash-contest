@@ -44,3 +44,30 @@ test('Early voting close opens confirmation before the close RPC', () => {
 test('Retention implementation remains outside this frontend-only change', () => {
   assert.equal(index.includes('retain-finalist-media'), false);
 });
+
+test('Settings summary is real, phase-aware and category-scoped', () => {
+  assert.match(index, /Riepilogo generale/);
+  assert.match(index, /adminSettingsCategorySummary\(adminSelectedCategories,submissions,media,votes/);
+  assert.match(index, /submissions\.filter\(row=>row\.category_id===category\.id\)/);
+  assert.match(index, /submissionIds\.has\(row\.submission_id\)/);
+  assert.match(index, /status==='VOTING_OPEN'.*Risultati: in corso/);
+  assert.doesNotMatch(index, /Risultati: assenti/);
+});
+
+test('Contest deletion uses a strong modal and preserves the guarded backend flow', () => {
+  const modal = index.slice(index.indexOf('function adminContestDeletionModal'), index.indexOf('const renderAdminOverview='));
+  const deletion = index.slice(index.indexOf('async function adminDeleteContest'), index.indexOf('const renderAdminOverview='));
+  assert.match(modal, /Eliminare definitivamente il Contest\?/);
+  assert.match(modal, /data-admin-delete-cancel/);
+  assert.match(modal, /data-admin-delete-confirm disabled/);
+  assert.match(modal, /input\.value!==contestName/);
+  assert.match(deletion, /admin_prepare_contest_deletion/);
+  assert.match(deletion, /admin_finalize_contest_deletion/);
+  assert.match(deletion, /admin_cancel_contest_deletion/);
+  assert.ok(deletion.indexOf('adminContestDeletionModal') < deletion.indexOf('admin_prepare_contest_deletion'));
+});
+
+test('Danger actions use readable, distinct visual treatments', () => {
+  assert.match(index, /adminConfirmOverlay \[data-admin-close-voting-confirm\]\{background:#111;color:#FFD400/);
+  assert.match(index, /danger-zone \[data-admin-delete-contest\]\{background:#fff0f1;color:#8F1D1D;border:1px solid #8F1D1D/);
+});
