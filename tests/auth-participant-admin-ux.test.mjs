@@ -17,6 +17,18 @@ test('Admin authorization remains server-backed by admin_users', () => {
   assert.match(index, /if\(!isAdmin\|\|!session\)\{view\.innerHTML=msg\('Accesso non autorizzato\.'/);
 });
 
+test('Admin contest RPCs revalidate the authenticated session before loading contests', () => {
+  assert.match(index, /async function loadAdminContests\(\)\{const current=await supabase\.auth\.getSession\(\)/);
+  assert.match(index, /await loadContext\(\);if\(!isAdmin\)throw Object\.assign\(new Error\('admin_session_required'\)/);
+  assert.match(index, /if\(error\?\.code==='admin_session_required'\)\{currentTab='home';if\(session\)render\(\);else authView\(\);return\}/);
+});
+
+test('Participant and voter OTP refresh the Admin membership state without granting Admin implicitly', () => {
+  assert.match(index, /session=data\.session;await loadContext\(\);playerOtpPending=false/);
+  assert.match(index, /session=data\.session;await loadContext\(\);verifiedVoterSession=data\.session/);
+  assert.match(index, /event==='SIGNED_IN'&&identityChanged/);
+});
+
 test('Recovery copy stays neutral and does not enumerate accounts', () => {
   assert.match(index, /resetPasswordForEmail\(email,\{redirectTo:AUTH_REDIRECT_URL\}\)/);
   assert.match(index, /Se esiste un account associato a questa email, riceverai le istruzioni per reimpostare la password\./);

@@ -72,6 +72,13 @@ test('Danger actions use readable, distinct visual treatments', () => {
   assert.match(index, /data-admin-close-voting-confirm\]:hover,\.danger-zone \[data-admin-delete-contest\]:hover\{background:#fff;color:#7F1D1D;border-color:#7F1D1D/);
 });
 
+test('Admin rejection and video deletion actions use the approved light destructive style', () => {
+  assert.match(index, /html\[data-theme="light"\] \.adminSubmission \.btn\.danger\{background:#FFFFFF;color:#8F1D1D;border:1px solid #8F1D1D;font-weight:800;box-shadow:none\}/);
+  assert.match(index, /html\[data-theme="light"\] \.adminSubmission \.btn\.danger:hover\{background:#FFFFFF;color:#7F1D1D;border-color:#7F1D1D;box-shadow:0 4px 10px #1111111a;transform:translateY\(-1px\)\}/);
+  assert.match(index, /data-decision="REJECTED"/);
+  assert.match(index, /data-media-delete/);
+});
+
 test('Admin internal navigation highlights the section selected by adminSection', () => {
   assert.match(index, /adminSection===id\?'active':''/);
   assert.match(index, /data-admin-section=/);
