@@ -14,6 +14,12 @@ test('anonymous Candidatura starts with email verification only', () => {
   assert.doesNotMatch(gate, /contestantDisplayName|id="category"/);
 });
 
+test('Candidatura cannot mount or submit create_submission without an Auth session', () => {
+  assert.match(index, /if\(!session\)\{await renderStep\(playerOtpGateView\(requestId\),'participant-auth'/);
+  assert.match(index, /async function createSubmission[\s\S]*?if\(!session\)\{void playerOtpGateView\(activeRenderRequestId\);return\}/);
+  assert.match(index, /permission:'La sessione non è valida\. Verifica di nuovo la tua email\.'/);
+});
+
 test('closed candidature window renders only the existing informational message', () => {
   assert.match(activeGate, /if\(submissionWindowState\(\)==='OPEN'\)\{await playerOtpGateViewOpen\(requestId\);return\}/);
   assert.match(activeGate, /view\.innerHTML=`<section class="card playerOtpGate"><div class="notice">\$\{esc\(submissionWindowMessage\(\)\)\}<\/div><\/section>`/);
