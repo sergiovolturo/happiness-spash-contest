@@ -28,7 +28,7 @@ test('generic signOut errors remain failures and do not claim success', () => {
 });
 
 test('local cleanup clears Admin and Player auth state', () => {
-  assert.match(index, /function clearClientAuthState\(\)\{session=null;isAdmin=false;settings=null;participantId=null;submissionRows=\[\];mediaRows=\[\];votedCategoryIds=new Set\(\);voteStateError=null;otpPending=false;otpVerified=false;verifiedVoterSession=null;playerOtpEmail='';playerOtpPending=false;/);
+  assert.match(index, /function clearClientAuthState\(\)\{session=null;isAdmin=false;settings=null;participantId=null;submissionRows=\[\];mediaRows=\[\];votedCategoryIds=new Set\(\);voteStateError=null;otpPending=false;otpVerified=false;verifiedVoterSession=null;playerOtpEmail='';playerOtpPending=false;pendingSubmissionRequest=null;/);
   assert.match(index, /const completeLocalLogout=\(\)=>\{clearClientAuthState\(\);currentTab='home';/);
 });
 
