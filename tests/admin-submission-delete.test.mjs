@@ -11,6 +11,7 @@ const snapshotFix = fs.readFileSync(path.join(root, 'supabase/migrations/2026100
 const auditCleanup = fs.readFileSync(path.join(root, 'supabase/migrations/20261004120000_admin_submission_deletion_media_audit_cleanup.sql'), 'utf8');
 const preflight = fs.readFileSync(path.join(root, 'supabase/migrations/20261004130000_admin_submission_delete_preflight_storage_acl.sql'), 'utf8');
 const storageAcl = fs.readFileSync(path.join(root, 'supabase/migrations/20261004140000_admin_submission_storage_helper_acl.sql'), 'utf8');
+const thumbnailDeletePolicy = fs.readFileSync(path.join(root, 'supabase/migrations/20261004150000_admin_submission_thumbnail_delete_policy.sql'), 'utf8');
 const card = index.slice(index.indexOf('const adminSubmissionCardHtml='), index.indexOf('const adminAddCategoryFieldLabels='));
 const adminDelete = index.slice(index.indexOf('async function adminDeleteSubmission'), index.indexOf('const adminContestDeletionReason='));
 
@@ -90,6 +91,26 @@ test('thumbnail deletion treats only a missing optional object as non-blocking',
   assert.match(index, /adminRemoveSubmissionObject\(item\.storage_bucket,item\.storage_path\)/);
   assert.match(storageAcl, /to authenticated/);
   assert.match(storageAcl, /to supabase_storage_admin/);
+});
+
+test('thumbnail DELETE policy passes the authenticated Admin explicitly through the Storage evaluator', () => {
+  assert.match(thumbnailDeletePolicy, /_admin_submission_storage_delete_allowed_for_user\(text,text,uuid\)/);
+  assert.match(thumbnailDeletePolicy, /admin_users au where au\.user_id=p_auth_user_id/);
+  assert.match(thumbnailDeletePolicy, /_admin_submission_storage_delete_allowed_for_user\(bucket_id,name,auth\.uid\(\)\)/);
+  assert.match(thumbnailDeletePolicy, /to authenticated/);
+  assert.match(thumbnailDeletePolicy, /to supabase_storage_admin/);
+  assert.doesNotMatch(thumbnailDeletePolicy, /to anon/);
+  for (const table of ['submission_publications','contest_votes','vote_deletion_audits','contest_result_entries','contest_finalists']) {
+    assert.match(thumbnailDeletePolicy, new RegExp(`public\\.${table}`));
+  }
+});
+
+test('submission deletion covers every media version and both optional thumbnail extensions', () => {
+  assert.match(adminDelete, /\.eq\('submission_id',submissionId\)/);
+  assert.doesNotMatch(adminDelete, /\.eq\('is_current',true\)/);
+  assert.match(adminDelete, /item\.storage_bucket,item\.storage_path/);
+  assert.match(adminDelete, /for\(const extension of \['webp','jpg'\]\)/);
+  assert.match(adminDelete, /adminRemoveSubmissionObject\('contest-thumbnails'/);
 });
 
 test('Storage deletion policy is narrow and does not grant anonymous writes', () => {
