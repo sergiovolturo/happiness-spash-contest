@@ -8,6 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const migration = fs.readFileSync(path.join(root, 'supabase/migrations/20261004100000_admin_submission_deletion.sql'), 'utf8');
 const snapshotFix = fs.readFileSync(path.join(root, 'supabase/migrations/20261004110000_admin_submission_deletion_category_snapshot_fix.sql'), 'utf8');
+const auditCleanup = fs.readFileSync(path.join(root, 'supabase/migrations/20261004120000_admin_submission_deletion_media_audit_cleanup.sql'), 'utf8');
 const card = index.slice(index.indexOf('const adminSubmissionCardHtml='), index.indexOf('const adminAddCategoryFieldLabels='));
 const adminDelete = index.slice(index.indexOf('async function adminDeleteSubmission'), index.indexOf('const adminContestDeletionReason='));
 
@@ -47,6 +48,16 @@ test('a category snapshot alone does not block an unrelated submission', () => {
   assert.match(snapshotFix, /contest_finalists cf where cf\.submission_id=p_submission_id/);
   assert.doesNotMatch(snapshotFix, /contest_result_snapshots rs where rs\.contest_id=.*category_id/);
   assert.match(snapshotFix, /contest_media_deletion_audit da where da\.submission_id=p_submission_id/);
+});
+
+test('technical media audit cleanup is scoped to the deleted submission', () => {
+  assert.match(auditCleanup, /delete from public\.contest_media_deletion_requests where submission_id=p_submission_id/);
+  assert.match(auditCleanup, /delete from public\.contest_media_deletion_audit where submission_id=p_submission_id/);
+  assert.match(auditCleanup, /delete from public\.submission_media where submission_id=p_submission_id/);
+  assert.match(auditCleanup, /delete from public\.submissions where id=p_submission_id/);
+  assert.match(auditCleanup, /contest_result_entries where submission_id=p_submission_id/);
+  assert.match(auditCleanup, /contest_finalists where submission_id=p_submission_id/);
+  assert.doesNotMatch(auditCleanup, /delete from public\.contest_media_deletion_(requests|audit)\s*;/);
 });
 
 test('Storage deletion policy is narrow and does not grant anonymous writes', () => {
