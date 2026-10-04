@@ -1,0 +1,137 @@
+-- Safe, Admin-only deletion of an entire submission.
+-- Storage objects are removed first by the client. The RPC refuses to remove
+-- database rows while any related object remains, keeping retries safe.
+
+create or replace function public._admin_submission_is_deletable(p_submission_id uuid)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path=''
+as $function$
+declare
+  v_contest_id uuid;
+  v_category_id uuid;
+  v_status public.contest_status;
+  v_archived_at timestamptz;
+  v_deletion_locked_at timestamptz;
+begin
+  if auth.uid() is null
+     or not exists (select 1 from public.admin_users au where au.user_id=auth.uid()) then
+    return false;
+  end if;
+
+  select cc.contest_id, s.category_id, c.status, c.archived_at, c.deletion_locked_at
+    into v_contest_id, v_category_id, v_status, v_archived_at, v_deletion_locked_at
+    from public.submissions s
+    join public.contest_categories cc on cc.id=s.category_id
+    join public.contests c on c.id=cc.contest_id
+   where s.id=p_submission_id;
+  if not found then return false; end if;
+
+  if v_archived_at is not null
+     or v_deletion_locked_at is not null
+     or v_status in ('VOTING_OPEN','VOTING_CLOSED','CLOSED') then
+    return false;
+  end if;
+
+  -- Any historical/public or moderation record makes the submission
+  -- non-deletable; the existing history must remain intact.
+  if exists (select 1 from public.submission_publications sp where sp.submission_id=p_submission_id)
+     or exists (select 1 from public.contest_votes cv where cv.submission_id=p_submission_id)
+     or exists (select 1 from public.vote_deletion_audits va where va.submission_id=p_submission_id)
+     or exists (select 1 from public.contest_result_entries re where re.submission_id=p_submission_id)
+     or exists (select 1 from public.contest_finalists cf where cf.submission_id=p_submission_id)
+     or exists (select 1 from public.submission_moderation_events me where me.submission_id=p_submission_id)
+     or exists (select 1 from public.contest_media_deletion_requests dr where dr.submission_id=p_submission_id)
+     or exists (select 1 from public.contest_media_deletion_audit da where da.submission_id=p_submission_id)
+     or exists (select 1 from public.contest_result_snapshots rs where rs.contest_id=v_contest_id and rs.category_id=v_category_id) then
+    return false;
+  end if;
+
+  return true;
+end;
+$function$;
+
+create or replace function public._admin_submission_storage_delete_allowed(p_bucket text,p_path text)
+returns boolean
+language sql
+stable
+security definer
+set search_path=''
+as $function$
+  select exists (
+    select 1
+      from public.submission_media sm
+     where (
+       (p_bucket=sm.storage_bucket and p_path=sm.storage_path)
+       or (
+         p_bucket='contest-thumbnails'
+         and p_path in (
+           'submission-thumbnails/'||sm.submission_id::text||'/'||sm.id::text||'.webp',
+           'submission-thumbnails/'||sm.submission_id::text||'/'||sm.id::text||'.jpg'
+         )
+       )
+     )
+       and public._admin_submission_is_deletable(sm.submission_id)
+  );
+$function$;
+
+drop policy if exists admin_submission_objects_delete on storage.objects;
+create policy admin_submission_objects_delete
+  on storage.objects for delete to authenticated
+  using (
+    public._admin_submission_storage_delete_allowed(bucket_id,name)
+  );
+
+create or replace function public.admin_delete_submission(p_submission_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path=''
+as $function$
+declare
+  v_media_count integer;
+begin
+  if auth.uid() is null
+     or not exists (select 1 from public.admin_users au where au.user_id=auth.uid()) then
+    raise exception using errcode='P0001',message='admin_required';
+  end if;
+
+  perform 1 from public.submissions where id=p_submission_id for update;
+  if not found then
+    raise exception using errcode='P0001',message='submission_not_found';
+  end if;
+  if not public._admin_submission_is_deletable(p_submission_id) then
+    raise exception using errcode='P0001',message='submission_delete_blocked';
+  end if;
+
+  if exists (
+    select 1
+      from public.submission_media sm
+      join storage.objects so on so.bucket_id=sm.storage_bucket and so.name=sm.storage_path
+     where sm.submission_id=p_submission_id
+  ) or exists (
+    select 1
+      from public.submission_media sm
+      join storage.objects so on so.bucket_id='contest-thumbnails'
+       and so.name in (
+         'submission-thumbnails/'||sm.submission_id::text||'/'||sm.id::text||'.webp',
+         'submission-thumbnails/'||sm.submission_id::text||'/'||sm.id::text||'.jpg'
+       )
+     where sm.submission_id=p_submission_id
+  ) then
+    raise exception using errcode='P0001',message='storage_delete_required';
+  end if;
+
+  select count(*) into v_media_count from public.submission_media where submission_id=p_submission_id;
+  delete from public.submission_media where submission_id=p_submission_id;
+  delete from public.submissions where id=p_submission_id;
+  return jsonb_build_object('status','COMPLETED','submission_id',p_submission_id,'media_count',v_media_count);
+end;
+$function$;
+
+revoke all on function public._admin_submission_is_deletable(uuid) from public,anon,authenticated,service_role;
+revoke all on function public._admin_submission_storage_delete_allowed(text,text) from public,anon,authenticated,service_role;
+revoke all on function public.admin_delete_submission(uuid) from public,anon,service_role;
+grant execute on function public.admin_delete_submission(uuid) to authenticated;

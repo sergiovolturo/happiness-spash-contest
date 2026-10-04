@@ -89,7 +89,8 @@ test('final wrapper audit preserves the new behavior', () => {
   assert.match(index, /async function renderAdmin\(/);
   assert.match(index, /adminView=renderAdmin/);
   assert.doesNotMatch(index, /adminView=async function/);
-  const finalGallery=index.slice(index.lastIndexOf('galleryView='),index.lastIndexOf('submissionView='));
+  const thumbnailWrapper=index.indexOf('const galleryViewBeforeThumbnails=');
+  const finalGallery=index.slice(index.lastIndexOf('galleryView=async function(requestId=activeRenderRequestId){',thumbnailWrapper),index.lastIndexOf('submissionView='));
   assert.match(finalGallery, /const view=document\.querySelector\('#view'\)/);
   assert.match(finalGallery, /id="backToPublicContests"/);
   assert.match(finalGallery, /homeView\(activeRenderRequestId\)/);
