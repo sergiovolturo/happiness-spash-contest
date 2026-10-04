@@ -62,7 +62,7 @@ begin
      )
      and not exists(
        select 1 from public.submission_publications sp
-       where sp.submission_id=v_submission.id and sp.media_id=p_media_id and sp.revoked_at is null
+       where sp.submission_id=v_submission.id and sp.revoked_at is null
      ) then
     insert into public.submission_publications(
       submission_id,media_id,published_at,published_by_auth_user_id

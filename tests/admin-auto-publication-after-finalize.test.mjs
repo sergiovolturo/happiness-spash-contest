@@ -24,7 +24,7 @@ test('Admin auto-publication requires another current public submission in the s
 });
 
 test('Publication is idempotent and records the Admin actor without changing Player flow', () => {
-  assert.match(finalize, /not exists\(\s*select 1 from public\.submission_publications sp[\s\S]*sp\.media_id=p_media_id[\s\S]*sp\.revoked_at is null/i);
+  assert.match(finalize, /not exists\(\s*select 1 from public\.submission_publications sp[\s\S]*sp\.submission_id=v_submission\.id[\s\S]*sp\.revoked_at is null/i);
   assert.match(finalize, /published_by_auth_user_id\s*\) values\(v_submission\.id,p_media_id,now\(\),v_auth_user_id\)/i);
   assert.doesNotMatch(finalize, /creation_source='PARTICIPANT'/i);
 });
