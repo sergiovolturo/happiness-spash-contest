@@ -6,7 +6,8 @@ const source=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const activeHome=source.slice(source.lastIndexOf('homeView=async function'));
 const homeFlow=source.slice(source.indexOf('const homeViewStable='),source.indexOf('const adminCategoryDefinitionCard='));
 const activeGallery=source.slice(source.lastIndexOf('async function galleryView('),source.indexOf('const renderPublicGalleryCards='));
-const finalGalleryStart=source.lastIndexOf('galleryView=async function(requestId=activeRenderRequestId){');
+const thumbnailWrapper=source.indexOf('const galleryViewBeforeThumbnails=');
+const finalGalleryStart=source.lastIndexOf('galleryView=async function(requestId=activeRenderRequestId){',thumbnailWrapper);
 const finalGallery=source.slice(finalGalleryStart,source.indexOf('submissionView=async function',finalGalleryStart));
 
 test('public home does not await gallery loading from the top-level render',()=>{

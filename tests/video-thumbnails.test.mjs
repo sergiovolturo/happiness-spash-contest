@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import test from 'node:test';
+
+const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+const migration = await readFile(
+  new URL('../supabase/migrations/20261004073343_video_thumbnails.sql', import.meta.url),
+  'utf8',
+);
+
+test('thumbnail storage is optional and scoped to finalized published media', () => {
+  assert.match(migration, /deterministic media-id paths/i);
+  assert.match(migration, /published_submission_media/);
+  assert.match(migration, /submission_thumbnail_objects_insert[\s\S]+to authenticated/i);
+  assert.match(migration, /published_submission_thumbnail_objects_select[\s\S]+to anon,authenticated/i);
+  assert.match(migration, /sm\.status='FINALIZED'/i);
+  assert.match(migration, /sm\.is_current/i);
+  assert.doesNotMatch(migration, /drop table|delete from public\.submission_media|delete from storage\.objects/i);
+});
+
+test('thumbnail generation uses a safe frame target and never becomes video upload validation', () => {
+  assert.match(html, /Math\.min\(\.75,[\s\S]*video\.duration/);
+  assert.match(html, /canvas\.toBlob\([\s\S]*image\/webp/);
+  assert.match(html, /image\/jpeg/);
+  assert.match(html, /async function uploadVideoThumbnail/);
+  assert.match(html, /optional generation\/upload failed/);
+  assert.match(html, /void uploadVideoThumbnail/);
+});
+
+test('public gallery uses a thumbnail when available and keeps the poster fallback', () => {
+  assert.match(html, /thumbnailPathCandidates/);
+  assert.match(html, /resolveGalleryThumbnail/);
+  assert.match(html, /publicVideoPoster\.hasThumbnail/);
+  assert.match(html, /classList\.add\('hasThumbnail'\)/);
+  assert.match(html, /<span class="publicVideoPoster" aria-hidden="true">▶<\/span>/);
+});
+
+test('thumbnail failures do not alter the main upload/finalize flow', () => {
+  assert.match(html, /handleMediaUploadBeforeThumbnail/);
+  assert.match(html, /adminUploadAndFinalizeBeforeThumbnail/);
+  assert.match(html, /await handleMediaUploadBeforeThumbnail\(event\)/);
+  assert.match(html, /await adminUploadAndFinalizeBeforeThumbnail\(media,file,messageBox\)/);
+  assert.doesNotMatch(html, /await uploadVideoThumbnail\(/);
+});
