@@ -9,6 +9,7 @@ const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const migration = fs.readFileSync(path.join(root, 'supabase/migrations/20261004100000_admin_submission_deletion.sql'), 'utf8');
 const snapshotFix = fs.readFileSync(path.join(root, 'supabase/migrations/20261004110000_admin_submission_deletion_category_snapshot_fix.sql'), 'utf8');
 const auditCleanup = fs.readFileSync(path.join(root, 'supabase/migrations/20261004120000_admin_submission_deletion_media_audit_cleanup.sql'), 'utf8');
+const preflight = fs.readFileSync(path.join(root, 'supabase/migrations/20261004130000_admin_submission_delete_preflight_storage_acl.sql'), 'utf8');
 const card = index.slice(index.indexOf('const adminSubmissionCardHtml='), index.indexOf('const adminAddCategoryFieldLabels='));
 const adminDelete = index.slice(index.indexOf('async function adminDeleteSubmission'), index.indexOf('const adminContestDeletionReason='));
 
@@ -58,6 +59,26 @@ test('technical media audit cleanup is scoped to the deleted submission', () => 
   assert.match(auditCleanup, /contest_result_entries where submission_id=p_submission_id/);
   assert.match(auditCleanup, /contest_finalists where submission_id=p_submission_id/);
   assert.doesNotMatch(auditCleanup, /delete from public\.contest_media_deletion_(requests|audit)\s*;/);
+});
+
+test('preflight blocks protected submissions before Storage deletion', () => {
+  assert.match(preflight, /create or replace function public\.admin_get_submission_delete_status/);
+  assert.match(preflight, /grant execute on function public\.admin_get_submission_delete_status\(uuid\) to authenticated/);
+  assert.match(preflight, /publication_exists/);
+  assert.match(preflight, /votes_exist/);
+  assert.match(preflight, /results_exist/);
+  assert.match(preflight, /finalist_exists/);
+  assert.match(preflight, /lifecycle_locked/);
+  assert.match(index, /admin_get_submission_delete_status/);
+  assert.match(index, /if\(!status\?\.deletable\)/);
+  assert.match(index, /storage\.from\(item\.storage_bucket\)\.remove/);
+  assert.match(index, /const preflight=await supabase\.rpc\('admin_get_submission_delete_status'/);
+});
+
+test('Storage helper is executable by the internal policy evaluator but remains Admin/path scoped', () => {
+  assert.match(preflight, /grant execute on function public\._admin_submission_storage_delete_allowed\(text,text\)\s+to supabase_storage_admin/);
+  assert.match(preflight, /_admin_submission_storage_delete_allowed/);
+  assert.doesNotMatch(preflight, /grant execute on function public\._admin_submission_storage_delete_allowed\(text,text\)\s+to anon/);
 });
 
 test('Storage deletion policy is narrow and does not grant anonymous writes', () => {
