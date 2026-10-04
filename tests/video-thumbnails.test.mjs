@@ -7,6 +7,10 @@ const migration = await readFile(
   new URL('../supabase/migrations/20261004073343_video_thumbnails.sql', import.meta.url),
   'utf8',
 );
+const bucketMigration = await readFile(
+  new URL('../supabase/migrations/20261004080655_video_thumbnail_bucket.sql', import.meta.url),
+  'utf8',
+);
 
 test('thumbnail storage is optional and scoped to finalized published media', () => {
   assert.match(migration, /deterministic media-id paths/i);
@@ -16,6 +20,21 @@ test('thumbnail storage is optional and scoped to finalized published media', ()
   assert.match(migration, /sm\.status='FINALIZED'/i);
   assert.match(migration, /sm\.is_current/i);
   assert.doesNotMatch(migration, /drop table|delete from public\.submission_media|delete from storage\.objects/i);
+});
+
+test('thumbnails use an isolated private image bucket without broadening video storage', () => {
+  assert.match(bucketMigration, /contest-thumbnails/);
+  assert.match(bucketMigration, /public, allowed_mime_types/);
+  assert.match(bucketMigration, /image\/webp/);
+  assert.match(bucketMigration, /image\/jpeg/);
+  assert.match(bucketMigration, /bucket_id='contest-thumbnails'/);
+  assert.match(bucketMigration, /to authenticated/);
+  assert.match(bucketMigration, /to anon,authenticated/);
+  assert.doesNotMatch(bucketMigration, /bucket_id='contest-videos'/);
+  assert.doesNotMatch(bucketMigration, /for update|for delete/i);
+  assert.match(html, /const thumbnailStorageBucket='contest-thumbnails'/);
+  assert.match(html, /from\(thumbnailStorageBucket\)\.upload/);
+  assert.match(html, /from\(thumbnailStorageBucket\)\.download/);
 });
 
 test('thumbnail generation uses a safe frame target and never becomes video upload validation', () => {
