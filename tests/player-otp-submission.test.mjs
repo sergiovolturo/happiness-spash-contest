@@ -48,8 +48,10 @@ test('Player OTP has isolated state and DOM ids', () => {
   assert.doesNotMatch(gate, /id="otpCode"/);
 });
 
-test('successful OTP request renders the verification input', () => {
-  assert.match(gate, /playerOtpPending=true;render\(\)/);
+test('successful OTP request renders the verification input and cooldown', () => {
+  assert.match(gate, /playerOtpCooldownUntil=Date\.now\(\)\+OTP_RESEND_COOLDOWN_MS;playerOtpPending=true;[\s\S]*render\(\)/);
+  assert.match(gate, /playerOtpCooldownUntil=Date\.now\(\)\+OTP_RESEND_COOLDOWN_MS/);
+  assert.match(gate, /playerOtpCooldownUntil/);
   assert.match(gate, /Codice di verifica/);
   assert.match(gate, /Abbiamo inviato un codice a/);
 });
@@ -90,8 +92,8 @@ test('voter Auth session can enter Candidatura without another OTP', () => {
 test('submission OTP starts only from the explicit send-code action and is serialized', () => {
   assert.match(index, /playerOtpRequestForm/);
   assert.match(index, /requestPlayerOtp/);
-  assert.match(index, /if\(playerOtpRequestInFlight\)return/);
-  assert.match(index, /playerOtpPending=true;render\(\)/);
+  assert.match(index, /if\(playerOtpRequestInFlight\|\|otpCooldownActive\(playerOtpCooldownUntil\)\)return/);
+  assert.match(index, /playerOtpCooldownUntil=Date\.now\(\)\+OTP_RESEND_COOLDOWN_MS;playerOtpPending=true;[\s\S]*render\(\)/);
   const renderSource=index.slice(index.indexOf('async function render'), index.indexOf('const adminHumanizeStatusLabels'));
   assert.doesNotMatch(renderSource, /signInWithOtp/);
 });
@@ -142,6 +144,22 @@ test('anonymous OTP completion checks the participant context before resuming su
   const otp = index.slice(index.indexOf('async function verifyPlayerOtp'), index.indexOf('const playerOtpGateView='));
   assert.match(otp, /await loadParticipantContext\(\);if\(activeSubmissionForCategory\(pending\.categoryId\)\)\{await render\(\);return\}/);
   assert.match(otp, /activeSubmissionForCategory\(pending\.categoryId\)[\s\S]*?submitSubmissionValues\(pending\)/);
+});
+test('submission OTP exposes explicit feedback and cooldown protection', () => {
+  assert.match(index, /playerOtpRequestInFlight\|\|otpCooldownActive\(playerOtpCooldownUntil\)/);
+  assert.match(index, /Invia di nuovo il codice/);
+  assert.match(index, /Puoi richiedere un nuovo codice tra/);
+});
+test('active submissions collapse the duplicate candidature form', () => {
+  assert.match(index, /activeRows=\(submissionRows\|\|\[\]\)\.filter/);
+  assert.match(index, /form\.hidden=true/);
+  assert.match(index, /Candidati in un'altra categoria/);
+  assert.match(index, /openAdditionalSubmissionForm/);
+});
+test('submission attempts are serialized and reuse one duplicate warning', () => {
+  assert.match(index, /if\(submissionInFlight\)return/);
+  assert.match(index, /submissionInFlight=true/);
+  assert.match(index, /submissionCategoryGuard/);
 });
 
 test('capacity and closed-window guards remain in the Player flow', () => {
