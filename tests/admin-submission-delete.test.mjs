@@ -10,6 +10,7 @@ const migration = fs.readFileSync(path.join(root, 'supabase/migrations/202610041
 const snapshotFix = fs.readFileSync(path.join(root, 'supabase/migrations/20261004110000_admin_submission_deletion_category_snapshot_fix.sql'), 'utf8');
 const auditCleanup = fs.readFileSync(path.join(root, 'supabase/migrations/20261004120000_admin_submission_deletion_media_audit_cleanup.sql'), 'utf8');
 const preflight = fs.readFileSync(path.join(root, 'supabase/migrations/20261004130000_admin_submission_delete_preflight_storage_acl.sql'), 'utf8');
+const storageAcl = fs.readFileSync(path.join(root, 'supabase/migrations/20261004140000_admin_submission_storage_helper_acl.sql'), 'utf8');
 const card = index.slice(index.indexOf('const adminSubmissionCardHtml='), index.indexOf('const adminAddCategoryFieldLabels='));
 const adminDelete = index.slice(index.indexOf('async function adminDeleteSubmission'), index.indexOf('const adminContestDeletionReason='));
 
@@ -71,7 +72,7 @@ test('preflight blocks protected submissions before Storage deletion', () => {
   assert.match(preflight, /lifecycle_locked/);
   assert.match(index, /admin_get_submission_delete_status/);
   assert.match(index, /if\(!status\?\.deletable\)/);
-  assert.match(index, /storage\.from\(item\.storage_bucket\)\.remove/);
+  assert.match(index, /adminRemoveSubmissionObject\(item\.storage_bucket,item\.storage_path\)/);
   assert.match(index, /const preflight=await supabase\.rpc\('admin_get_submission_delete_status'/);
 });
 
@@ -79,6 +80,16 @@ test('Storage helper is executable by the internal policy evaluator but remains 
   assert.match(preflight, /grant execute on function public\._admin_submission_storage_delete_allowed\(text,text\)\s+to supabase_storage_admin/);
   assert.match(preflight, /_admin_submission_storage_delete_allowed/);
   assert.doesNotMatch(preflight, /grant execute on function public\._admin_submission_storage_delete_allowed\(text,text\)\s+to anon/);
+});
+
+test('thumbnail deletion treats only a missing optional object as non-blocking', () => {
+  assert.match(index, /const adminStorageObjectMissing=error=>/);
+  assert.match(index, /adminRemoveSubmissionObject\('contest-thumbnails'/);
+  assert.match(index, /adminRemoveSubmissionObject\('contest-thumbnails',[^,]+,true\)/);
+  assert.match(index, /status\|\|error\?\.statusCode\)===404/);
+  assert.match(index, /adminRemoveSubmissionObject\(item\.storage_bucket,item\.storage_path\)/);
+  assert.match(storageAcl, /to authenticated/);
+  assert.match(storageAcl, /to supabase_storage_admin/);
 });
 
 test('Storage deletion policy is narrow and does not grant anonymous writes', () => {
