@@ -11,6 +11,10 @@ const bucketMigration = await readFile(
   new URL('../supabase/migrations/20261004080655_video_thumbnail_bucket.sql', import.meta.url),
   'utf8',
 );
+const cleanupMigration = await readFile(
+  new URL('../supabase/migrations/20261004081011_video_thumbnail_legacy_cleanup.sql', import.meta.url),
+  'utf8',
+);
 
 test('thumbnail storage is optional and scoped to finalized published media', () => {
   assert.match(migration, /deterministic media-id paths/i);
@@ -35,6 +39,13 @@ test('thumbnails use an isolated private image bucket without broadening video s
   assert.match(html, /const thumbnailStorageBucket='contest-thumbnails'/);
   assert.match(html, /from\(thumbnailStorageBucket\)\.upload/);
   assert.match(html, /from\(thumbnailStorageBucket\)\.download/);
+});
+
+test('legacy thumbnail cleanup removes only the two old contest-videos policies', () => {
+  assert.match(cleanupMigration, /drop policy if exists submission_thumbnail_objects_insert on storage\.objects/i);
+  assert.match(cleanupMigration, /drop policy if exists published_submission_thumbnail_objects_select on storage\.objects/i);
+  assert.doesNotMatch(cleanupMigration, /drop bucket|delete from storage\.objects|alter table|drop policy(?! if exists)/i);
+  assert.doesNotMatch(cleanupMigration, /contest_thumbnail_bucket_objects_insert|published_contest_thumbnail_bucket_objects_select/);
 });
 
 test('thumbnail generation uses a safe frame target and never becomes video upload validation', () => {
