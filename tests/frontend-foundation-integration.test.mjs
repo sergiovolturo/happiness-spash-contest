@@ -90,7 +90,7 @@ test('public entrypoint exposes the existing email/password auth view without a 
 
 test('auth buttons follow session state and stale authenticated responses are ignored', () => {
   assert.match(index, /function syncAuthButtons\(\)/);
-  assert.match(index, /login\.classList\.toggle\('hidden',adminAuthenticated\)/);
+  assert.match(index, /login\.classList\.toggle\('hidden',authenticated\)/);
   assert.match(index, /logout\.classList\.toggle\('hidden',!authenticated\)/);
   assert.match(index, /let authReady=false,authRequestSeq=0/);
   assert.match(index, /requestId!==authRequestSeq\|\|session!==s/);

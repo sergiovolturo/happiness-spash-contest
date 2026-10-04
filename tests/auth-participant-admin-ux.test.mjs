@@ -5,9 +5,9 @@ import test from 'node:test';
 const index = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const syncAuthButtons = index.slice(index.indexOf('function syncAuthButtons()'), index.indexOf('function clearClientAuthState'));
 
-test('participant sessions keep Admin access visible while showing logout', () => {
-  assert.match(syncAuthButtons, /const authenticated=!!session,adminAuthenticated=authenticated&&isAdmin/);
-  assert.match(syncAuthButtons, /login\.classList\.toggle\('hidden',adminAuthenticated\)/);
+test('any authenticated session shows only logout', () => {
+  assert.match(syncAuthButtons, /const authenticated=!!session/);
+  assert.match(syncAuthButtons, /login\.classList\.toggle\('hidden',authenticated\)/);
   assert.match(syncAuthButtons, /logout\.classList\.toggle\('hidden',!authenticated\)/);
 });
 

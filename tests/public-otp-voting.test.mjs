@@ -24,7 +24,7 @@ test('cast passes submission and category identifiers', () => assert.match(votin
 test('no direct contest vote inserts', () => assert.doesNotMatch(votingFlow, /insert\s*\([^)]*contest_votes/i));
 test('no direct voter identity writes', () => assert.doesNotMatch(votingFlow, /verified_voter_identities.*insert/i));
 test('legacy votes are not used by the new flow', () => assert.doesNotMatch(votingFlow, /public\.votes|from\(['"]votes['"]\)|\.from\(['"]votes['"]\)/i));
-test('vote confirmation states permanence', () => assert.match(votingFlow, /Il voto è definitivo e non potrà essere modificato/));
+test('vote confirmation states uniqueness and permanence', () => assert.match(votingFlow, /Il voto è unico e definitivo per questa categoria e non potrà essere modificato/));
 test('double vote click is guarded', () => assert.match(votingFlow, /voteInFlight\.has\(key\)/));
 test('double OTP requests are guarded', () => assert.match(votingFlow, /otpRequestInFlight\.value/));
 test('double OTP verification is guarded', () => assert.match(votingFlow, /otpVerifyInFlight\.value/));
@@ -79,3 +79,12 @@ test('anonymous vote flow has no email-based vote-status lookup', () => {
   assert.doesNotMatch(votingFlow, /eq\(['"]email['"]|voter_email|has_voted_by_email|verified_voter_identities/);
 });
 test('voter state refreshes after successful cast', () => assert.match(votingFlow, /await loadVoteState\(\);voteTarget=null/));
+test('vote confirmation uses an explicit confirm action', () => {
+  assert.match(votingFlow, /id="confirmVote"/);
+  assert.match(votingFlow, /confirm\.onclick=castVoteFromDialog/);
+});
+test('voter OTP exposes a resend cooldown', () => {
+  assert.match(votingFlow, /OTP_RESEND_COOLDOWN_MS/);
+  assert.match(votingFlow, /otpCooldownActive\(otpCooldownUntil\)/);
+  assert.match(votingFlow, /Puoi richiedere un nuovo codice tra/);
+});
