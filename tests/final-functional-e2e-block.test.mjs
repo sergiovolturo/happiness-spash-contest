@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const index = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-const migration = await readFile(new URL('../supabase/migrations/20260930000700_public_results_after_voting_close.sql', import.meta.url), 'utf8');
+const migration = await readFile(new URL('../supabase/migrations/20261005090000_post_voting_results_flow.sql', import.meta.url), 'utf8');
 
 test('closed Player candidature removes the form and preserves Le tue candidature', () => {
   const wrapper = index.slice(index.indexOf('playerSubmissionViewBase=submissionView'), index.indexOf('const playerVoteDialogBase'));
@@ -56,14 +56,64 @@ test('public result rendering is post-vote only and exposes aggregate data', () 
   assert.doesNotMatch(index.slice(index.indexOf('const galleryViewBeforeFunctionalResults')), /voter|email|identity|UUID/i);
 });
 
-test('public results fallback ranks each category by vote count and marks Top 4', () => {
-  assert.match(migration, /now\(\) < v_contest\.voting_close_at/);
-  assert.match(migration, /dense_rank\(\) over\(partition by c\.category_id order by c\.vote_count desc\)/i);
-  assert.match(migration, /r\.rank_position<=4/);
+test('public results require a current published snapshot and remain aggregate-only', () => {
+  const publicResults = migration.slice(migration.indexOf('create or replace function public.get_public_contest_results'), migration.indexOf('create or replace function public.admin_preview_contest_results'));
+  assert.match(publicResults, /status='PUBLISHED' and rs\.invalidated_at is null/);
+  assert.match(publicResults, /contest_result_entries/);
+  assert.doesNotMatch(publicResults, /dense_rank\(\) over\(partition by c\.category_id/);
   assert.match(migration, /grant execute on function public\.get_public_contest_results\(uuid\) to anon,authenticated/i);
 });
 
 test('public result RPC remains closed to direct table access', () => {
   assert.match(migration, /security definer set search_path=''/i);
-  assert.match(migration, /revoke execute on function public\.get_public_contest_results\(uuid\) from public,service_role/i);
+  assert.match(migration, /revoke all on function public\.get_public_contest_results\(uuid\) from public,service_role/i);
+});
+
+test('Admin preview is read-only, Admin-only and does not create result state', () => {
+  assert.match(migration, /create or replace function public\.admin_preview_contest_results\(p_contest_id uuid\)/);
+  assert.match(migration, /admin_users au where au\.user_id=v_auth_user_id/);
+  assert.match(migration, /grant execute on function public\.admin_preview_contest_results\(uuid\) to authenticated/);
+  assert.match(migration, /revoke execute on function public\.admin_preview_contest_results\(uuid\) from public,anon,service_role/);
+  assert.doesNotMatch(migration.slice(migration.indexOf('create or replace function public.admin_preview_contest_results')), /insert into public\.(contest_result_snapshots|contest_finalists)/);
+  assert.match(index, /admin_preview_contest_results/);
+  assert.match(index, /Classifica provvisoria/);
+  assert.equal((index.match(/admin_preview_contest_results/g) || []).length, 1, 'preview RPC must be fetched once per results load');
+  assert.match(index, /adminResultsPreviewRows=data\?\.preview\|\|\[\]/);
+});
+
+test('cutoff tie semantics identify a group crossing the finalist threshold', () => {
+  assert.match(migration, /row_number\(\) over\(partition by c\.category_id/);
+  assert.match(migration, /min\(x\.ordinal_position\)[\s\S]*<=r\.finalists_count/);
+  assert.match(migration, /max\(x\.ordinal_position\)[\s\S]*>r\.finalists_count/);
+  const crosses = (votes, slots) => {
+    const groups = new Map();
+    [...votes].sort((a, b) => b - a).forEach((vote, index) => {
+      const group = groups.get(vote) || [];
+      group.push(index + 1);
+      groups.set(vote, group);
+    });
+    return [...groups.values()].some(group => Math.min(...group) <= slots && Math.max(...group) > slots);
+  };
+  assert.equal(crosses([10, 8, 7, 5, 5], 4), true);
+  assert.equal(crosses([10, 10, 8, 7, 5], 4), false);
+  assert.equal(crosses([10, 8, 7, 5, 4, 4], 4), false);
+  assert.equal(crosses([10, 8, 7, 5, 5], 5), false);
+});
+
+test('non-archived VOTING_CLOSED contests remain public without exposing provisional counts', () => {
+  const publicList = migration.slice(migration.indexOf('create or replace function public.get_public_contests()'), migration.indexOf('create or replace function public.get_public_contest()'));
+  const legacyPublic = migration.slice(migration.indexOf('create or replace function public.get_public_contest()'), migration.indexOf('-- Public results are available'));
+  assert.match(publicList, /c\.archived_at is null/);
+  for (const validStatus of ['SUBMISSIONS_OPEN','VOTING_OPEN','SUBMISSIONS_CLOSED','MODERATION','READY_FOR_VOTING','VOTING_CLOSED']) {
+    assert.match(publicList, new RegExp(`'${validStatus}'`));
+    assert.match(legacyPublic, new RegExp(`'${validStatus}'`));
+  }
+  for (const invalidStatus of ['FROZEN','CONFIRMED','PUBLISHED']) {
+    assert.doesNotMatch(publicList, new RegExp(`'${invalidStatus}'`));
+    assert.doesNotMatch(legacyPublic, new RegExp(`'${invalidStatus}'`));
+  }
+  assert.doesNotMatch(publicList, /'CLOSED'/);
+  assert.match(index, /VOTING_CLOSED:'Votazioni concluse'/);
+  assert.match(index, /Le votazioni sono terminate\. I risultati sono in fase di validazione\./);
+  assert.match(index, /publicActiveStatuses=new Set\(\[[\s\S]*'VOTING_CLOSED'/);
 });
