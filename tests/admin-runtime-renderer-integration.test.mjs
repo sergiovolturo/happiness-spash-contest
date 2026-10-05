@@ -12,6 +12,22 @@ test('authenticated Admin candidature entry uses the authoritative renderer', ()
   assert.match(index, /class="adminSubmissionMedia"/);
 });
 
+test('Admin overview performs one bootstrap and does not preload categories', () => {
+  const overviewWrapperStart = index.indexOf('renderAdmin=async function(requestId=activeRenderRequestId){await renderAdminBaseForFunctionalBlock');
+  assert.ok(overviewWrapperStart >= 0);
+  const overviewWrapperEnd = index.indexOf('};', overviewWrapperStart);
+  const overviewWrapper = index.slice(overviewWrapperStart, overviewWrapperEnd);
+  assert.doesNotMatch(overviewWrapper, /loadAdminContests\(\)/);
+  assert.doesNotMatch(overviewWrapper, /admin_list_contest_categories/);
+
+  const overviewStart = index.indexOf('async function renderAdmin(');
+  const overviewEnd = index.indexOf("if(adminSection==='administrators')", overviewStart);
+  const overviewRenderer = index.slice(overviewStart, overviewEnd);
+  assert.equal((overviewRenderer.match(/loadAdminContests\(\)/g) || []).length, 1);
+  assert.equal((overviewRenderer.match(/supabase\.auth\.getSession\(\)/g) || []).length, 0);
+  assert.equal((overviewRenderer.match(/admin_list_contest_categories/g) || []).length, 0);
+});
+
 test('authoritative runtime card cannot fall back to the legacy large-player/delete surface', () => {
   const start = index.indexOf('const renderAdminSubmissionsSectionAuthoritative=');
   const end = index.indexOf('const renderAdminResultsSectionAuthoritative=', start);

@@ -36,9 +36,12 @@ test('Admin shows a provisional per-category ranking while voting is open', () =
   assert.match(index, /row\.vote_count/);
 });
 
-test('Admin overview loads category associations for the selected Contest', () => {
-  assert.match(index, /adminSelectedCategories=categories\.error\?\[\]:\(categories\.data\|\|\[\]\)/);
-  assert.match(index, /admin_list_contest_categories/);
+test('Admin overview does not preload category associations', () => {
+  const wrapperStart = index.indexOf('renderAdmin=async function(requestId=activeRenderRequestId){await renderAdminBaseForFunctionalBlock');
+  const wrapperEnd = index.indexOf('};', wrapperStart);
+  const wrapper = index.slice(wrapperStart, wrapperEnd);
+  assert.doesNotMatch(wrapper, /loadAdminContests\(\)/);
+  assert.doesNotMatch(wrapper, /admin_list_contest_categories/);
 });
 
 test('public results are loaded only after the voting window closes', () => {
