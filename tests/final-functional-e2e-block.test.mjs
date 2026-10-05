@@ -77,6 +77,27 @@ test('Admin preview is read-only, Admin-only and does not create result state', 
   assert.doesNotMatch(migration.slice(migration.indexOf('create or replace function public.admin_preview_contest_results')), /insert into public\.(contest_result_snapshots|contest_finalists)/);
   assert.match(index, /admin_preview_contest_results/);
   assert.match(index, /Classifica provvisoria/);
+  assert.equal((index.match(/admin_preview_contest_results/g) || []).length, 1, 'preview RPC must be fetched once per results load');
+  assert.match(index, /adminResultsPreviewRows=data\?\.preview\|\|\[\]/);
+});
+
+test('cutoff tie semantics identify a group crossing the finalist threshold', () => {
+  assert.match(migration, /row_number\(\) over\(partition by c\.category_id/);
+  assert.match(migration, /min\(x\.ordinal_position\)[\s\S]*<=r\.finalists_count/);
+  assert.match(migration, /max\(x\.ordinal_position\)[\s\S]*>r\.finalists_count/);
+  const crosses = (votes, slots) => {
+    const groups = new Map();
+    [...votes].sort((a, b) => b - a).forEach((vote, index) => {
+      const group = groups.get(vote) || [];
+      group.push(index + 1);
+      groups.set(vote, group);
+    });
+    return [...groups.values()].some(group => Math.min(...group) <= slots && Math.max(...group) > slots);
+  };
+  assert.equal(crosses([10, 8, 7, 5, 5], 4), true);
+  assert.equal(crosses([10, 10, 8, 7, 5], 4), false);
+  assert.equal(crosses([10, 8, 7, 5, 4, 4], 4), false);
+  assert.equal(crosses([10, 8, 7, 5, 5], 5), false);
 });
 
 test('non-archived VOTING_CLOSED contests remain public without exposing provisional counts', () => {

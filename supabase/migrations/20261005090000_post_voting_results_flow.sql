@@ -128,18 +128,17 @@ begin
     where cc.contest_id=p_contest_id and cc.is_active
     group by cc.id,d.name,cc.finalists_count,s.id,s.contestant_display_name
   ), ranked as (
-    select c.*,dense_rank() over(partition by c.category_id order by c.vote_count desc)::integer as rank_position
+    select c.*,dense_rank() over(partition by c.category_id order by c.vote_count desc)::integer as rank_position,
+      row_number() over(partition by c.category_id order by c.vote_count desc,c.submission_id)::integer as ordinal_position
     from candidates c
   )
   select r.category_id,r.category_name,r.finalists_count,r.submission_id,
     r.contestant_display_name,r.vote_count,r.rank_position,
     r.rank_position<=r.finalists_count,
-    r.vote_count=(select b.vote_count from ranked b
-      where b.category_id=r.category_id
-      order by b.vote_count desc,b.submission_id
-      offset greatest(r.finalists_count-1,0) limit 1)
-      and (select count(*) from ranked tie
-        where tie.category_id=r.category_id and tie.vote_count=r.vote_count)>r.finalists_count
+    (select min(x.ordinal_position) from ranked x
+      where x.category_id=r.category_id and x.vote_count=r.vote_count)<=r.finalists_count
+      and (select max(x.ordinal_position) from ranked x
+        where x.category_id=r.category_id and x.vote_count=r.vote_count)>r.finalists_count
   from ranked r
   order by r.category_id,r.rank_position,r.submission_id;
 end;
