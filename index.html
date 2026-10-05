@@ -320,6 +320,7 @@ async function adminResultAction(key,fn){if(adminActionsInFlight.has(key))return
 function closeAdminVotingConfirmation(){document.querySelector('#adminCloseVotingConfirmation')?.remove();document.body.insertAdjacentHTML('beforeend','<div class="adminConfirmOverlay" id="adminCloseVotingConfirmation" role="presentation"><section class="card" role="dialog" aria-modal="true" aria-labelledby="adminCloseVotingTitle"><h2 id="adminCloseVotingTitle">Chiudere anticipatamente la votazione?</h2><p>Dopo la chiusura non saranno più accettati nuovi voti. La votazione verrà chiusa prima della scadenza prevista.</p><div class="actions"><button class="btn" type="button" data-admin-close-voting-cancel>Annulla</button><button class="btn danger" type="button" data-admin-close-voting-confirm>Conferma chiusura</button></div></section></div>');document.querySelector('[data-admin-close-voting-cancel]')?.addEventListener('click',()=>document.querySelector('#adminCloseVotingConfirmation')?.remove());document.querySelector('[data-admin-close-voting-confirm]')?.addEventListener('click',()=>{document.querySelector('#adminCloseVotingConfirmation')?.remove();adminResultAction('close-voting',()=>supabase.rpc('close_contest_voting',{p_contest_id:adminSelectedContest.id}))})}
 async function adminCloseVoting(){if(!adminSelectedContest)return;closeAdminVotingConfirmation()}
 async function adminFreezeResults(){if(!adminSelectedContest)return;adminResultAction('freeze-results',()=>supabase.rpc('freeze_contest_results',{p_contest_id:adminSelectedContest.id}))}
+// Kept for historical snapshots and older clients; the active Admin UI skips this step.
 async function adminConfirmFinalists(id){adminResultAction(`confirm-finalists:${id}`,()=>supabase.rpc('confirm_contest_finalists',{p_snapshot_id:id}))}
 async function adminPublishFinalists(id){adminResultAction(`publish-finalists:${id}`,()=>supabase.rpc('publish_contest_finalists',{p_snapshot_id:id}))}
 async function adminDeleteFraudVote(id){const reason=prompt('Motivo della cancellazione del voto:');if(!reason||!reason.trim())return;adminResultAction(`delete-vote:${id}`,()=>supabase.rpc('delete_contest_vote',{p_vote_id:id,p_deletion_reason:reason.trim()}))}
@@ -593,7 +594,7 @@ boot=async function(){try{await loadPublicContestDirectory();const {data,error}=
    if(!surface)return;
    const flow=adminResultsFlowStep(data);
    surface.insertAdjacentHTML('afterbegin','<div class="adminResultsGuide"><div class="eyebrow">POST-VOTO</div><p class="muted">Gestisci la selezione dei finalisti ufficiali del Contest.</p><div class="adminResultsSteps" aria-label="Percorso risultati"><span class="'+(flow==='Risultati da congelare'?'active':'')+'">Votazioni concluse</span> → <span class="'+(flow==='Risultati da congelare'?'active':'')+'">Risultati da congelare</span> → <span class="'+(flow==='Parità da risolvere'?'active':'')+'">Eventuali parità da risolvere</span> → <span class="'+(flow==='Finalisti da confermare'?'active':'')+'">Finalisti da confermare</span> → <span class="'+(flow==='Finalisti pubblicati'?'active':'')+'">Finalisti pubblicati</span></div><p class="notice">Stato corrente: <b>'+esc(flow)+'</b></p></div>');
-   surface.insertAdjacentHTML('beforeend','<p class="muted adminFreezeExplanation">Congelando i risultati verrà creato lo snapshot ufficiale della classifica corrente. Dopo il congelamento eventuali parità dovranno essere risolte prima della conferma dei finalisti.</p>');
+   surface.insertAdjacentHTML('beforeend','<p class="muted adminFreezeExplanation">Congelando i risultati verrà creato lo snapshot ufficiale della classifica corrente. Dopo il congelamento eventuali parità dovranno essere risolte prima della pubblicazione dei finalisti.</p>');
    surface.insertAdjacentHTML('beforeend',adminPreFreezeSummaryHtml(data));
    if(!Array.isArray(data.preview)||!data.preview.length)return;
    const groups=new Map();data.preview.forEach(row=>{if(!groups.has(row.category_id))groups.set(row.category_id,[]);groups.get(row.category_id).push(row)});
@@ -604,6 +605,25 @@ boot=async function(){try{await loadPublicContestDirectory();const {data,error}=
  homeView=async function(requestId=activeRenderRequestId){await homeViewWithPublishedFinalists(requestId);if(!renderIsCurrent(requestId))return;const view=document.querySelector('#view'),target=view?.querySelector('.publicContestSurface,.gallerySection');if(target&&publicResultRows?.some(row=>row.is_finalist)){const existing=target.querySelector('.publicOfficialFinalists');if(!existing)target.insertAdjacentHTML('beforeend',publicOfficialFinalistsMarkup())}};
  const renderAdminWithFinalResults=renderAdmin;
  renderAdmin=async function(requestId=activeRenderRequestId){await renderAdminWithFinalResults(requestId);if(!renderIsCurrent(requestId)||adminSection!=='results')return;const view=document.querySelector('#view'),surface=view?.querySelector('.adminResults'),data=adminResultsLoadedData;if(!surface||!data)return;if(!surface.querySelector('.adminPreFreezeSummary'))surface.insertAdjacentHTML('beforeend',adminPreFreezeSummaryHtml(data));if(!surface.querySelector('.adminProvisionalResults')&&Array.isArray(data.preview)&&data.preview.length){const groups=new Map();data.preview.forEach(row=>{if(!groups.has(row.category_id))groups.set(row.category_id,[]);groups.get(row.category_id).push(row)});const sections=[...groups.values()].map(rows=>'<article class="card"><h3>'+esc(rows[0].category_name)+'</h3><div class="muted">Finalisti previsti: '+Number(rows[0].finalists_count)+'</div>'+rows.map(row=>'<div class="notice"><b>#'+row.rank_position+'</b> · '+esc(row.contestant_display_name||'Nome candidato non disponibile')+' · '+Number(row.vote_count)+' voti'+(row.is_finalist_candidate?' · Dentro i finalisti previsti':' · Fuori dai finalisti previsti')+(row.is_cutoff_tie?' · Pari merito al cutoff':'')+'</div>').join('')+(rows.some(row=>row.is_cutoff_tie)?'<div class="notice error">Parità da risolvere: seleziona i candidati coinvolti e assegna i posti disponibili.</div>':'')+'</article>').join('');surface.insertAdjacentHTML('beforeend','<section class="adminProvisionalResults"><div class="section-title"><div><h3>Classifica provvisoria</h3><div class="muted">Anteprima riservata agli Admin; non crea snapshot né finalisti.</div></div><span class="badge">Solo Admin</span></div><div class="grid" style="grid-template-columns:1fr">'+sections+'</div></section>')}};
+ const adminApplyPublicFinalistsFlow=()=>{
+   document.querySelectorAll('.confirmFinalists').forEach(button=>{
+     button.classList.remove('confirmFinalists');
+     button.classList.add('publishFinalists');
+     button.textContent='Pubblica finalisti';
+     button.onclick=()=>adminPublishFinalists(button.dataset.snapshotId);
+   });
+   document.querySelectorAll('.adminResultsSteps').forEach(steps=>{
+     const labels=[...steps.querySelectorAll('span')].map(span=>span.textContent||'');
+     const published=labels.some(label=>label.includes('pubblicati'));
+     const tie=labels.some(label=>label.includes('parità'));
+     steps.innerHTML=`<span>${published?'✓':'✓'} Voto chiuso</span><span>${published?'✓':'✓'} Congela</span><span>${published?'📣':tie?'⚠':'●'} Pubblica</span>`;
+   });
+ };
+ const renderAdminWithPublicFinalistsFlow=renderAdmin;
+ renderAdmin=async function(requestId=activeRenderRequestId){
+   await renderAdminWithPublicFinalistsFlow(requestId);
+   if(renderIsCurrent(requestId))adminApplyPublicFinalistsFlow();
+ };
  adminView=renderAdmin;
  bindNav();
  boot();
