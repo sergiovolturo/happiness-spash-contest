@@ -46,7 +46,7 @@ test('Admin overview does not preload category associations', () => {
 
 test('public results are loaded only after the voting window closes', () => {
   assert.match(index, /const votingClosed=nextContest\.voting_close_at&&Date\.now\(\)>=Date\.parse\(nextContest\.voting_close_at\)/);
-  assert.match(index, /if\(votingClosed\|\|\['VOTING_CLOSED','FROZEN','CONFIRMED','PUBLISHED','CLOSED'\]\.includes\(nextContest\.status\)\)/);
+  assert.match(index, /if\(votingClosed\|\|\['VOTING_CLOSED','CLOSED'\]\.includes\(nextContest\.status\)\)/);
 });
 
 test('public result rendering is post-vote only and exposes aggregate data', () => {
