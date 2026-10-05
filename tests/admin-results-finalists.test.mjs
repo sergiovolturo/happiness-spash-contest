@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const index = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-const adminResults = index.slice(index.indexOf('const resultErrorLabel'), index.indexOf('async function adminView'));
+const adminResults = index.slice(index.indexOf('const resultErrorLabel'), index.indexOf(' const adminPreFreezeSummaryHtml='));
 const migration = await readFile(new URL('../supabase/migrations/20260922000500_step5_voting.sql', import.meta.url), 'utf8');
 
 test('Admin results reads backend snapshots and entries', () => {
