@@ -102,9 +102,17 @@ test('cutoff tie semantics identify a group crossing the finalist threshold', ()
 
 test('non-archived VOTING_CLOSED contests remain public without exposing provisional counts', () => {
   const publicList = migration.slice(migration.indexOf('create or replace function public.get_public_contests()'), migration.indexOf('create or replace function public.get_public_contest()'));
+  const legacyPublic = migration.slice(migration.indexOf('create or replace function public.get_public_contest()'), migration.indexOf('-- Public results are available'));
   assert.match(publicList, /c\.archived_at is null/);
-  assert.match(publicList, /'VOTING_CLOSED'/);
-  assert.match(publicList, /'FROZEN'.*'CONFIRMED'.*'PUBLISHED'/s);
+  for (const validStatus of ['SUBMISSIONS_OPEN','VOTING_OPEN','SUBMISSIONS_CLOSED','MODERATION','READY_FOR_VOTING','VOTING_CLOSED']) {
+    assert.match(publicList, new RegExp(`'${validStatus}'`));
+    assert.match(legacyPublic, new RegExp(`'${validStatus}'`));
+  }
+  for (const invalidStatus of ['FROZEN','CONFIRMED','PUBLISHED']) {
+    assert.doesNotMatch(publicList, new RegExp(`'${invalidStatus}'`));
+    assert.doesNotMatch(legacyPublic, new RegExp(`'${invalidStatus}'`));
+  }
+  assert.doesNotMatch(publicList, /'CLOSED'/);
   assert.match(index, /VOTING_CLOSED:'Votazioni concluse'/);
   assert.match(index, /Le votazioni sono terminate\. I risultati sono in fase di validazione\./);
   assert.match(index, /publicActiveStatuses=new Set\(\[[\s\S]*'VOTING_CLOSED'/);

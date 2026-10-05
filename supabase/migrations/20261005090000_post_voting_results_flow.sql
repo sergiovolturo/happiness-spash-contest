@@ -17,20 +17,16 @@ as $function$
     and c.deletion_locked_at is null
     and c.status in (
       'SUBMISSIONS_OPEN','VOTING_OPEN','SUBMISSIONS_CLOSED','MODERATION',
-      'READY_FOR_VOTING','VOTING_CLOSED','FROZEN','CONFIRMED','PUBLISHED','CLOSED'
+      'READY_FOR_VOTING','VOTING_CLOSED'
     )
   order by case c.status
     when 'SUBMISSIONS_OPEN' then 1
     when 'VOTING_OPEN' then 2
     when 'VOTING_CLOSED' then 3
-    when 'FROZEN' then 4
-    when 'CONFIRMED' then 5
-    when 'PUBLISHED' then 6
-    when 'CLOSED' then 7
-    when 'SUBMISSIONS_CLOSED' then 8
-    when 'MODERATION' then 9
-    when 'READY_FOR_VOTING' then 10
-    else 11 end,
+    when 'SUBMISSIONS_CLOSED' then 4
+    when 'MODERATION' then 5
+    when 'READY_FOR_VOTING' then 6
+    else 7 end,
     c.updated_at desc nulls last,c.created_at desc,c.id desc;
 $function$;
 
@@ -46,14 +42,13 @@ as $function$
   where c.archived_at is null and c.deletion_locked_at is null
     and c.status in (
       'SUBMISSIONS_OPEN','VOTING_OPEN','SUBMISSIONS_CLOSED','MODERATION',
-      'READY_FOR_VOTING','VOTING_CLOSED','FROZEN','CONFIRMED','PUBLISHED','CLOSED'
+      'READY_FOR_VOTING','VOTING_CLOSED'
     )
   order by case c.status
     when 'SUBMISSIONS_OPEN' then 1 when 'VOTING_OPEN' then 2
-    when 'VOTING_CLOSED' then 3 when 'FROZEN' then 4
-    when 'CONFIRMED' then 5 when 'PUBLISHED' then 6
-    when 'CLOSED' then 7 when 'SUBMISSIONS_CLOSED' then 8
-    when 'MODERATION' then 9 when 'READY_FOR_VOTING' then 10 else 11 end,
+    when 'VOTING_CLOSED' then 3
+    when 'SUBMISSIONS_CLOSED' then 4 when 'MODERATION' then 5
+    when 'READY_FOR_VOTING' then 6 else 7 end,
     c.updated_at desc nulls last,c.created_at desc,c.id desc
   limit 1;
 $function$;
