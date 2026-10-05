@@ -48,13 +48,26 @@ test('legacy thumbnail cleanup removes only the two old contest-videos policies'
   assert.doesNotMatch(cleanupMigration, /contest_thumbnail_bucket_objects_insert|published_contest_thumbnail_bucket_objects_select/);
 });
 
-test('thumbnail generation uses a safe frame target and never becomes video upload validation', () => {
+test('thumbnail generation validates the actual Blob MIME and falls back to JPEG', () => {
   assert.match(html, /Math\.min\(\.75,[\s\S]*video\.duration/);
-  assert.match(html, /canvas\.toBlob\([\s\S]*image\/webp/);
-  assert.match(html, /image\/jpeg/);
+  assert.match(html, /const canvasToBlob=\(canvas,type,quality\)=>new Promise/);
+  assert.match(html, /webp\?\.type==='image\/webp'/);
+  assert.match(html, /jpeg\?\.type==='image\/jpeg'/);
+  assert.match(html, /contentType:'image\/webp'/);
+  assert.match(html, /contentType:'image\/jpeg'/);
+  assert.match(html, /blob\?\.type!==contentType/);
+  assert.doesNotMatch(html, /extension==='webp'\?'image\/webp':'image\/jpeg'/);
   assert.match(html, /async function uploadVideoThumbnail/);
   assert.match(html, /optional generation\/upload failed/);
   assert.match(html, /void uploadVideoThumbnail/);
+});
+
+test('thumbnail probing is at most one WebP-to-JPEG sequence per media in a session', () => {
+  assert.match(html, /galleryThumbnailRequests=new Map\(\)/);
+  assert.match(html, /galleryThumbnailMisses=new Set\(\)/);
+  assert.match(html, /if\(galleryThumbnailMisses\.has\(row\.media_id\)\)return ''/);
+  assert.match(html, /if\(galleryThumbnailRequests\.has\(row\.media_id\)\)return galleryThumbnailRequests\.get\(row\.media_id\)/);
+  assert.match(html, /galleryThumbnailMisses\.add\(row\.media_id\)/);
 });
 
 test('public gallery uses a thumbnail when available and keeps the poster fallback', () => {
