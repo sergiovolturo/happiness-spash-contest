@@ -42,7 +42,8 @@ test('RESULTS renders from an empty view without legacy configuration surfaces',
   const results=index.slice(index.indexOf('const renderAdminResultsSectionAuthoritative='),index.indexOf('const adminRenderAuthoritativeShell='));
   assert.match(active, /view\.innerHTML=''/);
   assert.match(active, /adminSection==='results'.*renderAdminResultsSectionAuthoritative/);
-  assert.match(results, /renderAdminResults\(view\)/);
+  assert.match(results, /adminRenderCompactResults\(view,requestId\)/);
+  assert.doesNotMatch(results, /renderAdminResults\(view\)/);
   assert.doesNotMatch(results, /adminManualSubmission|adminCurrentContestConfiguration|adminContestSurfaceLegacyFinal|adminRemoveLegacyComposition/);
 });
 
