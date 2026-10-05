@@ -26,6 +26,14 @@ label{display:block;font-weight:700;font-size:14px;margin:14px 0 7px}.input{widt
 .closedCategory{margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#f8fcfd}.closedCategory ul{margin:8px 0 0;padding-left:22px}.submissionCategory{font-size:15px}
   .publicVideoPoster.hasThumbnail{background-size:cover;background-position:center;color:#fff;text-shadow:0 1px 3px #000}
 </style>
+<style>
+.publicOfficialFinalists.compact{margin:12px 0;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:#f8fcfd;box-shadow:none}
+.publicOfficialFinalists.compact h3{margin:0 0 4px;font-size:18px}
+.publicOfficialFinalists.compact p{margin:0 0 10px}
+.publicOfficialFinalists.compact ul{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0;padding:0;list-style:none}
+.publicOfficialFinalists.compact li{display:flex;gap:5px;align-items:baseline}
+.publicOfficialFinalists.compact li span{color:var(--muted);font-size:13px}
+</style>
 <style>.adminLifecycleSteps{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:800}.adminLifecycleStep{padding:8px 12px;border-radius:999px;background:#edf5f6;color:var(--muted)}.adminLifecycleStep.active{background:var(--ink);color:#fff}.adminLifecycleArrow{color:var(--muted)}.adminPrerequisites>div{margin:6px 0}.adminCategorySummary{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.adminCategorySummary>div{border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:5px}.adminCategorySummary span{color:var(--muted)}.adminManualToggle{margin:8px 0}.adminVotingFilters{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.adminVotingFilter.active{background:var(--ink);color:#fff}.adminVotingVideoGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:10px}.adminVotingVideoCategory{margin-top:20px}.adminVotingVideo{min-width:0;padding:10px;display:flex;flex-direction:column;gap:10px}.adminVotingVideoPreview{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:16/9;border:0;border-radius:14px;background:linear-gradient(135deg,#071b22,#167c8b);color:#fff;font-size:30px;overflow:hidden}.adminVotingVideoPreview:hover{filter:brightness(1.12)}.adminVotingVideoPreview span{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#ffffffdd;color:var(--ink);font-size:22px}.adminVotingVideoName{overflow-wrap:anywhere}.adminVideoModal{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:#071b22cc}.adminVideoModalCard{width:min(960px,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;border-radius:20px;padding:18px}.adminVideoModal video{display:block;width:100%;max-height:72vh;aspect-ratio:16/9;background:#071b22;border-radius:14px}.adminVideoModalClose{float:right}.adminAudit{margin-top:18px}.adminAudit summary{cursor:pointer;font-weight:800}@media(max-width:1050px){.adminVotingVideoGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:820px){.adminVotingVideoGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.adminVotingVideoGrid{grid-template-columns:1fr}}</style>
 <style>
 .categoryManagerList{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),480px));justify-content:start;gap:14px}
@@ -320,6 +328,7 @@ async function adminResultAction(key,fn){if(adminActionsInFlight.has(key))return
 function closeAdminVotingConfirmation(){document.querySelector('#adminCloseVotingConfirmation')?.remove();document.body.insertAdjacentHTML('beforeend','<div class="adminConfirmOverlay" id="adminCloseVotingConfirmation" role="presentation"><section class="card" role="dialog" aria-modal="true" aria-labelledby="adminCloseVotingTitle"><h2 id="adminCloseVotingTitle">Chiudere anticipatamente la votazione?</h2><p>Dopo la chiusura non saranno più accettati nuovi voti. La votazione verrà chiusa prima della scadenza prevista.</p><div class="actions"><button class="btn" type="button" data-admin-close-voting-cancel>Annulla</button><button class="btn danger" type="button" data-admin-close-voting-confirm>Conferma chiusura</button></div></section></div>');document.querySelector('[data-admin-close-voting-cancel]')?.addEventListener('click',()=>document.querySelector('#adminCloseVotingConfirmation')?.remove());document.querySelector('[data-admin-close-voting-confirm]')?.addEventListener('click',()=>{document.querySelector('#adminCloseVotingConfirmation')?.remove();adminResultAction('close-voting',()=>supabase.rpc('close_contest_voting',{p_contest_id:adminSelectedContest.id}))})}
 async function adminCloseVoting(){if(!adminSelectedContest)return;closeAdminVotingConfirmation()}
 async function adminFreezeResults(){if(!adminSelectedContest)return;adminResultAction('freeze-results',()=>supabase.rpc('freeze_contest_results',{p_contest_id:adminSelectedContest.id}))}
+// Kept for historical snapshots and older clients; the active Admin UI skips this step.
 async function adminConfirmFinalists(id){adminResultAction(`confirm-finalists:${id}`,()=>supabase.rpc('confirm_contest_finalists',{p_snapshot_id:id}))}
 async function adminPublishFinalists(id){adminResultAction(`publish-finalists:${id}`,()=>supabase.rpc('publish_contest_finalists',{p_snapshot_id:id}))}
 async function adminDeleteFraudVote(id){const reason=prompt('Motivo della cancellazione del voto:');if(!reason||!reason.trim())return;adminResultAction(`delete-vote:${id}`,()=>supabase.rpc('delete_contest_vote',{p_vote_id:id,p_deletion_reason:reason.trim()}))}
@@ -448,7 +457,45 @@ const adminRenderAuthoritativeShell=(view,requestId)=>{if(!renderIsCurrent(reque
 const adminInviteErrorMessage=error=>error?.message||'Operazione non disponibile. Riprova.';
 const renderAdminAdministrators=async(view,requestId)=>{if(!renderIsCurrent(requestId))return;view.innerHTML='<section class="card adminAdministrators" id="adminAdministratorsSurface"><div class="section-title"><div><h2>Amministratori</h2><div class="muted">Gestisci gli accessi Admin senza modificare il ruolo degli altri utenti.</div></div><button class="btn" type="button" data-admin-back-overview>← Panoramica</button></div><div id="adminAdministratorsMsg"></div><form id="adminInviteForm" class="adminManualForm"><div><label for="adminInviteEmail">Email</label><input class="input" id="adminInviteEmail" name="email" type="email" autocomplete="email" required maxlength="320"><div class="muted">L’invito crea un accesso Admin collegato all’identità Auth invitata.</div></div><button class="btn primary" type="submit">Invita nuovo Admin</button></form><div id="adminAdministratorsList"><div class="muted">Caricamento amministratori…</div></div></section>';const msgBox=view.querySelector('#adminAdministratorsMsg'),list=view.querySelector('#adminAdministratorsList'),showMessage=(text,type='notice')=>{if(msgBox)msgBox.innerHTML=msg(text,type)};view.querySelector('[data-admin-back-overview]')?.addEventListener('click',()=>{adminSection='overview';currentTab='admin';render()});const load=async()=>{const result=await supabase.functions.invoke('invite-admin',{body:{action:'list'}});if(result.error)throw result.error;const admins=Array.isArray(result.data?.admins)?result.data.admins:[];list.innerHTML=admins.length?'<div class="adminAdministratorsList">'+admins.map(admin=>`<div class="notice"><div><b>${esc(admin.full_name||admin.email||'Admin')}</b><div class="muted">${esc(admin.email||'Email non disponibile')}</div></div><span class="badge">${esc(admin.status||'attivo')}</span></div>`).join('')+'</div>':'<div class="empty">Nessun Admin disponibile.</div>'};try{await load()}catch(error){list.innerHTML=msg(adminInviteErrorMessage(error),'error')}view.querySelector('#adminInviteForm')?.addEventListener('submit',async event=>{event.preventDefault();const form=event.currentTarget,button=event.submitter,email=form.elements.email.value.trim();button.disabled=true;try{const result=await supabase.functions.invoke('invite-admin',{body:{action:'invite',email}});if(result.error)throw result.error;showMessage('Invito inviato. L’utente potrà completare l’accesso tramite il link ricevuto.','notice');form.reset();await load()}catch(error){showMessage(adminInviteErrorMessage(error),'error')}finally{button.disabled=false}})};
 async function renderAdmin(requestId=activeRenderRequestId){if(!renderIsCurrent(requestId))return;const view=document.querySelector('#view');if(!isAdmin||!session){view.innerHTML=msg('Accesso non autorizzato.','error');return}try{await loadAdminContests();if(!renderIsCurrent(requestId))return;const selected=adminContestRows.find(row=>row.id===adminSelectedContestId)||adminContestRows[0]||null;adminSelectedContest=selected;view.innerHTML='';if(adminSection==='administrators'){await renderAdminAdministrators(view,requestId);return}if(adminSection==='category-library'){await renderAdminCategoryLibrary(view,requestId);return}if(!selected||adminSection==='overview'){if(selected)adminSelectedContest=selected;await renderAdminOverview(view,requestId);if(!renderIsCurrent(requestId))return;adminBindOverviewCreate(view);adminEnsureCategoryLibraryButton(view);return}adminSelectedContest=selected;const categories=await supabase.rpc('admin_list_contest_categories',{p_contest_id:selected.id});if(categories.error)throw categories.error;if(!renderIsCurrent(requestId))return;adminSelectedCategories=categories.data||[];if(adminSection==='contest')await renderAdminContestSectionAuthoritative(view,requestId);else if(adminSection==='submissions')await renderAdminSubmissionsSectionAuthoritative(view,requestId);else if(adminSection==='results')await renderAdminResultsSectionAuthoritative(view,requestId);else if(adminSection==='settings')await renderAdminSettingsSection(view,requestId);if(!renderIsCurrent(requestId))return;adminRenderAuthoritativeShell(view,requestId)}catch(error){if(error?.code==='admin_session_required'){currentTab='home';if(session)render();else authView();return}if(renderIsCurrent(requestId))view.innerHTML=msg(error?.message||'Superficie Admin non disponibile. Riprova.','error')}};
-adminView=renderAdmin;
+ const publicContestResultRowsById=new Map();
+ const publicContestHasClosedVoting=contest=>!!contest&&(!!contest.voting_close_at&&Date.now()>=Date.parse(contest.voting_close_at)||['VOTING_CLOSED','CLOSED'].includes(contest.status));
+ const publicScopedResultRows=(contestId,categoryId=null)=>{
+   const rows=publicContestResultRowsById.get(contestId)||[];
+   return rows.filter(row=>row.contest_id===contestId&&(categoryId===null||row.category_id===categoryId));
+ };
+ const publicOfficialFinalistsCompactMarkup=(contestId,categoryId=null)=>{
+   const rows=publicScopedResultRows(contestId,categoryId).filter(row=>row.is_finalist);
+   if(!rows.length)return '';
+   const categories=publicContestDirectoryCategories.get(contestId)||[];
+   const groups=new Map();
+   rows.forEach(row=>{if(!groups.has(row.category_id))groups.set(row.category_id,[]);groups.get(row.category_id).push(row)});
+   const lines=[...groups.entries()].map(([id,items])=>{
+     const category=categories.find(item=>item.id===id);
+     return items.map(item=>'<li><span>'+esc(category?.name||'Categoria')+'</span><b>'+esc(item.contestant_display_name||'Nome candidato non disponibile')+'</b></li>').join('');
+   }).join('');
+   return '<section class="publicOfficialFinalists compact" data-public-finalists-contest="'+esc(contestId)+'"'+(categoryId? ' data-public-finalists-category="'+esc(categoryId)+'"':'')+'><h3>Finalisti ufficiali</h3><p class="muted">Qualificati alla Finalissima Instagram</p><ul>'+lines+'</ul></section>';
+ };
+ const loadPublicContestSelectionScoped=loadPublicContestSelection;
+ loadPublicContestSelection=async function(contest){
+   await loadPublicContestSelectionScoped(contest);
+   const rows=(publicResultRows||[]).map(row=>({...row,contest_id:contest?.id||null}));
+   if(contest?.id)publicContestResultRowsById.set(contest.id,rows);
+   publicResultRows=rows;
+ };
+ const loadPublicContestDirectoryScoped=loadPublicContestDirectory;
+ loadPublicContestDirectory=async function(requestId){
+   const loaded=await loadPublicContestDirectoryScoped(requestId);
+   if(!loaded)return loaded;
+   for(const contest of publicContestRows){
+     if(!publicContestHasClosedVoting(contest)){publicContestResultRowsById.set(contest.id,[]);continue}
+     const result=await supabase.rpc('get_public_contest_results',{p_contest_id:contest.id});
+     if(requestId&&!renderIsCurrent(requestId))return false;
+     publicContestResultRowsById.set(contest.id,result.error?[]:(result.data||[]).map(row=>({...row,contest_id:contest.id})));
+   }
+   publicResultRows=publicScopedResultRows(publicContest?.id);
+   return loaded;
+ };
+ adminView=renderAdmin;
 const adminVotingStatusSurfaceLegacy=contest=>{const status=contest?.status==='VOTING_OPEN'?'Aperta':contest?.status==='READY_FOR_VOTING'?'Pronta':(['VOTING_CLOSED','FROZEN','CONFIRMED','PUBLISHED','CLOSED'].includes(contest?.status)?'Chiusa':'Non ancora aperta');const action=contest?.status==='VOTING_OPEN'?'<button class="btn" type="button" id="adminContestEarlyClose">Chiudi anticipatamente</button>':'';return `<section class="card adminVotingStatusSurface"><div class="eyebrow">VOTAZIONE</div><h3>Stato: ${status}</h3><p class="muted">Apertura: ${esc(contest?.voting_open_at?fmt(contest.voting_open_at):'non impostata')}<br>Chiusura: ${esc(contest?.voting_close_at?fmt(contest.voting_close_at):'non impostata')}</p>${contest?.status==='VOTING_OPEN'?`<p>Votazione aperta. Termina il ${esc(fmt(contest.voting_close_at))}.</p>`:''}${contest?.status==='READY_FOR_VOTING'?`<p>La votazione si aprirà automaticamente il ${esc(fmt(contest.voting_open_at))}.</p>`:''}${contest?.status==='VOTING_CLOSED'?'<p>Votazione chiusa.</p>':''}${action}</section>`};
 const removeAdminVoteVerificationSurface=view=>{view?.querySelectorAll('.adminResults').forEach(surface=>{const heading=[...surface.querySelectorAll('h3')].find(node=>node.textContent.trim()==='Voti da verificare');if(!heading)return;let node=heading;while(node){const next=node.nextElementSibling;node.remove();node=next}})};
 // Final SPA bindings: top-level navigation owns the transition and always opens Admin at Overview.
@@ -593,7 +640,7 @@ boot=async function(){try{await loadPublicContestDirectory();const {data,error}=
    if(!surface)return;
    const flow=adminResultsFlowStep(data);
    surface.insertAdjacentHTML('afterbegin','<div class="adminResultsGuide"><div class="eyebrow">POST-VOTO</div><p class="muted">Gestisci la selezione dei finalisti ufficiali del Contest.</p><div class="adminResultsSteps" aria-label="Percorso risultati"><span class="'+(flow==='Risultati da congelare'?'active':'')+'">Votazioni concluse</span> → <span class="'+(flow==='Risultati da congelare'?'active':'')+'">Risultati da congelare</span> → <span class="'+(flow==='Parità da risolvere'?'active':'')+'">Eventuali parità da risolvere</span> → <span class="'+(flow==='Finalisti da confermare'?'active':'')+'">Finalisti da confermare</span> → <span class="'+(flow==='Finalisti pubblicati'?'active':'')+'">Finalisti pubblicati</span></div><p class="notice">Stato corrente: <b>'+esc(flow)+'</b></p></div>');
-   surface.insertAdjacentHTML('beforeend','<p class="muted adminFreezeExplanation">Congelando i risultati verrà creato lo snapshot ufficiale della classifica corrente. Dopo il congelamento eventuali parità dovranno essere risolte prima della conferma dei finalisti.</p>');
+   surface.insertAdjacentHTML('beforeend','<p class="muted adminFreezeExplanation">Congelando i risultati verrà creato lo snapshot ufficiale della classifica corrente. Dopo il congelamento eventuali parità dovranno essere risolte prima della pubblicazione dei finalisti.</p>');
    surface.insertAdjacentHTML('beforeend',adminPreFreezeSummaryHtml(data));
    if(!Array.isArray(data.preview)||!data.preview.length)return;
    const groups=new Map();data.preview.forEach(row=>{if(!groups.has(row.category_id))groups.set(row.category_id,[]);groups.get(row.category_id).push(row)});
@@ -604,6 +651,49 @@ boot=async function(){try{await loadPublicContestDirectory();const {data,error}=
  homeView=async function(requestId=activeRenderRequestId){await homeViewWithPublishedFinalists(requestId);if(!renderIsCurrent(requestId))return;const view=document.querySelector('#view'),target=view?.querySelector('.publicContestSurface,.gallerySection');if(target&&publicResultRows?.some(row=>row.is_finalist)){const existing=target.querySelector('.publicOfficialFinalists');if(!existing)target.insertAdjacentHTML('beforeend',publicOfficialFinalistsMarkup())}};
  const renderAdminWithFinalResults=renderAdmin;
  renderAdmin=async function(requestId=activeRenderRequestId){await renderAdminWithFinalResults(requestId);if(!renderIsCurrent(requestId)||adminSection!=='results')return;const view=document.querySelector('#view'),surface=view?.querySelector('.adminResults'),data=adminResultsLoadedData;if(!surface||!data)return;if(!surface.querySelector('.adminPreFreezeSummary'))surface.insertAdjacentHTML('beforeend',adminPreFreezeSummaryHtml(data));if(!surface.querySelector('.adminProvisionalResults')&&Array.isArray(data.preview)&&data.preview.length){const groups=new Map();data.preview.forEach(row=>{if(!groups.has(row.category_id))groups.set(row.category_id,[]);groups.get(row.category_id).push(row)});const sections=[...groups.values()].map(rows=>'<article class="card"><h3>'+esc(rows[0].category_name)+'</h3><div class="muted">Finalisti previsti: '+Number(rows[0].finalists_count)+'</div>'+rows.map(row=>'<div class="notice"><b>#'+row.rank_position+'</b> · '+esc(row.contestant_display_name||'Nome candidato non disponibile')+' · '+Number(row.vote_count)+' voti'+(row.is_finalist_candidate?' · Dentro i finalisti previsti':' · Fuori dai finalisti previsti')+(row.is_cutoff_tie?' · Pari merito al cutoff':'')+'</div>').join('')+(rows.some(row=>row.is_cutoff_tie)?'<div class="notice error">Parità da risolvere: seleziona i candidati coinvolti e assegna i posti disponibili.</div>':'')+'</article>').join('');surface.insertAdjacentHTML('beforeend','<section class="adminProvisionalResults"><div class="section-title"><div><h3>Classifica provvisoria</h3><div class="muted">Anteprima riservata agli Admin; non crea snapshot né finalisti.</div></div><span class="badge">Solo Admin</span></div><div class="grid" style="grid-template-columns:1fr">'+sections+'</div></section>')}};
+ const adminApplyPublicFinalistsFlow=()=>{
+   document.querySelectorAll('.confirmFinalists').forEach(button=>{
+     button.classList.remove('confirmFinalists');
+     button.classList.add('publishFinalists');
+     button.textContent='Pubblica finalisti';
+     button.onclick=()=>adminPublishFinalists(button.dataset.snapshotId);
+   });
+   document.querySelectorAll('.adminResultsSteps').forEach(steps=>{
+     const labels=[...steps.querySelectorAll('span')].map(span=>span.textContent||'');
+     const published=labels.some(label=>label.includes('pubblicati'));
+     const tie=labels.some(label=>label.includes('parità'));
+     steps.innerHTML=`<span>${published?'✓':'✓'} Voto chiuso</span><span>${published?'✓':'✓'} Congela</span><span>${published?'📣':tie?'⚠':'●'} Pubblica</span>`;
+   });
+ };
+ const renderAdminWithPublicFinalistsFlow=renderAdmin;
+ renderAdmin=async function(requestId=activeRenderRequestId){
+   await renderAdminWithPublicFinalistsFlow(requestId);
+   if(renderIsCurrent(requestId))adminApplyPublicFinalistsFlow();
+ };
+ const homeViewWithScopedFinalists=homeView;
+ homeView=async function(requestId=activeRenderRequestId){
+   await homeViewWithScopedFinalists(requestId);
+   if(!renderIsCurrent(requestId))return;
+   document.querySelectorAll('[data-public-contest-surface]').forEach(surface=>{
+     const contestId=surface.dataset.publicContestSurface;
+     surface.querySelectorAll('.publicOfficialFinalists:not(.compact)').forEach(node=>node.remove());
+     if(!contestId||surface.querySelector('[data-public-finalists-contest]'))return;
+     const markup=publicOfficialFinalistsCompactMarkup(contestId);
+     if(markup)surface.insertAdjacentHTML('beforeend',markup);
+   });
+ };
+ const galleryViewWithScopedPrivacy=galleryView;
+ galleryView=async function(requestId=activeRenderRequestId){
+   await galleryViewWithScopedPrivacy(requestId);
+   if(!renderIsCurrent(requestId)||!publicContest)return;
+   const view=document.querySelector('#view');
+   view?.querySelectorAll('.publicResultSummary').forEach(node=>node.remove());
+   view?.querySelectorAll('.publicCategoryGrid').forEach(node=>node.remove());
+   const section=view?.querySelector('.gallerySection');
+   if(!section||section.querySelector('[data-public-finalists-contest]'))return;
+   const markup=publicOfficialFinalistsCompactMarkup(publicContest.id,gallerySelectedCategoryId);
+   if(markup)section.insertAdjacentHTML('afterbegin',markup);
+ };
  adminView=renderAdmin;
  bindNav();
  boot();
