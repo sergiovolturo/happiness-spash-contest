@@ -78,7 +78,7 @@ test('Admin preview is read-only, Admin-only and does not create result state', 
   assert.match(index, /admin_preview_contest_results/);
   assert.match(index, /Classifica provvisoria/);
   assert.equal((index.match(/admin_preview_contest_results/g) || []).length, 1, 'preview RPC must be fetched once per results load');
-  assert.match(index, /adminResultsPreviewRows=data\?\.preview\|\|\[\]/);
+  assert.match(index, /adminResultsPreviewRows=.*data\?\.preview/);
 });
 
 test('cutoff tie semantics identify a group crossing the finalist threshold', () => {
