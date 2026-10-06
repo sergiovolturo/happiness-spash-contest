@@ -616,9 +616,9 @@ submissionView=async function(requestId=activeRenderRequestId){if(!renderIsCurre
  const submissionViewWithDeferredOtp=submissionView;
 submissionView=async function(requestId=activeRenderRequestId){await submissionViewWithDeferredOtp(requestId);if(!renderIsCurrent(requestId))return;const view=document.querySelector('#view'),form=view?.querySelector('#submissionForm');if(!view||!form)return;const name=form.elements.contestantDisplayName,category=form.elements.category,button=form.querySelector('button[type="submit"]'),guard=view.querySelector('#submissionCategoryGuard');if(pendingSubmissionRequest){if(name)name.value=pendingSubmissionRequest.contestantDisplayName;if(category)category.value=pendingSubmissionRequest.categoryId}const syncCategoryGuard=()=>{const blocked=!!session&&activeSubmissionForCategory(category?.value);if(guard)guard.innerHTML=blocked?submissionCategoryGuardMarkup(category.value):'';if(button)button.disabled=blocked};category?.addEventListener('change',syncCategoryGuard);syncCategoryGuard();const activeRows=(submissionRows||[]).filter(row=>['PENDING','APPROVED'].includes(String(row.status||'').toUpperCase()));const otherCategories=publicCategories.filter(item=>item.is_active!==false&&(!Number.isFinite(Number(item.available_submission_count))||Number(item.available_submission_count)>0)&&!activeSubmissionForCategory(item.id));if(session&&activeRows.length){form.hidden=true;form.setAttribute('aria-hidden','true');if(otherCategories.length){const toggle=document.createElement('button');toggle.type='button';toggle.className='btn';toggle.id='openAdditionalSubmissionForm';toggle.textContent="Candidati in un'altra categoria";form.parentElement.insertBefore(toggle,form);toggle.onclick=()=>{form.hidden=false;form.removeAttribute('aria-hidden');toggle.remove();form.elements.category?.focus()}}}const box=view.querySelector('#submissionMsg');if(!session&&pendingSubmissionRequest){if(box)box.innerHTML=playerOtpInlineMarkup();bindPlayerOtpInline()}else if(session&&submissionError&&box){box.innerHTML=msg(submissionErrorLabel(submissionError),'error')}};
 boot=async function(){try{await loadPublicContestDirectory();const {data,error}=await supabase.auth.getSession();if(error)throw error;session=data.session;authReady=true;syncAuthButtons();if(recoveryRequested){passwordRecoveryView();return}if(!session)return render();await loadContext();await loadVoteState();render()}catch(error){authReady=true;syncAuthButtons();app.innerHTML=msg('Errore di collegamento. Aggiorna la pagina e riprova.','error');console.error(error)}};
- let adminResultsLoadedData=null;
+ let adminResultsLoadedData=null,adminTieCandidateRows=[];
  const loadAdminResultsWithPreviewCache=loadAdminResults;
- loadAdminResults=async function(){const data=await loadAdminResultsWithPreviewCache();adminResultsLoadedData=data;adminResultsPreviewRows=Array.isArray(data?.preview)?data.preview:[];return data};
+ loadAdminResults=async function(){const data=await loadAdminResultsWithPreviewCache();adminResultsLoadedData=data;adminTieCandidateRows=Array.isArray(data?.reviewSubmissions)?data.reviewSubmissions:[];adminResultsPreviewRows=Array.isArray(data?.preview)?data.preview:[];return data};
  const renderAdminResultsWithoutPreview=renderAdminResults;
  const adminResultsFlowStep=(data)=>{const snapshots=(data?.snapshots||[]).filter(row=>!row.invalidated_at),published=snapshots.some(row=>row.status==='PUBLISHED'),confirmed=snapshots.some(row=>row.status==='CONFIRMED'),frozen=snapshots.some(row=>row.status==='FROZEN'),tie=snapshots.some(row=>row.tie_requires_decision)||Array.isArray(data?.preview)&&data.preview.some(row=>row.is_cutoff_tie);if(published)return 'Finalisti pubblicati';if(confirmed)return 'Finalisti confermati';if(frozen&&tie)return 'Parità da risolvere';if(frozen)return 'Finalisti da confermare';return 'Risultati da congelare'};
  const adminPreFreezeSummaryHtml=(data)=>{const rows=Array.isArray(data?.preview)?data.preview:[],categories=Array.isArray(data?.categories)?data.categories:[],groups=new Map();rows.forEach(row=>{if(!groups.has(row.category_id))groups.set(row.category_id,[]);groups.get(row.category_id).push(row)});const categoryBlocks=categories.map(category=>{const scoped=groups.get(category.id)||[],votes=scoped.reduce((total,row)=>total+Number(row.vote_count||0),0),tie=scoped.some(row=>row.is_cutoff_tie),warning=scoped.length<Number(category.finalists_count||0)?'<div class="notice">La categoria ha meno candidati dei finalisti configurati.</div>':'';return '<article class="adminPreFreezeCategory"><h4>'+esc(category.name)+'</h4><div class="muted">Candidati eleggibili: '+scoped.length+' · Voti totali: '+votes+' · Finalisti previsti: '+Number(category.finalists_count||0)+'</div>'+(tie?'<div class="notice error">Parità al cutoff da risolvere.</div>':'')+warning+(scoped.length?'<div class="grid" style="grid-template-columns:1fr">'+scoped.map(row=>'<div class="notice"><b>#'+Number(row.rank_position||0)+'</b> · '+esc(row.contestant_display_name||'Nome candidato non disponibile')+' · '+Number(row.vote_count||0)+' voti · '+(row.is_finalist_candidate?'Dentro i finalisti previsti':'Fuori dai finalisti previsti')+'</div>').join('')+'</div>':'<div class="empty">Nessun candidato eleggibile.</div>')+'</article>'}).join('');return '<section class="adminPreFreezeSummary"><div class="section-title"><div><h3>Riepilogo prima del congelamento</h3><div class="muted">'+categories.length+' categorie · '+rows.length+' candidati eleggibili · '+rows.reduce((total,row)=>total+Number(row.vote_count||0),0)+' voti totali</div></div></div>'+categoryBlocks+'</section>'};
@@ -665,10 +665,24 @@ boot=async function(){try{await loadPublicContestDirectory();const {data,error}=
      steps.innerHTML=`<span>${published?'✓':'✓'} Voto chiuso</span><span>${published?'✓':'✓'} Congela</span><span>${published?'📣':tie?'⚠':'●'} Pubblica</span>`;
    });
  };
+ const adminTieCandidateName=submissionId=>{
+   const row=adminTieCandidateRows.find(item=>item.id===submissionId);
+   const name=String(row?.contestant_display_name||'').trim();
+   return name||'Candidato senza nome';
+ };
+ const adminApplyTieCandidateNames=view=>{
+   view?.querySelectorAll('[data-tie-selection]').forEach(input=>{
+     const label=input.closest('label');
+     if(!label)return;
+     const votes=label.textContent.match(/(\d+)\s+voti\b/)?.[1]||'0';
+     input.dataset.submissionId=input.value;
+     label.replaceChildren(input,document.createTextNode(' '+adminTieCandidateName(input.value)+' · '+votes+' voti'));
+   });
+ };
  const renderAdminWithPublicFinalistsFlow=renderAdmin;
  renderAdmin=async function(requestId=activeRenderRequestId){
    await renderAdminWithPublicFinalistsFlow(requestId);
-   if(renderIsCurrent(requestId))adminApplyPublicFinalistsFlow();
+   if(renderIsCurrent(requestId)){adminApplyPublicFinalistsFlow();adminApplyTieCandidateNames(document.querySelector('#view'));}
  };
  const homeViewWithScopedFinalists=homeView;
  homeView=async function(requestId=activeRenderRequestId){
