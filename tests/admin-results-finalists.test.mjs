@@ -70,7 +70,7 @@ test('tie selection enforces an exact count before RPC', () => {
   assert.match(adminResults, /resolve_contest_result_tie/);
 });
 test('tie resolution can be replaced before confirmation and refreshes state', () => {
-  assert.match(adminResults, /Sostituisci decisione tie/);
+  assert.match(adminResults, /Cambia finalista selezionato/);
   assert.match(adminResults, /await loadPublicContest\(\);await render\(\)/);
 });
 test('confirm is enabled only after a resolved tie', () => assert.match(adminResults, /\(!tie\|\|resolved\)/));
