@@ -73,6 +73,10 @@ test('tie resolution can be replaced before confirmation and refreshes state', (
   assert.match(adminResults, /Cambia finalista selezionato/);
   assert.match(adminResults, /await loadPublicContest\(\);await render\(\)/);
 });
+test('resolved tie status uses clear Admin copy', () => {
+  assert.doesNotMatch(index, /Decisione tie registrata\./);
+  assert.match(index, /Hai già selezionato il finalista per questa parità\./);
+});
 test('confirm is enabled only after a resolved tie', () => assert.match(adminResults, /\(!tie\|\|resolved\)/));
 test('concurrent tie resolution and finalist actions are guarded', () => {
   assert.match(adminResults, /resolve-tie:/);
