@@ -27,23 +27,23 @@ test('public Contest RPCs use only real contest_status values', () => {
   assert.doesNotMatch(publicList, /'CLOSED'/);
 });
 
-test('Admin preview is rendered independently of the freeze button', () => {
-  const wrapperStart = index.indexOf('const renderAdminResultsWithoutPreview=');
-  const wrapper = index.slice(wrapperStart, index.indexOf('bindNav();', wrapperStart));
-  assert.doesNotMatch(wrapper, /!view\.querySelector\('#freezeResults'\)/);
-  assert.match(wrapper, /data\?\.preview/);
-  assert.match(wrapper, /Classifica provvisoria/);
-  assert.match(wrapper, /Parità da risolvere/);
-  assert.match(wrapper, /Finalisti pubblicati/);
+test('Admin result surface is compact and independent of the technical preview', () => {
+  const compact = index.slice(index.indexOf('const adminResultsFlowStep='), index.indexOf('const adminRenderCompactResults='));
+  assert.match(compact, /adminCompactResultsMarkup/);
+  assert.match(compact, /FINALISTI DEFINITI/);
+  assert.match(compact, /Definisci finalisti/);
+  assert.doesNotMatch(compact, /Classifica provvisoria|Parità da risolvere|Risultati congelati/);
 });
 
 test('Admin results flow explains each post-vote state', () => {
-  assert.match(index, /Risultati e finalisti/);
-  assert.match(index, /Gestisci la selezione dei finalisti ufficiali del Contest/);
-  for (const step of ['Votazioni concluse', 'Risultati da congelare', 'Eventuali parità da risolvere', 'Finalisti da confermare', 'Finalisti pubblicati']) {
-    assert.match(index, new RegExp(step));
+  const compact = index.slice(index.indexOf('const adminResultsFlowStep='), index.indexOf('const adminRenderCompactResults='));
+  for (const step of ['Votazione chiusa', 'Finalisti definiti', 'Pubblica']) {
+    assert.match(compact, new RegExp(step));
   }
-  assert.match(index, /Stato corrente:/);
+  for (const technical of ['Congela', 'Conferma risultati', 'Finalisti confermati']) {
+    assert.doesNotMatch(compact, new RegExp(technical));
+  }
+  assert.match(index, /adminApplyPublicFinalistsFlow/);
 });
 
 test('Public finalisti are shown only from official result rows', () => {

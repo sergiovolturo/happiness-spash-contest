@@ -18,13 +18,16 @@ test('publication promotes frozen finalists directly to published', () => {
 test('a cutoff tie remains a publication prerequisite', () => {
   assert.match(migration, /message = 'tie_requires_decision'/i);
   assert.match(migration, /from unnest\(v_resolution\.selected_submission_ids\)/i);
-  assert.match(index, /Parità da risolvere/);
-  assert.match(index, /Pubblica finalisti/);
+  const compact = index.slice(index.indexOf('const adminResultsFlowStep='), index.indexOf('const adminRenderCompactResults='));
+  assert.match(compact, /PARITÀ PER L’ULTIMO POSTO DISPONIBILE/);
+  assert.match(compact, /Pubblica finalisti/);
 });
 
 test('the admin flow presents three post-voting steps', () => {
-  assert.match(index, /Voto chiuso/);
-  assert.match(index, /Congela/);
-  assert.match(index, /Pubblica/);
+  const compact = index.slice(index.indexOf('const adminResultsFlowStep='), index.indexOf('const adminRenderCompactResults='));
+  assert.match(compact, /Votazione chiusa/);
+  assert.match(compact, /Finalisti definiti/);
+  assert.match(compact, /Pubblica/);
+  assert.doesNotMatch(compact, /Congela|Conferma risultati|Finalisti confermati/);
   assert.match(index, /adminApplyPublicFinalistsFlow/);
 });

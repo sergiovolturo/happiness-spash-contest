@@ -4,23 +4,11 @@ import test from 'node:test';
 
 const index = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
-test('live Admin preview renders the pre-freeze summary from two preview rows', () => {
-  const nameStart = index.indexOf('adminPreFreezeSummaryHtml=');
-  const start = index.lastIndexOf('const ', nameStart);
-  const end = index.indexOf('\r\n renderAdminResults=async function', start);
-  assert.ok(start >= 0 && end > start, 'pre-freeze summary helper must be present');
-  const helper = Function('esc', `${index.slice(start, end)}; return adminPreFreezeSummaryHtml;`)(value => String(value));
-  const html = helper({
-    categories: [
-      { id: 'volée', name: 'TOP VOLÉE', finalists_count: 4 },
-      { id: 'smash', name: 'TOP SMASH', finalists_count: 4 },
-    ],
-    preview: [
-      { category_id: 'volée', contestant_display_name: 'Matteo Volturo', vote_count: 2, rank_position: 1, is_finalist_candidate: true, is_cutoff_tie: false },
-      { category_id: 'smash', contestant_display_name: 'Matteo Volturo', vote_count: 4, rank_position: 1, is_finalist_candidate: true, is_cutoff_tie: false },
-    ],
-  });
-  for (const text of ['Riepilogo prima del congelamento', 'Candidati eleggibili: 1', 'Voti totali: 2', 'Voti totali: 4', 'Finalisti previsti: 4', 'Matteo Volturo', '2 voti', '4 voti']) assert.match(html, new RegExp(text));
+test('live Admin pre-definition surface uses clear finalist terminology', () => {
+  const compact = index.slice(index.indexOf('const adminResultsFlowStep='), index.indexOf('const adminRenderCompactResults='));
+  assert.match(compact, /Definisci finalisti/);
+  assert.doesNotMatch(compact, /Congela risultati/);
+  assert.doesNotMatch(compact, /Riepilogo prima del congelamento/);
 });
 
 test('Admin preview is fetched once and remains read-only before freeze', () => {

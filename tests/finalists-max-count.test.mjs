@@ -22,8 +22,9 @@ test('confirm_contest_finalists validates against the effective count', () => {
 });
 
 test('Admin copy describes finalists_count as a maximum and keeps insufficiency informational', () => {
-  assert.match(index, /adminApplyMaximumFinalistCopy/);
-  assert.match(index, /Fino a \$1 finalisti/);
-  assert.match(index, /meno candidati del massimo configurato/);
+  const compact = index.slice(index.indexOf('const adminResultsFlowStep='), index.indexOf('const adminRenderCompactResults='));
+  assert.match(compact, /effectiveCount=Math\.min/);
+  assert.match(compact, /slice\(0,effectiveCount\)/);
+  assert.doesNotMatch(compact, /Fino a \$1 finalisti|meno candidati del massimo configurato/);
 });
 
