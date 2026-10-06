@@ -5,6 +5,7 @@ import path from 'node:path';
 
 const index=fs.readFileSync(path.join(process.cwd(),'index.html'),'utf8');
 const migration=fs.readFileSync(path.join(process.cwd(),'supabase/migrations/20260929000200_contest_workspace_archive_purge.sql'),'utf8');
+const cleanupMigration=fs.readFileSync(path.join(process.cwd(),'supabase/migrations/20261006150908_contest_archive_media_cleanup.sql'),'utf8');
 const aclMigration=fs.readFileSync(path.join(process.cwd(),'supabase/migrations/20260929000300_restrict_admin_contest_list_acl.sql'),'utf8');
 
 test('Admin overview uses Contest cards without the legacy selector',()=>{
@@ -30,10 +31,14 @@ test('Archive and restore are separate, reversible Admin actions',()=>{
   assert.match(migration,/add column if not exists archived_at timestamptz/);
   assert.match(migration,/create or replace function public\.admin_archive_contest/);
   assert.match(migration,/create or replace function public\.admin_restore_contest/);
-  assert.match(index,/Archiviare questo Contest\?/);
+  assert.match(cleanupMigration,/create or replace function public\.admin_prepare_contest_archive/);
+  assert.match(cleanupMigration,/create or replace function public\.admin_finalize_contest_archive/);
+  assert.match(index,/Archivia Contest\?/);
+  assert.match(index,/Archivia ed elimina i media/);
+  assert.match(index,/Annulla/);
   assert.match(index,/data-admin-archive-contest/);
   assert.match(index,/data-admin-restore-contest/);
-  assert.match(index,/NON cambia|archived_at/);
+  assert.match(index,/dati storici resteranno conservati/);
   assert.match(migration,/c\.archived_at is null and c\.deletion_locked_at is null/);
 });
 
