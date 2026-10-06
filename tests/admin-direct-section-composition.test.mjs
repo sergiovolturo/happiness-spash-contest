@@ -73,15 +73,15 @@ test('DRAFT Candidature and Results render only their empty states',async()=>{
   assert.doesNotMatch(resultsView.html,/Risultati e finalisti|Voti da verificare/);
 });
 
-test('Settings final composition owns archive and permanent deletion controls',async()=>{
+test('Settings final composition owns the configurable note and safe archive control',async()=>{
   const result={data:[],error:null};
   const chain={select(){return this},in(){return this},eq(){return this},then(resolve){resolve(result)}};
   const view=new FakeView();
-  const settings=compile('renderAdminSettingsSection',{renderIsCurrent,adminSelectedContest:{id:'contest',name:'Contest',status:'DRAFT',archived_at:null},document:{querySelector:()=>null},adminClearLegacyAdminSurfaces:()=>{},adminHideElement:()=>{},adminSelectedCategories:[{id:'category'}],supabase:{from:()=>Object.create(chain)},esc,fmt,adminReadableStatus,adminResultStatusLabel:()=>'',adminSettingsCategorySummary:()=>'',adminArchiveContest:()=>{},adminRestoreContest:()=>{},adminDeleteContest:()=>{}});
+  const settings=compile('renderAdminSettingsSection',{renderIsCurrent,adminSelectedContest:{id:'contest',name:'Contest',status:'DRAFT',archived_at:null,configuration:{}},document:{querySelector:()=>null},adminClearLegacyAdminSurfaces:()=>{},adminHideElement:()=>{},adminSelectedCategories:[{id:'category'}],supabase:{from:()=>Object.create(chain)},esc,fmt,adminReadableStatus,adminResultStatusLabel:()=>'',adminSettingsCategorySummary:()=>{},adminWorkspaceRefresh:async()=>{},adminArchiveContest:()=>{},adminRestoreContest:()=>{}});
   await settings(view,1);
-  assert.equal(count(view.html,/data-admin-archive-contest/g),1);
-  assert.equal(count(view.html,/data-admin-delete-contest/g),1);
-  assert.match(view.html,/Zona pericolosa/);
+  assert.equal(count(view.html,/data-admin-archive-contest/g),0);
+  assert.doesNotMatch(view.html,/data-admin-delete-contest/);
+  assert.match(view.html,/Nota finalista scelto dall’Admin/);
 });
 
 test('authoritative render dispatch never invokes the legacy global surface',()=>{

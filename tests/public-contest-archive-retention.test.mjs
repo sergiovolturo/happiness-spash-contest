@@ -44,7 +44,8 @@ test('public archive is absent while Admin archive retention remains covered', (
   assert.doesNotMatch(index, /const returnToActiveHome=async\(requestId\)=>/);
   assert.doesNotMatch(index, /returnToActiveHome\(requestId\)/);
   assert.match(index, /adminArchive/);
-  assert.match(index, /admin_archive_contest/);
+  assert.match(index, /admin_prepare_contest_archive/);
+  assert.match(index, /admin_finalize_contest_archive/);
 });
 
 test('current snapshot is canonical and blocks retention when latest snapshot is not definitive', () => {
