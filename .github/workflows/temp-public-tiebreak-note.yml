@@ -1,0 +1,23 @@
+name: Temporary public tiebreak note
+on:
+  push:
+    branches: [codex/public-tiebreak-note]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/public-tiebreak-note
+          fetch-depth: 0
+      - run: python3 scripts/temp_public_tiebreak_patch.py
+      - run: node --test tests/*.test.mjs
+      - run: |
+          git rm .github/workflows/temp-public-tiebreak-note.yml scripts/temp_public_tiebreak_patch.py
+          git add index.html tests/public-tiebreak-note.test.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Show public Instagram tiebreak note"
+          git push origin HEAD:codex/public-tiebreak-note
