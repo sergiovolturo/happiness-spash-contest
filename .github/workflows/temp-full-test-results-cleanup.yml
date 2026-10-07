@@ -1,0 +1,27 @@
+name: Temporary full results cleanup test
+
+on:
+  push:
+    branches:
+      - codex/cleanup-results-admin-note
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/cleanup-results-admin-note
+          fetch-depth: 0
+      - name: Run full test suite
+        run: node --test tests/*.test.mjs
+      - name: Remove temporary workflow
+        run: |
+          git rm .github/workflows/temp-full-test-results-cleanup.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: remove temporary full test workflow"
+          git push origin HEAD:codex/cleanup-results-admin-note
