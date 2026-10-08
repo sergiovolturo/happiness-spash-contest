@@ -91,7 +91,7 @@ test('resolved tie collapses the picker and identifies the Admin-selected finali
   assert.match(defined, /Anna Test/);
   assert.doesNotMatch(defined, /Gabriele/);
   assert.match(markup, /Scelta dall’Admin per risolvere la parità/);
-  assert.match(markup, /Cambia finalista selezionato/);
+  assert.match(markup, /Cambia finalista scelto per la parità/);
   assert.match(markup, /data-tie-picker="snap-a" hidden/);
 });
 
