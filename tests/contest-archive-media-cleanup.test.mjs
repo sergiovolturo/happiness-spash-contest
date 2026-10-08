@@ -63,9 +63,9 @@ test('public surfaces keep archived and deletion-locked Contests out', () => {
 
 test('confirmation copy and archived Admin indication are explicit', () => {
   assert.match(index, /Archivia Contest\?/);
-  assert.match(index, /Il Contest verrà rimosso dalla visuale pubblica e tutti i video e le relative anteprime verranno eliminati definitivamente dall’app\. Risultati, finalisti e dati storici resteranno conservati\./);
-  assert.match(index, /Archivia ed elimina i media/);
+  assert.match(index, /L’archiviazione conserverà solo il video e l’eventuale anteprima dei vincitori definitivi; tutti gli altri media verranno eliminati\. Risultati, finalisti e dati storici resteranno conservati\./);
+  assert.match(index, /Archivia e conserva i vincitori/);
   assert.match(index, /Annulla/);
-  assert.match(index, /Media eliminati dall’app; dati storici conservati\./);
+  assert.match(index, /adminArchiveContestConfirmation/);
   assert.match(index, /data-admin-archive-contest/);
 });
