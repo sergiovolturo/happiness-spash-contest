@@ -14,6 +14,13 @@ test('Hall of Fame is a public navigation surface with the fixed Instagram link'
   assert.doesNotMatch(index, /Guarda il risultato su Instagram/);
 });
 
+test('public navigation orders Contest, Candidatura, then Hall Of Fame', () => {
+  const nav = index.slice(index.indexOf('function nav()'), index.indexOf('let navBound='));
+  assert.match(nav, /\[\['home','Contest'\],\['upload','Candidatura'\]\];tabs\.push\(\['hall-of-fame','Hall Of Fame'\]\)/);
+  assert.ok(nav.indexOf("['home','Contest']") < nav.indexOf("['upload','Candidatura']"));
+  assert.ok(nav.indexOf("['upload','Candidatura']") < nav.indexOf("['hall-of-fame','Hall Of Fame']"));
+});
+
 test('public footer uses the same Instagram profile link', () => {
   assert.match(index, /const publicFooter=.*PUBLIC_INSTAGRAM_URL/);
   assert.match(index, /aria-label="Instagram centro_sportivo_happiness"/);
