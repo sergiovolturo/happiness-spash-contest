@@ -1,0 +1,39 @@
+name: Codex fix archive copy line endings
+on:
+  push:
+    branches:
+      - codex/selective-archive-finalist-media
+permissions:
+  contents: write
+jobs:
+  fix-copy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/selective-archive-finalist-media
+          fetch-depth: 0
+      - name: Restore index bytes from main and apply one binary replacement
+        run: |
+          git fetch origin main
+          git checkout origin/main -- index.html
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          data = p.read_bytes()
+          old = "Il Contest verrà rimosso dalla visuale pubblica e tutti i video e le relative anteprime verranno eliminati definitivamente dall’app. Risultati, finalisti e dati storici resteranno conservati.".encode('utf-8')
+          new = "Il Contest verrà archiviato. I video e le anteprime dei non finalisti verranno eliminati definitivamente; i media dei finalisti ufficiali saranno conservati insieme a risultati e dati storici.".encode('utf-8')
+          if data.count(old) != 1:
+              raise SystemExit(f'Expected exactly one source copy, found {data.count(old)}')
+          p.write_bytes(data.replace(old, new))
+          PY
+      - name: Verify focused archive tests
+        run: node --test tests/contest-archive-media-cleanup.test.mjs tests/selective-contest-archive-media.test.mjs
+      - name: Remove temporary workflow and commit
+        run: |
+          rm .github/workflows/codex-fix-archive-copy-line-endings.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/codex-fix-archive-copy-line-endings.yml
+          git commit -m "Preserve index line endings in archive copy update"
+          git push origin HEAD:codex/selective-archive-finalist-media
