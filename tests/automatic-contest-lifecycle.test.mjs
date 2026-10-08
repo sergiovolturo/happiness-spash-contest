@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const migration = fs.readFileSync(
-  path.join(root, 'supabase/migrations/20260930000700_automatic_contest_lifecycle.sql'),
+  path.join(root, 'supabase/migrations/20260930114856_automatic_contest_lifecycle.sql'),
   'utf8'
 );
 const scheduler = migration.slice(migration.indexOf('create or replace function public.process_contest_voting_windows'));

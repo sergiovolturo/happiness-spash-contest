@@ -1,4 +1,6 @@
 -- Fix composite-row expansion for the Admin Contest listing.
+drop function if exists public.admin_list_contests();
+
 create or replace function public.admin_list_contests()
 returns setof public.contests
 language plpgsql stable security definer set search_path=''
