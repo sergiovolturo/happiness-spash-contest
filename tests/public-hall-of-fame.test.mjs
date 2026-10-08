@@ -23,6 +23,8 @@ test('public navigation orders Contest, Candidatura, then Hall Of Fame', () => {
 
 test('public footer uses the same Instagram profile link', () => {
   assert.match(index, /const publicFooter=.*PUBLIC_INSTAGRAM_URL/);
+  assert.match(index, /<span class="muted">Centro Sportivo Happiness<\/span>/);
+  assert.doesNotMatch(index.slice(index.indexOf('const publicFooter='), index.indexOf('let navBound=')), /HAPPINESS SPASH CONTEST/);
   assert.match(index, /aria-label="Instagram centro_sportivo_happiness"/);
   assert.match(index, /class="instagramIcon"/);
   assert.match(index, /target="_blank" rel="noopener noreferrer"/);
