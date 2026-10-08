@@ -259,7 +259,7 @@ async function hallOfFameView(requestId=activeRenderRequestId){
   view.innerHTML='<section class="hallOfFame"><div class="section-title"><div><div class="eyebrow">HAPPINESS SPASH CONTEST</div><h2>Hall Of Fame</h2><p class="muted">I vincitori definitivi dei Contest.</p></div><a class="btn primary" href="'+PUBLIC_INSTAGRAM_URL+'" target="_blank" rel="noopener noreferrer">Seguici su Instagram →</a></div><div class="hallOfFameGrid">'+cards.join('')+'</div></section>';
 }
 function nav(){const tabs=isAdmin?[['home','Contest'],['admin','Amministra']]:[['home','Contest'],['upload','Candidatura']];tabs.splice(1,0,['hall-of-fame','Hall Of Fame']);return '<nav class="nav">'+tabs.map(([id,l])=>'<button class="btn '+(currentTab===id?'active':'')+'" data-tab="'+id+'">'+l+'</button>').join('')+'</nav>'}
-const publicFooter=()=>'<footer class="publicFooter"><span class="muted">HAPPINESS SPASH CONTEST</span><a href="'+PUBLIC_INSTAGRAM_URL+'" target="_blank" rel="noopener noreferrer">@centro_sportivo_happiness/</a></footer>';
+const publicFooter=()=>'<footer class="publicFooter"><span class="muted">HAPPINESS SPASH CONTEST</span><a href="'+PUBLIC_INSTAGRAM_URL+'" target="_blank" rel="noopener noreferrer">@centro_sportivo_happiness</a></footer>';
 let navBound=false;function bindNav(){if(navBound)return;document.addEventListener('click',event=>{const b=event.target?.closest?.('[data-tab]')||event.target?.parentElement?.closest?.('[data-tab]');if(!b)return;event.preventDefault();currentTab=b.dataset.tab;void render()},true);navBound=true}
 let renderRequestSeq=0,activeRenderRequestId=0,activeRenderAbortController=null;
 const SPA_RENDER_TIMEOUT_MS=20000;
