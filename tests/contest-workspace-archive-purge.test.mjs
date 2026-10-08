@@ -34,7 +34,7 @@ test('Archive and restore are separate, reversible Admin actions',()=>{
   assert.match(cleanupMigration,/create or replace function public\.admin_prepare_contest_archive/);
   assert.match(cleanupMigration,/create or replace function public\.admin_finalize_contest_archive/);
   assert.match(index,/Archivia Contest\?/);
-  assert.match(index,/Archivia ed elimina i media/);
+  assert.match(index,/Archivia e conserva i vincitori/);
   assert.match(index,/Annulla/);
   assert.match(index,/data-admin-archive-contest/);
   assert.match(index,/data-admin-restore-contest/);
