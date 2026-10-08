@@ -38,6 +38,11 @@ test('already archived Contests cannot enter the retry flow', () => {
   assert.match(index, /contest\.archived_at\|\|!contest\.deletion_locked_at/);
 });
 
+test('archive resume observer binds to existing app root, never a missing view node', () => {
+  assert.match(index, /adminResumeArchiveObserver\.observe\(document\.querySelector\('#app'\),\{childList:true,subtree:true\}\)/);
+  assert.doesNotMatch(index, /adminResumeArchiveObserver\.observe\(document\.querySelector\('#view'\)/);
+});
+
 test('resume confirmation uses non-technical Admin copy', () => {
   assert.match(archiveFlow, /resume=!!adminSelectedContest\?\.deletion_locked_at&&!adminSelectedContest\?\.archived_at/);
   assert.match(archiveFlow, /Riprendi archiviazione\?/);
