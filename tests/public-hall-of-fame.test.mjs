@@ -16,7 +16,10 @@ test('Hall of Fame is a public navigation surface with the fixed Instagram link'
 
 test('public footer uses the same Instagram profile link', () => {
   assert.match(index, /const publicFooter=.*PUBLIC_INSTAGRAM_URL/);
-  assert.match(index, />@centro_sportivo_happiness<\/a>/);
+  assert.match(index, /aria-label="Instagram centro_sportivo_happiness"/);
+  assert.match(index, /class="instagramIcon"/);
+  assert.match(index, /target="_blank" rel="noopener noreferrer"/);
+  assert.doesNotMatch(index, />@centro_sportivo_happiness<\/a>/);
 });
 
 test('Hall of Fame contract exposes only presentation data, never vote or Admin metadata', () => {
