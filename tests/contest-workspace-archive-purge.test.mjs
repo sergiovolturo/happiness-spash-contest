@@ -45,7 +45,9 @@ test('Archive and restore are separate, reversible Admin actions',()=>{
 test('Video rejection and physical deletion remain distinct and two-phase',()=>{
   assert.match(index,/data-decision="REJECTED"/);
   assert.match(index,/Elimina video/);
-  assert.match(index,/const removed=await storage\.remove\(\[plan\.storage_path\]\)/);
+  assert.match(index,/for\(const object of objects\)/);
+  assert.match(index,/supabase\.storage\.from\(object\.bucket\)\.remove\(\[object\.path\]\)/);
+  assert.doesNotMatch(index,/admin_cancel_media_deletion/);
   assert.match(index,/admin_prepare_media_deletion/);
   assert.match(index,/admin_finalize_media_deletion/);
   assert.match(index,/Scrivi ELIMINA/);

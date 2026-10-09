@@ -49,12 +49,13 @@ test('Elimina video is attached to the media area, not a separate UUID list', ()
   assert.doesNotMatch(index, /Elimina definitivamente video/);
 });
 
-test('media deletion keeps reason, confirmation, prepare, Storage remove, cancel and finalize workflow', () => {
+test('media deletion keeps reason, confirmation, coordinated Storage remove and finalize workflow', () => {
   assert.match(index, /adminMediaDeletionReason/);
   assert.match(index, /Scrivi ELIMINA/);
   assert.match(index, /admin_prepare_media_deletion/);
-  assert.match(index, /storage\.remove\(\[plan\.storage_path\]\)/);
-  assert.match(index, /admin_cancel_media_deletion/);
+  assert.match(index, /for\(const object of objects\)/);
+  assert.match(index, /storage\.from\(object\.bucket\)\.remove\(\[object\.path\]\)/);
+  assert.doesNotMatch(index, /admin_cancel_media_deletion/);
   assert.match(index, /admin_finalize_media_deletion/);
   assert.match(index, /render\(\)/);
 });
