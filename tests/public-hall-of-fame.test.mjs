@@ -44,10 +44,21 @@ test('public navigation orders Contest, Candidatura, then Hall Of Fame', () => {
 });
 
 test('public pages end after the social block without a duplicate or empty footer', () => {
+  assert.match(index, /Area amministratori/);
+  assert.match(index, /class="publicAdminAccess"/);
   assert.doesNotMatch(index, /const publicFooter/);
   assert.doesNotMatch(index, /class="publicFooter"/);
   assert.doesNotMatch(index, /class="instagramIcon"/);
   assert.doesNotMatch(index, /publicSocial\(\)\+publicFooter\(\)/);
+});
+
+test('public Admin access uses the existing auth view and header keeps only logout', () => {
+  assert.doesNotMatch(index, /<button id="login"[^>]*>Accedi<\/button>/);
+  assert.match(index, /id="adminAccessLink"/);
+  assert.match(index, /adminAccessLink.*authView\(\)/s);
+  assert.match(index, /const app=.*login=null/);
+  assert.match(index, /logout\.onclick=async/);
+  assert.match(index, /<button id="logout" class="btn hidden">Esci<\/button>/);
 });
 
 test('Hall of Fame contract exposes only presentation data, never vote or Admin metadata', () => {
