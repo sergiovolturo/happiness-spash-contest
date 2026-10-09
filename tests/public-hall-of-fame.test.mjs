@@ -28,7 +28,7 @@ test('Hall of Fame copy and public social block use the requested labels and lin
   ]) assert.match(index, new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   assert.strictEqual((index.match(/class="publicSocialIcon"/g)||[]).length, 4);
   assert.strictEqual((index.match(/class="publicSocialLinks"/g)||[]).length, 1);
-  const social = index.slice(index.indexOf('const publicSocial='), index.indexOf('const publicFooter='));
+  const social = index.slice(index.indexOf('const publicSocial='), index.indexOf('let navBound='));
   assert.strictEqual((social.match(/target="_blank" rel="noopener noreferrer"/g)||[]).length, 4);
   assert.match(index, /aria-label="Instagram Centro Sportivo Happiness"/);
   assert.match(index, /aria-label="Facebook Centro Sportivo Happiness"/);
@@ -43,11 +43,11 @@ test('public navigation orders Contest, Candidatura, then Hall Of Fame', () => {
   assert.ok(nav.indexOf("['upload','Candidatura']") < nav.indexOf("['hall-of-fame','Hall Of Fame']"));
 });
 
-test('public footer keeps the Centro Sportivo Happiness label without duplicating social links', () => {
-  assert.match(index, /<span class="muted">Centro Sportivo Happiness<\/span>/);
-  assert.doesNotMatch(index.slice(index.indexOf('const publicFooter='), index.indexOf('let navBound=')), /HAPPINESS SPASH CONTEST/);
-  assert.match(index, /<footer class="publicFooter"><span class="muted">Centro Sportivo Happiness<\/span><\/footer>/);
+test('public pages end after the social block without a duplicate or empty footer', () => {
+  assert.doesNotMatch(index, /const publicFooter/);
+  assert.doesNotMatch(index, /class="publicFooter"/);
   assert.doesNotMatch(index, /class="instagramIcon"/);
+  assert.doesNotMatch(index, /publicSocial\(\)\+publicFooter\(\)/);
 });
 
 test('Hall of Fame contract exposes only presentation data, never vote or Admin metadata', () => {
