@@ -36,8 +36,18 @@ test('hardening does not add duplicate columns, backfill data, or change RPC sig
 });
 
 test('trigger validators retain a locked search path and no client EXECUTE grant', () => {
-  assert.equal((migration.match(/set search_path = ''/g) || []).length, 3);
+  assert.equal((migration.match(/set search_path = ''/g) || []).length, 5);
   assert.match(migration, /revoke all on function public\._validate_result_snapshot_integrity\(\) from public, anon, authenticated, service_role/);
   assert.match(migration, /revoke all on function public\._validate_submission_contest_category_integrity\(\) from public, anon, authenticated, service_role/);
   assert.match(migration, /revoke all on function public\._validate_result_entry_integrity\(\) from public, anon, authenticated, service_role/);
+  assert.match(migration, /revoke all on function public\._validate_participation_contest_integrity\(\) from public, anon, authenticated, service_role/);
+  assert.match(migration, /revoke all on function public\._validate_category_contest_integrity\(\) from public, anon, authenticated, service_role/);
+});
+
+test('parent updates cannot invalidate existing child relationships', () => {
+  assert.match(migration, /before update of contest_id[\s\S]*on public\.contest_participations/);
+  assert.match(migration, /s\.participation_id = new\.id[\s\S]*cc\.contest_id is distinct from new\.contest_id/);
+  assert.match(migration, /before update of contest_id[\s\S]*on public\.contest_categories/);
+  assert.match(migration, /s\.category_id = new\.id[\s\S]*cp\.contest_id is distinct from new\.contest_id/);
+  assert.match(migration, /rs\.category_id = new\.id[\s\S]*rs\.contest_id is distinct from new\.contest_id/);
 });

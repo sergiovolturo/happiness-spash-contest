@@ -104,6 +104,57 @@ begin
 end;
 $function$;
 
+create or replace function public._validate_participation_contest_integrity()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+begin
+  if exists (
+    select 1
+      from public.submissions s
+      join public.contest_categories cc on cc.id = s.category_id
+     where s.participation_id = new.id
+       and cc.contest_id is distinct from new.contest_id
+  ) then
+    raise exception using errcode = 'P0001', message = 'participation_contest_change_would_break_submission_integrity';
+  end if;
+
+  return new;
+end;
+$function$;
+
+create or replace function public._validate_category_contest_integrity()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+begin
+  if exists (
+    select 1
+      from public.submissions s
+      join public.contest_participations cp on cp.id = s.participation_id
+     where s.category_id = new.id
+       and cp.contest_id is distinct from new.contest_id
+  ) then
+    raise exception using errcode = 'P0001', message = 'category_contest_change_would_break_submission_integrity';
+  end if;
+
+  if exists (
+    select 1
+      from public.contest_result_snapshots rs
+     where rs.category_id = new.id
+       and rs.contest_id is distinct from new.contest_id
+  ) then
+    raise exception using errcode = 'P0001', message = 'category_contest_change_would_break_snapshot_integrity';
+  end if;
+
+  return new;
+end;
+$function$;
+
 drop trigger if exists contest_result_snapshots_integrity_trg on public.contest_result_snapshots;
 create trigger contest_result_snapshots_integrity_trg
 before insert or update of contest_id, category_id
@@ -122,6 +173,20 @@ before insert or update of snapshot_id, submission_id
 on public.contest_result_entries
 for each row execute function public._validate_result_entry_integrity();
 
+drop trigger if exists contest_participations_contest_integrity_trg on public.contest_participations;
+create trigger contest_participations_contest_integrity_trg
+before update of contest_id
+on public.contest_participations
+for each row execute function public._validate_participation_contest_integrity();
+
+drop trigger if exists contest_categories_contest_integrity_trg on public.contest_categories;
+create trigger contest_categories_contest_integrity_trg
+before update of contest_id
+on public.contest_categories
+for each row execute function public._validate_category_contest_integrity();
+
 revoke all on function public._validate_result_snapshot_integrity() from public, anon, authenticated, service_role;
 revoke all on function public._validate_submission_contest_category_integrity() from public, anon, authenticated, service_role;
 revoke all on function public._validate_result_entry_integrity() from public, anon, authenticated, service_role;
+revoke all on function public._validate_participation_contest_integrity() from public, anon, authenticated, service_role;
+revoke all on function public._validate_category_contest_integrity() from public, anon, authenticated, service_role;
