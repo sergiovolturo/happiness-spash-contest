@@ -78,7 +78,15 @@ test('vote submission remains server-authoritative for duplicate prevention', ()
 test('anonymous vote flow has no email-based vote-status lookup', () => {
   assert.doesNotMatch(votingFlow, /eq\(['"]email['"]|voter_email|has_voted_by_email|verified_voter_identities/);
 });
-test('voter state refreshes after successful cast', () => assert.match(votingFlow, /await loadVoteState\(\);voteTarget=null/));
+test('voter state refreshes after successful cast', () => assert.match(votingFlow, /await loadVoteState\(\);[\s\S]*?voteTarget=null/));
+test('successful cast exposes an explicit confirmation after the RPC succeeds', () => {
+  assert.match(votingFlow, /if\(error\)\{[\s\S]*?voteInFlight\.delete\(key\);return\}await loadVoteState\(\);voteSuccessMessage='Voto registrato correttamente'/);
+  assert.match(index, /view\.insertAdjacentHTML\('afterbegin',msg\(voteSuccessMessage,'success'\)\)/);
+});
+test('vote errors do not set the success confirmation', () => {
+  const cast = votingFlow.slice(votingFlow.indexOf('async function castVoteFromDialog'), votingFlow.indexOf('async function galleryView'));
+  assert.doesNotMatch(cast.slice(0, cast.indexOf('if(error)')), /voteSuccessMessage/);
+});
 test('vote confirmation uses an explicit confirm action', () => {
   assert.match(votingFlow, /id="confirmVote"/);
   assert.match(votingFlow, /confirm\.onclick=castVoteFromDialog/);
