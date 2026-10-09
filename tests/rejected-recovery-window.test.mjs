@@ -60,3 +60,12 @@ test('player exposes replacement only when rejected recovery is available', () =
   assert.match(index, /La candidatura non può più essere ripresentata perché il periodo candidature è terminato/);
   assert.match(index, /Sostituisci il video e ripresenta la candidatura/);
 });
+
+test('all Player category selectors use the same blocked-category copy', () => {
+  const firstRenderer = index.slice(index.indexOf('async function submissionView('), index.indexOf('async function handleMediaUpload'));
+  for (const renderer of [firstRenderer, index]) {
+    assert.match(renderer, /Categoria completa/);
+    assert.match(renderer, /Hai già una candidatura/);
+    assert.match(renderer, /Candidatura da recuperare/);
+  }
+});
