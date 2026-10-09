@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const index = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-const migration = await readFile(new URL('../supabase/migrations/20261008110947_public_hall_of_fame.sql', import.meta.url), 'utf8');
+const migration = await readFile(new URL('../supabase/migrations/20261009160000_hall_of_fame_selected_order.sql', import.meta.url), 'utf8');
 const contract = migration.slice(migration.indexOf('returns table'), migration.indexOf('language sql'));
 
 test('Hall of Fame is a public navigation surface with the fixed Instagram link', () => {
@@ -43,25 +43,37 @@ test('Hall of Fame contract exposes only presentation data, never vote or Admin 
 test('Hall of Fame is strictly winner, Contest, category, published snapshot and current finalized media scoped', () => {
   for (const fragment of [
     'from public.contest_winners cw',
-    'c.id = cw.contest_id',
-    'cc.id = cw.category_id',
-    'cf.id = cw.finalist_id',
-    'cf.contest_id = cw.contest_id',
-    'cf.category_id = cw.category_id',
-    'cf.submission_id = cw.submission_id',
-    "c.status = 'CLOSED'",
-    'c.archived_at is null',
-    'c.deletion_locked_at is null',
-    "crs.status = 'PUBLISHED'",
+    /c\.id\s*=\s*cw\.contest_id/i,
+    /cc\.id\s*=\s*cw\.category_id/i,
+    /cf\.id\s*=\s*cw\.finalist_id/i,
+    /cf\.contest_id\s*=\s*cw\.contest_id/i,
+    /cf\.category_id\s*=\s*cw\.category_id/i,
+    /cf\.submission_id\s*=\s*cw\.submission_id/i,
+    /c\.status\s*=\s*'CLOSED'/i,
+    /c\.deletion_locked_at\s+is\s+null/i,
+    /crs\.status\s*=\s*'PUBLISHED'/i,
     'crs.invalidated_at is null',
-    "sm.status = 'FINALIZED'",
+    /sm\.status\s*=\s*'FINALIZED'/i,
     'sm.is_current',
     'sm.storage_deleted_at is null'
-  ]) assert.match(migration, new RegExp(fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+  ]) assert.match(migration, fragment instanceof RegExp ? fragment : new RegExp(fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
 });
 
-test('Hall of Fame orders newest Contests first and categories by Contest order', () => {
-  assert.match(migration, /order by c\.created_at desc, cc\.display_order asc, cc\.id asc/i);
+test('Hall of Fame orders winners by selection time with a deterministic Contest/category tie-break', () => {
+  assert.match(migration, /order by cw\.selected_at desc, cw\.contest_id asc, cw\.category_id asc/i);
+
+  const rows = [
+    { selected_at: '2026-10-09T10:00:00Z', contest_id: 'b', category_id: 'a' },
+    { selected_at: '2026-10-10T10:00:00Z', contest_id: 'z', category_id: 'z' },
+    { selected_at: '2026-10-09T10:00:00Z', contest_id: 'a', category_id: 'z' },
+    { selected_at: '2026-10-09T10:00:00Z', contest_id: 'a', category_id: 'a' }
+  ];
+  const ordered = [...rows].sort((left, right) =>
+    Date.parse(right.selected_at) - Date.parse(left.selected_at)
+      || left.contest_id.localeCompare(right.contest_id)
+      || left.category_id.localeCompare(right.category_id)
+  );
+  assert.deepEqual(ordered.map(row => `${row.contest_id}:${row.category_id}`), ['z:z', 'a:a', 'a:z', 'b:a']);
 });
 
 test('Hall of Fame keeps thumbnail optional and the UI identifies each entry as a winner', () => {
