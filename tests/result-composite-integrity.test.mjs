@@ -51,3 +51,13 @@ test('parent updates cannot invalidate existing child relationships', () => {
   assert.match(migration, /s\.category_id = new\.id[\s\S]*cp\.contest_id is distinct from new\.contest_id/);
   assert.match(migration, /rs\.category_id = new\.id[\s\S]*rs\.contest_id is distinct from new\.contest_id/);
 });
+
+test('integrity validators use row-level locks for concurrent parent and child changes', () => {
+  assert.equal((migration.match(/for update/g) || []).length, 7);
+  assert.match(migration, /where cc\.id = new\.category_id\s+for update/);
+  assert.match(migration, /where cp\.id = new\.participation_id\s+for update/);
+  assert.match(migration, /where rs\.id = new\.snapshot_id\s+for update/);
+  assert.match(migration, /where s\.id = new\.submission_id\s+for update of s/);
+  assert.match(migration, /order by cc\.id\s+for update of cc/);
+  assert.match(migration, /order by cp\.id\s+for update of cp/);
+});

@@ -12,10 +12,13 @@ as $function$
 declare
   v_category_contest_id uuid;
 begin
+  -- Lock the category before validating it. Snapshot writers use the same
+  -- parent lock, so a concurrent category move cannot pass this check.
   select cc.contest_id
     into v_category_contest_id
     from public.contest_categories cc
-   where cc.id = new.category_id;
+   where cc.id = new.category_id
+   for update;
 
   if not found then
     raise exception using errcode = 'P0001', message = 'result_snapshot_category_not_found';
@@ -39,10 +42,12 @@ declare
   v_category_contest_id uuid;
   v_participation_contest_id uuid;
 begin
+  -- Child writes lock category, then participation, in this fixed order.
   select cc.contest_id
     into v_category_contest_id
     from public.contest_categories cc
-   where cc.id = new.category_id;
+   where cc.id = new.category_id
+   for update;
   if not found then
     raise exception using errcode = 'P0001', message = 'submission_category_not_found';
   end if;
@@ -50,7 +55,8 @@ begin
   select cp.contest_id
     into v_participation_contest_id
     from public.contest_participations cp
-   where cp.id = new.participation_id;
+   where cp.id = new.participation_id
+   for update;
   if not found then
     raise exception using errcode = 'P0001', message = 'submission_participation_not_found';
   end if;
@@ -75,10 +81,12 @@ declare
   v_submission_category_id uuid;
   v_submission_contest_id uuid;
 begin
+  -- Lock the referenced snapshot and submission before comparing identities.
   select rs.contest_id, rs.category_id
     into v_snapshot_contest_id, v_snapshot_category_id
     from public.contest_result_snapshots rs
-   where rs.id = new.snapshot_id;
+   where rs.id = new.snapshot_id
+   for update;
   if not found then
     raise exception using errcode = 'P0001', message = 'result_entry_snapshot_not_found';
   end if;
@@ -87,7 +95,8 @@ begin
     into v_submission_category_id, v_submission_contest_id
     from public.submissions s
     join public.contest_participations cp on cp.id = s.participation_id
-   where s.id = new.submission_id;
+   where s.id = new.submission_id
+   for update of s;
   if not found then
     raise exception using errcode = 'P0001', message = 'result_entry_submission_not_found';
   end if;
@@ -111,6 +120,16 @@ security definer
 set search_path = ''
 as $function$
 begin
+  -- Participation updates already hold the participation row lock. Lock all
+  -- referenced categories before checking existing submissions. A concurrent
+  -- submission writer must acquire the same category/participation sequence.
+  perform 1
+    from public.contest_categories cc
+    join public.submissions s on s.category_id = cc.id
+   where s.participation_id = new.id
+   order by cc.id
+   for update of cc;
+
   if exists (
     select 1
       from public.submissions s
@@ -132,6 +151,15 @@ security definer
 set search_path = ''
 as $function$
 begin
+  -- Category updates already hold the category row lock. Lock referenced
+  -- participations before checking submissions, in deterministic id order.
+  perform 1
+    from public.contest_participations cp
+    join public.submissions s on s.participation_id = cp.id
+   where s.category_id = new.id
+   order by cp.id
+   for update of cp;
+
   if exists (
     select 1
       from public.submissions s
