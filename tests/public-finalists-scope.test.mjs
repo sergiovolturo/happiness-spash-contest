@@ -46,6 +46,7 @@ test('public finalist rendering exposes no votes, Top N, rank, cutoff or Admin p
   assert.doesNotMatch(publicFinalistFlow, /Voti:\s|Top\s+\d|vote_count|rank_position|cutoff|admin_preview_contest_results/i);
   const finalGalleryWrapper = index.slice(index.indexOf('const galleryViewWithScopedPrivacy'), index.indexOf('adminView=renderAdmin;', index.indexOf('const galleryViewWithScopedPrivacy')));
   assert.doesNotMatch(finalGalleryWrapper, /Voti:\s|Top\s+\d|vote_count|rank_position|cutoff|admin_preview_contest_results/i);
+  assert.doesNotMatch(index, /publicResultSummary/);
 });
 
 test('public result and category scoping are explicit in the final renderer', () => {
