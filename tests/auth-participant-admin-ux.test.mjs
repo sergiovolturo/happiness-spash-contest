@@ -5,9 +5,9 @@ import test from 'node:test';
 const index = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const syncAuthButtons = index.slice(index.indexOf('function syncAuthButtons()'), index.indexOf('function clearClientAuthState'));
 
-test('any authenticated session shows only logout', () => {
+test('any authenticated session keeps logout handling while the public login control is footer-only', () => {
   assert.match(syncAuthButtons, /const authenticated=!!session/);
-  assert.match(syncAuthButtons, /login\.classList\.toggle\('hidden',authenticated\)/);
+  assert.match(syncAuthButtons, /login\?\.classList\.toggle\('hidden',authenticated\)/);
   assert.match(syncAuthButtons, /logout\.classList\.toggle\('hidden',!authenticated\)/);
 });
 
