@@ -51,6 +51,11 @@ test('player exposes replacement only when rejected recovery is available', () =
   assert.match(index, /activeSubmissionForCategory=categoryId=>categoryId&&submissionRows\.some\(row=>row\.category_id===categoryId&&\['PENDING','APPROVED','REJECTED'\]\.includes/);
   assert.match(index, /otherActiveSubmissionForCategory=.*\['PENDING','APPROVED'\]\.includes/);
   assert.match(index, /blocked=activeSubmissionForCategory\(c\.id\)/);
+  assert.match(index, /existing=submissionRows\.find\(row=>row\.category_id===c\.id&&\['PENDING','APPROVED','REJECTED'\]\.includes/);
+  assert.match(index, /Categoria completa/);
+  assert.match(index, /Hai già una candidatura/);
+  assert.match(index, /Candidatura da recuperare/);
+  assert.match(index, /\(blocked\|\|full\?'disabled':''\)/);
   assert.match(index, /r\.status==='REJECTED'&&recovery\.available/);
   assert.match(index, /La candidatura non può più essere ripresentata perché il periodo candidature è terminato/);
   assert.match(index, /Sostituisci il video e ripresenta la candidatura/);
