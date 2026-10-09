@@ -37,7 +37,7 @@ const adminSectionEmpty=compile('adminSectionEmpty');
 test('overview final composition has one create control and no archive action on cards',async()=>{
   const rows=[{id:'one',name:'Contest corrente',status:'DRAFT',archived_at:null},{id:'old',name:'Contest storico',status:'CLOSED',archived_at:'2026-09-20T10:00:00Z'}];
   const view=new FakeView();
-  const renderOverview=compile('renderAdminOverview',{renderIsCurrent,adminContestRows:rows,adminSelectedContest:rows[0],adminSelectedCategories:[],esc,fmt,adminReadableStatus,adminOverviewAction,adminOverviewMessage});
+  const renderOverview=compile('renderAdminOverview',{renderIsCurrent,adminContestRows:rows,adminCompletedArchiveContestIds:new Set(),adminSelectedContest:rows[0],adminSelectedCategories:[],esc,fmt,adminReadableStatus,adminOverviewAction,adminOverviewMessage});
   const bindCreate=compile('adminBindOverviewCreate',{supabase:{rpc(){throw new Error('submit was not requested')}},adminSlugify:value=>value,adminSelectedContestId:null,adminSection:'overview',currentTab:'admin',render:async()=>{},msg:()=>''});
   await renderOverview(view,1);
   bindCreate(view);
@@ -45,6 +45,18 @@ test('overview final composition has one create control and no archive action on
   assert.equal(count(view.html,/data-admin-overview-action="archive"/g),0);
   assert.equal(count(view.html,/id="adminNewContestForm"/g),1);
   assert.match(view.html,/Archivio storico/);
+});
+
+test('overview omits restore only for completed archived cards, even when another Contest is selected',async()=>{
+  const rows=[{id:'current',name:'Contest corrente',status:'CLOSED',archived_at:null},{id:'completed',name:'Contest completato',status:'CLOSED',archived_at:'2026-09-20T10:00:00Z'},{id:'legacy',name:'Contest legacy',status:'CLOSED',archived_at:'2026-09-19T10:00:00Z'}];
+  const dependencies={renderIsCurrent,adminContestRows:rows,adminCompletedArchiveContestIds:new Set(['completed']),adminSelectedContest:rows[0],adminSelectedCategories:[],esc,fmt,adminReadableStatus,adminOverviewAction,adminOverviewMessage};
+  const renderOverview=compile('renderAdminOverview',dependencies);
+  const view=new FakeView();
+  await renderOverview(view,1);
+  const completedCard=view.html.slice(view.html.indexOf('data-admin-overview-contest="completed"'),view.html.indexOf('data-admin-overview-contest="legacy"'));
+  const legacyCard=view.html.slice(view.html.indexOf('data-admin-overview-contest="legacy"'));
+  assert.doesNotMatch(completedCard,/Ripristina/);
+  assert.match(legacyCard,/Ripristina/);
 });
 
 test('Contest DRAFT final composition contains only the preparation workflow',async()=>{
