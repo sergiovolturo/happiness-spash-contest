@@ -5,10 +5,12 @@ import test from 'node:test';
 const index = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const syncAuthButtons = index.slice(index.indexOf('function syncAuthButtons()'), index.indexOf('function clearClientAuthState'));
 
-test('any authenticated session keeps logout handling while the public login control is footer-only', () => {
-  assert.match(syncAuthButtons, /const authenticated=!!session/);
-  assert.match(syncAuthButtons, /login\?\.classList\.toggle\('hidden',authenticated\)/);
-  assert.match(syncAuthButtons, /logout\.classList\.toggle\('hidden',!authenticated\)/);
+test('only an authenticated Admin session keeps the logout control visible', () => {
+  assert.match(syncAuthButtons, /const authenticatedAdmin=!!session&&isAdmin/);
+  assert.match(syncAuthButtons, /logout\.classList\.toggle\('hidden',!authenticatedAdmin\)/);
+  assert.doesNotMatch(syncAuthButtons, /login/);
+  assert.doesNotMatch(index, /login\.onclick=\(\)=>authView\(\)/);
+  assert.match(index, /id="adminAccessLink"/);
 });
 
 test('Admin authorization remains server-backed by admin_users', () => {

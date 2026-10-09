@@ -4,7 +4,7 @@ import test from 'node:test';
 
 const index = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const logoutHandler = index.slice(index.indexOf('logout.onclick='), index.indexOf('function forgotPasswordView'));
-const authListener = index.slice(index.indexOf('supabase.auth.onAuthStateChange'), index.indexOf('login.onclick'));
+const authListener = index.slice(index.indexOf('supabase.auth.onAuthStateChange'), index.indexOf('function forgotPasswordView'));
 
 test('AuthSessionMissingError is classified by stable Supabase error identity', () => {
   const expression = index.match(/const isAuthSessionMissingError=([^;]+);/)?.[1];
