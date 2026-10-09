@@ -8,11 +8,26 @@ const migration = fs.readFileSync('supabase/migrations/20261009120000_make_compl
 const restoreSource = fs.readFileSync('supabase/migrations/20260929000200_contest_workspace_archive_purge.sql', 'utf8');
 
 test('completed archive has no restore CTA and shows irreversible copy', () => {
-  assert.match(index, /contest_archive_requests.*status.*COMPLETED/s);
+  assert.match(index, /const archivedIds=adminContestRows\.filter\(contest=>contest\.archived_at\)/);
+  assert.match(index, /select\('contest_id'\)\.in\('contest_id',archivedIds\)\.eq\('status','COMPLETED'\)/);
   assert.match(index, /Archiviazione completata\. I dati storici sono conservati; i media non vincitori sono stati eliminati definitivamente\./);
   assert.match(index, /data-admin-restore-contest/);
   assert.match(index, /data-admin-overview-action="restore"/);
-  assert.match(index, /button\.remove\(\)/);
+});
+
+test('overview scopes the restore CTA per archived Contest, not the selected Contest', () => {
+  assert.match(index, /c\.archived_at&&!adminCompletedArchiveContestIds\.has\(c\.id\)\?/);
+  assert.doesNotMatch(index, /adminCompletedArchivePresentation/);
+});
+
+test('overview preserves restore for legacy archived Contests without COMPLETED', () => {
+  assert.match(index, /c\.archived_at&&!adminCompletedArchiveContestIds\.has\(c\.id\)\?.*Ripristina/s);
+});
+
+test('settings hides restore and shows irreversible copy for COMPLETED archives', () => {
+  assert.match(index, /archiveCompleted=archived&&adminCompletedArchiveContestIds\.has\(contest\.id\)/);
+  assert.match(index, /archived&&!archiveCompleted\?/);
+  assert.match(index, /archiveCompleted\?'<div class="notice">Archiviazione completata/);
 });
 
 test('legacy archived contests can still use restore, while completed archives are filtered first', () => {
