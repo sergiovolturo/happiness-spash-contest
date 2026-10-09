@@ -10,11 +10,11 @@ test('public tiebreak finalist is derived only from a finalist sharing rank with
   assert.match(index, /Number\(peer\.rank_position\)===Number\(row\.rank_position\)/);
 });
 
-test('public finalists and video result expose the Instagram tiebreak note', () => {
+test('public finalists retain the Instagram tiebreak note without exposing video results', () => {
   const matches = index.match(/Finalista dopo spareggio su Instagram/g) || [];
-  assert.equal(matches.length, 2);
+  assert.equal(matches.length, 1);
   assert.match(index, /publicOfficialFinalists\.compact li \.publicTiebreakNote\{grid-column:2\}/);
-  assert.match(index, /publicResultSummary[^]*publicResultIsTiebreakFinalist\(result,publicResultRows\)/);
+  assert.doesNotMatch(index, /publicResultSummary|resultSummary/);
 });
 
 test('public copy does not describe the tiebreak finalist as an Admin choice', () => {

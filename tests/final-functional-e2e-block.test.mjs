@@ -49,11 +49,15 @@ test('public results are loaded only after the voting window closes', () => {
   assert.match(index, /if\(votingClosed\|\|\['VOTING_CLOSED','CLOSED'\]\.includes\(nextContest\.status\)\)/);
 });
 
-test('public result rendering is post-vote only and exposes aggregate data', () => {
-  assert.match(index, /Voti: '\+result\.vote_count/);
-  assert.match(index, /Top 4 · Finalissima Instagram/);
-  assert.match(index, /const votingClosed=publicContest\.voting_close_at&&Date\.now\(\)>=Date\.parse\(publicContest\.voting_close_at\)/);
-  assert.doesNotMatch(index.slice(index.indexOf('const galleryViewBeforeFunctionalResults')), /voter|email|identity|UUID/i);
+test('public gallery remains finalist-only and never generates aggregate vote summaries', () => {
+  const activeGalleryStart = index.lastIndexOf('galleryView=async function(requestId=activeRenderRequestId)');
+  const activeGalleryEnd = index.indexOf('submissionView=async function', activeGalleryStart);
+  const activeGallery = index.slice(activeGalleryStart, activeGalleryEnd);
+  assert.doesNotMatch(index, /Voti:\s|publicResultSummary/);
+  assert.doesNotMatch(activeGallery, /vote_count|rank_position|Top\s+\d|Finalissima Instagram/);
+  assert.match(index, /publicOfficialFinalistsCompactMarkup/);
+  assert.match(index, /get_public_contest_results/);
+  assert.doesNotMatch(activeGallery, /voter|email|identity|UUID/i);
 });
 
 test('public results require a current published snapshot and remain aggregate-only', () => {
