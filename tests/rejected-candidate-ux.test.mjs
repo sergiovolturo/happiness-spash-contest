@@ -20,7 +20,7 @@ test('REJECTED keeps the rejection reason and offers replacement/re-submit CTA',
 });
 
 test('Player upload rule matches the backend-supported states', () => {
-  assert.match(playerCard, /canUpload=\(r\.status==='PENDING'&&!current\)\|\|r\.status==='REJECTED'/);
+  assert.match(playerCard, /canUpload=\(r\.status==='PENDING'&&!current\)\|\|\(r\.status==='REJECTED'&&recovery\.available\)/);
   assert.doesNotMatch(playerCard, /canUpload=r\.status==='REJECTED'\|\|!current/);
 });
 

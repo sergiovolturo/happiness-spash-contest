@@ -122,8 +122,8 @@ test('submission still uses the existing create/upload/finalize pipeline', () =>
   assert.match(index, /finalize_submission_media_upload/);
 });
 
-test('active PENDING or APPROVED candidature is blocked before OTP or create_submission', () => {
-  assert.match(index, /activeSubmissionForCategory=categoryId=>categoryId&&submissionRows\.some\(row=>row\.category_id===categoryId&&\['PENDING','APPROVED'\]\.includes\(String\(row\.status\|\|''\)\.toUpperCase\(\)\)\)/);
+test('active or rejected candidature is blocked before OTP or create_submission', () => {
+  assert.match(index, /activeSubmissionForCategory=categoryId=>categoryId&&submissionRows\.some\(row=>row\.category_id===categoryId&&\['PENDING','APPROVED','REJECTED'\]\.includes\(String\(row\.status\|\|''\)\.toUpperCase\(\)\)\)/);
   assert.match(index, /submitSubmissionValues\(request\)[\s\S]*?loadParticipantContext\(\)[\s\S]*?activeSubmissionForCategory\(categoryId\)[\s\S]*?submission_already_exists[\s\S]*?supabase\.rpc\('create_submission'/);
 });
 
@@ -135,8 +135,9 @@ test('selected active category disables the candidature CTA and shows the approv
   assert.match(wrapper, /if\(button\)button\.disabled=blocked/);
 });
 
-test('rejected, withdrawn and cancelled submissions do not enter the active guard', () => {
-  assert.match(index, /\['PENDING','APPROVED'\]\.includes\(String\(row\.status\|\|''\)\.toUpperCase\(\)\)/);
+test('withdrawn and cancelled submissions do not enter the active guard', () => {
+  assert.match(index, /\['PENDING','APPROVED','REJECTED'\]\.includes\(String\(row\.status\|\|''\)\.toUpperCase\(\)\)/);
+  assert.match(index, /otherActiveSubmissionForCategory=.*\['PENDING','APPROVED'\]\.includes/);
   assert.doesNotMatch(index, /\['PENDING','APPROVED','REJECTED','WITHDRAWN','CANCELLED'\]\.includes/);
 });
 
