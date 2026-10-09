@@ -9,9 +9,31 @@ const contract = migration.slice(migration.indexOf('returns table'), migration.i
 test('Hall of Fame is a public navigation surface with the fixed Instagram link', () => {
   assert.match(index, /\['hall-of-fame','Hall Of Fame'\]/);
   assert.match(index, /get_public_hall_of_fame/);
-  assert.match(index, /Seguici su Instagram →/);
+  assert.doesNotMatch(index, /Seguici su Instagram →/);
   assert.match(index, /https:\/\/www\.instagram\.com\/centro_sportivo_happiness\//g);
   assert.doesNotMatch(index, /Guarda il risultato su Instagram/);
+});
+
+test('Hall of Fame copy and public social block use the requested labels and links', () => {
+  assert.match(index, /I vincitori ufficiali dei Contest Happiness Spash\./);
+  assert.match(index, /Entrato nella Hall Of Fame '\+fmtHallOfFameDate\(row\.selected_at\)/);
+  assert.doesNotMatch(index, /Selezionato '\+fmt\(row\.selected_at\)/);
+  assert.doesNotMatch(index, /fmtHallOfFameDate\(row\.selected_at\).*\d{2}:\d{2}/);
+  assert.match(index, /Segui Centro Sportivo Happiness sui social/);
+  for (const url of [
+    'https://www.instagram.com/centro_sportivo_happiness/',
+    'https://www.facebook.com/share/1HpY1Ciq1z/?mibextid=wwXIfr',
+    'https://www.twitch.tv/centro_sportivo_happiness',
+    'https://www.centrosportivohappiness.it'
+  ]) assert.match(index, new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.strictEqual((index.match(/class="publicSocialIcon"/g)||[]).length, 4);
+  assert.strictEqual((index.match(/class="publicSocialLinks"/g)||[]).length, 1);
+  const social = index.slice(index.indexOf('const publicSocial='), index.indexOf('const publicFooter='));
+  assert.strictEqual((social.match(/target="_blank" rel="noopener noreferrer"/g)||[]).length, 4);
+  assert.match(index, /aria-label="Instagram Centro Sportivo Happiness"/);
+  assert.match(index, /aria-label="Facebook Centro Sportivo Happiness"/);
+  assert.match(index, /aria-label="Twitch Centro Sportivo Happiness"/);
+  assert.match(index, /aria-label="Sito web Centro Sportivo Happiness"/);
 });
 
 test('public navigation orders Contest, Candidatura, then Hall Of Fame', () => {
@@ -21,14 +43,11 @@ test('public navigation orders Contest, Candidatura, then Hall Of Fame', () => {
   assert.ok(nav.indexOf("['upload','Candidatura']") < nav.indexOf("['hall-of-fame','Hall Of Fame']"));
 });
 
-test('public footer uses the same Instagram profile link', () => {
-  assert.match(index, /const publicFooter=.*PUBLIC_INSTAGRAM_URL/);
+test('public footer keeps the Centro Sportivo Happiness label without duplicating social links', () => {
   assert.match(index, /<span class="muted">Centro Sportivo Happiness<\/span>/);
   assert.doesNotMatch(index.slice(index.indexOf('const publicFooter='), index.indexOf('let navBound=')), /HAPPINESS SPASH CONTEST/);
-  assert.match(index, /aria-label="Instagram centro_sportivo_happiness"/);
-  assert.match(index, /class="instagramIcon"/);
-  assert.match(index, /target="_blank" rel="noopener noreferrer"/);
-  assert.doesNotMatch(index, />@centro_sportivo_happiness<\/a>/);
+  assert.match(index, /<footer class="publicFooter"><span class="muted">Centro Sportivo Happiness<\/span><\/footer>/);
+  assert.doesNotMatch(index, /class="instagramIcon"/);
 });
 
 test('Hall of Fame contract exposes only presentation data, never vote or Admin metadata', () => {
