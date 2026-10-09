@@ -87,8 +87,19 @@ begin
       v_objects,v_submission.contestant_display_name,v_submission.category_id,auth.uid(),p_reason)
     returning * into v_request;
   else
-    -- A pending retry re-normalizes the same request instead of creating a
-    -- second request or preserving a stale thumbnail/video plan.
+    -- A pending retry keeps the original plan as well as objects that are
+    -- still present. This preserves audit coverage for objects already
+    -- removed by a partial earlier attempt.
+    select coalesce(jsonb_agg(jsonb_build_object('bucket',planned.bucket,'path',planned.path)
+                              order by planned.bucket,planned.path),'[]'::jsonb)
+      into v_objects
+      from (
+        select item->>'bucket' as bucket,item->>'path' as path
+          from jsonb_array_elements(coalesce(v_request.storage_objects,'[]'::jsonb)) previous(item)
+        union
+        select item->>'bucket' as bucket,item->>'path' as path
+          from jsonb_array_elements(v_objects) current(item)
+      ) planned;
     update public.contest_media_deletion_requests
        set storage_bucket=v_media.storage_bucket,
            storage_path=v_media.storage_path,

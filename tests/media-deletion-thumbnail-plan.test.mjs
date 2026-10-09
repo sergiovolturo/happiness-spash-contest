@@ -24,8 +24,23 @@ test('pending retries reuse one request and normalize stale plans without creati
   assert.match(prepare, /where media_id=p_media_id and status='PENDING'/);
   assert.match(prepare, /for update/);
   assert.match(prepare, /if not found then[\s\S]*insert into public\.contest_media_deletion_requests/);
+  assert.match(prepare, /jsonb_array_elements\(coalesce\(v_request\.storage_objects,'\[\]'::jsonb\)\)/);
+  assert.match(prepare, /jsonb_array_elements\(v_objects\) current\(item\)/);
   assert.match(prepare, /else[\s\S]*update public\.contest_media_deletion_requests[\s\S]*storage_objects=v_objects/);
   assert.match(prepare, /returning \* into v_request/);
+});
+
+test('partial retry preserves an already-removed object for the final audit', () => {
+  assert.match(prepare, /keeps the original plan as well as objects that are/);
+  assert.match(prepare, /select item->>'bucket' as bucket,item->>'path' as path[\s\S]*from jsonb_array_elements\(coalesce\(v_request\.storage_objects/);
+  assert.match(finalize, /from jsonb_array_elements\(v_objects\) planned\(item\)/);
+  assert.match(finalize, /contest_media_deletion_audit/);
+});
+
+test('an empty stored plan remains an empty plan when no objects exist', () => {
+  assert.match(prepare, /coalesce\(v_request\.storage_objects,'\[\]'::jsonb\)/);
+  assert.match(finalize, /v_objects=coalesce\(v_request\.storage_objects,/);
+  assert.match(finalize, /from jsonb_array_elements\(v_objects\) planned\(item\)/);
 });
 
 test('finalize checks every planned object before changing publication, audit or media rows', () => {
