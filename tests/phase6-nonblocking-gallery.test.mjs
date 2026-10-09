@@ -32,7 +32,7 @@ test('initial public gallery does not download media files',()=>{
 });
 
 test('auth refresh and duplicate same-user sign-in do not trigger render',()=>{
-  const auth=source.slice(source.indexOf('supabase.auth.onAuthStateChange'),source.indexOf('login.onclick'));
+  const auth=source.slice(source.indexOf('supabase.auth.onAuthStateChange'),source.indexOf('function forgotPasswordView'));
   assert.doesNotMatch(auth,/event==='TOKEN_REFRESHED'[^|&]*render\(\)/);
   assert.match(auth,/identityChanged=previousUserId!==nextUserId/);
   assert.match(auth,/shouldRender=event==='INITIAL_SESSION'/);
