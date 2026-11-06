@@ -71,7 +71,7 @@ test('generated PWA assets have their declared dimensions', () => {
   assert.deepEqual(pngDimensions('../assets/apple-touch-icon.png'), { width: 180, height: 180 });
 });
 
-test('maskable icon has opaque black outer corners instead of a white canvas', () => {
+test('maskable icon has an opaque uniform ten-pixel outer safety fascia', () => {
   const icon = readRgbaPng('../assets/pwa-icon-512-maskable.png');
   const corners = [[0, 0], [icon.width - 1, 0], [0, icon.height - 1], [icon.width - 1, icon.height - 1]];
   const expected = [
@@ -87,6 +87,12 @@ test('maskable icon has opaque black outer corners instead of a white canvas', (
   }
   for (let y = 1; y < icon.height - 1; y += 1) perimeter.push([0, y], [icon.width - 1, y]);
   assert.ok(perimeter.every(([x, y]) => [...icon.rows[y].subarray(x * 4, x * 4 + 4)].every((value, index) => value === expected[0][index])));
+  const outerFascia = [];
+  for (let band = 0; band < 10; band += 1) {
+    for (let x = 0; x < icon.width; x += 1) outerFascia.push([x, band], [x, icon.height - 1 - band]);
+    for (let y = 10; y < icon.height - 10; y += 1) outerFascia.push([band, y], [icon.width - 1 - band, y]);
+  }
+  assert.ok(outerFascia.every(([x, y]) => [...icon.rows[y].subarray(x * 4, x * 4 + 4)].every((value, index) => value === expected[0][index])));
 });
 
 test('index links the manifest, app icons and registers the service worker', () => {
