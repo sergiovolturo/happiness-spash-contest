@@ -71,10 +71,15 @@ test('generated PWA assets have their declared dimensions', () => {
   assert.deepEqual(pngDimensions('../assets/apple-touch-icon.png'), { width: 180, height: 180 });
 });
 
-test('maskable icon has transparent outer corners instead of a white canvas', () => {
+test('maskable icon has opaque black outer corners instead of a white canvas', () => {
   const icon = readRgbaPng('../assets/pwa-icon-512-maskable.png');
   const corners = [[0, 0], [icon.width - 1, 0], [0, icon.height - 1], [icon.width - 1, icon.height - 1]];
-  assert.deepEqual(corners.map(([x, y]) => icon.rows[y][x * 4 + 3]), [0, 0, 0, 0]);
+  assert.deepEqual(corners.map(([x, y]) => [...icon.rows[y].subarray(x * 4, x * 4 + 4)]), [
+    [17, 17, 17, 255],
+    [17, 17, 17, 255],
+    [17, 17, 17, 255],
+    [17, 17, 17, 255],
+  ]);
 });
 
 test('index links the manifest, app icons and registers the service worker', () => {
