@@ -74,12 +74,19 @@ test('generated PWA assets have their declared dimensions', () => {
 test('maskable icon has opaque black outer corners instead of a white canvas', () => {
   const icon = readRgbaPng('../assets/pwa-icon-512-maskable.png');
   const corners = [[0, 0], [icon.width - 1, 0], [0, icon.height - 1], [icon.width - 1, icon.height - 1]];
-  assert.deepEqual(corners.map(([x, y]) => [...icon.rows[y].subarray(x * 4, x * 4 + 4)]), [
+  const expected = [
     [17, 17, 17, 255],
     [17, 17, 17, 255],
     [17, 17, 17, 255],
     [17, 17, 17, 255],
-  ]);
+  ];
+  assert.deepEqual(corners.map(([x, y]) => [...icon.rows[y].subarray(x * 4, x * 4 + 4)]), expected);
+  const perimeter = [];
+  for (let x = 0; x < icon.width; x += 1) {
+    perimeter.push([x, 0], [x, icon.height - 1]);
+  }
+  for (let y = 1; y < icon.height - 1; y += 1) perimeter.push([0, y], [icon.width - 1, y]);
+  assert.ok(perimeter.every(([x, y]) => [...icon.rows[y].subarray(x * 4, x * 4 + 4)].every((value, index) => value === expected[0][index])));
 });
 
 test('index links the manifest, app icons and registers the service worker', () => {
