@@ -7,10 +7,11 @@ const migration = fs.readFileSync(
   'utf8'
 );
 
-test('performance migration keeps RLS semantics while using statement-scoped auth.uid', () => {
-  assert.match(migration, /alter policy/i);
-  assert.match(migration, /replace\(p\.qual, 'auth\.uid\(\)', '\(select auth\.uid\(\)\)'\)/i);
-  assert.match(migration, /replace\(p\.with_check, 'auth\.uid\(\)', '\(select auth\.uid\(\)\)'\)/i);
+test('performance migration uses explicit policy alterations without dynamic catalog loops', () => {
+  assert.match(migration, /alter policy contest_participations_admin_all/i);
+  assert.match(migration, /alter policy submissions_select_own_or_admin/i);
+  assert.match(migration, /alter policy submission_media_select_owner_or_admin/i);
+  assert.doesNotMatch(migration, /pg_policies|for\s+p\s+in|replace\s*\(/i);
   assert.doesNotMatch(migration, /drop policy|disable row level security/i);
 });
 
