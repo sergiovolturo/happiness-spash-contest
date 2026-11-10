@@ -1,9 +1,7 @@
 -- Expose only the resolved thumbnail coordinate on the already-public media
 -- surface. This removes speculative .webp/.jpg probing without exposing
 -- Storage objects or administrative metadata.
-drop view public.published_submission_media;
-
-create view public.published_submission_media as
+create or replace view public.published_submission_media as
 select
   sp.id as publication_id,
   sp.submission_id,
@@ -35,6 +33,3 @@ where sp.revoked_at is null
   and sm.is_current
   and c.archived_at is null
   and c.deletion_locked_at is null;
-
-revoke all on public.published_submission_media from public, anon, authenticated, service_role;
-grant select on public.published_submission_media to anon, authenticated;

@@ -40,3 +40,19 @@ test('public media reads the resolved thumbnail path and avoids speculative exte
   assert.match(migration, /coalesce\(tw\.name, tj\.name\) as thumbnail_path/i);
   assert.doesNotMatch(html, /thumbnailPathCandidates.*Promise\.all|storage\.from\(thumbnailStorageBucket\)\.download\([^)]*\.webp[^)]*\).*\.jpg/i);
 });
+
+test('thumbnail view replacement preserves dependencies, grants and historical column order', async () => {
+  const migration = await readFile(new URL('../supabase/migrations/20261110103000_public_thumbnail_paths.sql', import.meta.url), 'utf8');
+  assert.match(migration, /create or replace view public\.published_submission_media as/i);
+  assert.doesNotMatch(migration, /drop view|cascade/i);
+  assert.doesNotMatch(migration, /published_contest_thumbnail_bucket_objects_select/i);
+  assert.doesNotMatch(migration, /\b(?:revoke|grant)\s+(?:all|select|insert|update|delete|usage)/i);
+  const selectList = migration.match(/select([\s\S]*?)from public\.submission_publications/i)?.[1] || '';
+  const columns = ['sp.id as publication_id','sp.submission_id','sp.media_id','cc.contest_id','s.category_id','s.contestant_display_name','cc.name as category_name','sp.published_at','sm.storage_bucket','sm.storage_path','thumbnail_bucket','thumbnail_path'];
+  let previous = -1;
+  for (const column of columns) {
+    const position = selectList.indexOf(column);
+    assert.ok(position > previous, `column order missing or changed: ${column}`);
+    previous = position;
+  }
+});
