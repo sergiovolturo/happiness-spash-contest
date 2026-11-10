@@ -79,9 +79,11 @@ test('each accepted frame maps to one deterministic Storage object path', () => 
   assert.match(html, /upload\(path,blob,\{contentType,upsert:false\}\)/);
 });
 
-test('thumbnail probing is at most one WebP-to-JPEG sequence per media in a session', () => {
+test('thumbnail resolution is exact for current public rows and cached for legacy fallback', () => {
   assert.match(html, /galleryThumbnailRequests=new Map\(\)/);
   assert.match(html, /galleryThumbnailMisses=new Set\(\)/);
+  assert.match(html, /Object\.prototype\.hasOwnProperty\.call\(row,'thumbnail_path'\)/);
+  assert.match(html, /row\.thumbnail_path\?\[row\.thumbnail_path\]:\[\]/);
   assert.match(html, /if\(galleryThumbnailMisses\.has\(row\.media_id\)\)return ''/);
   assert.match(html, /if\(galleryThumbnailRequests\.has\(row\.media_id\)\)return galleryThumbnailRequests\.get\(row\.media_id\)/);
   assert.match(html, /galleryThumbnailMisses\.add\(row\.media_id\)/);
@@ -91,7 +93,7 @@ test('new thumbnail generation keeps WebP deterministic while legacy JPEG remain
   assert.match(html, /canvasToBlob\(canvas,'image\/webp',\.82\)/);
   assert.match(html, /extension:'webp',contentType:'image\/webp'/);
   assert.match(html, /extension:'jpg',contentType:'image\/jpeg'/);
-  assert.match(html, /thumbnailPathCandidates=row=>row\.thumbnail_path\?/);
+  assert.match(html, /thumbnailPathCandidates=row=>Object\.prototype\.hasOwnProperty\.call\(row,'thumbnail_path'\)/);
 });
 
 test('public gallery uses a thumbnail when available and keeps the poster fallback', () => {

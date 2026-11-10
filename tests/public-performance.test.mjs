@@ -30,3 +30,13 @@ test('public thumbnail and video URLs are cached and invalidated with gallery st
   assert.match(html, /galleryRequestSeq\+\+/);
   assert.match(html, /clearGalleryObjectUrls\(\)/);
 });
+
+test('public media reads the resolved thumbnail path and avoids speculative extension probes', async () => {
+  const migration = await readFile(new URL('../supabase/migrations/20261110103000_public_thumbnail_paths.sql', import.meta.url), 'utf8');
+  assert.match(html, /thumbnail_bucket,thumbnail_path/);
+  assert.match(html, /Object\.prototype\.hasOwnProperty\.call\(row,'thumbnail_path'\)/);
+  assert.match(migration, /left join storage\.objects tw/i);
+  assert.match(migration, /left join storage\.objects tj/i);
+  assert.match(migration, /coalesce\(tw\.name, tj\.name\) as thumbnail_path/i);
+  assert.doesNotMatch(html, /thumbnailPathCandidates.*Promise\.all|storage\.from\(thumbnailStorageBucket\)\.download\([^)]*\.webp[^)]*\).*\.jpg/i);
+});
