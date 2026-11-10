@@ -634,7 +634,9 @@ async function loadPublicContestDirectory(requestId){
   if(requestId&&!renderIsCurrent(requestId))return false;
   const rows=(Array.isArray(result.data)?result.data:[result.data]).filter(Boolean).filter(contest=>publicActiveStatuses.has(contest.status)).sort(publicContestSort);
   publicContestRows=rows;publicContestDirectoryCategories=new Map();
-  for(const contest of rows){const categories=await supabase.rpc('get_public_contest_categories',{p_contest_id:contest.id});if(requestId&&!renderIsCurrent(requestId))return false;if(categories.error){publicCategoryError=categories.error;publicContestDirectoryCategories.set(contest.id,[])}else publicContestDirectoryCategories.set(contest.id,categories.data||[])}
+  const categoryResults=await Promise.all(rows.map(contest=>supabase.rpc('get_public_contest_categories',{p_contest_id:contest.id})));
+  if(requestId&&!renderIsCurrent(requestId))return false;
+  categoryResults.forEach((categories,index)=>{const contest=rows[index];if(categories.error){publicCategoryError=categories.error;publicContestDirectoryCategories.set(contest.id,[])}else publicContestDirectoryCategories.set(contest.id,categories.data||[])});
   const selected=rows.find(row=>row.id===publicContest?.id)||rows[0]||null;
   if(selected)await loadPublicContestSelection(selected);else{publicContest=null;publicCategories=[];publicActiveContest=null;publicActiveCategories=[]}
   return true;

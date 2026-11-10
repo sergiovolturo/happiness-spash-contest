@@ -87,6 +87,13 @@ test('thumbnail probing is at most one WebP-to-JPEG sequence per media in a sess
   assert.match(html, /galleryThumbnailMisses\.add\(row\.media_id\)/);
 });
 
+test('new thumbnail generation keeps WebP deterministic while legacy JPEG remains a compatibility fallback', () => {
+  assert.match(html, /canvasToBlob\(canvas,'image\/webp',\.82\)/);
+  assert.match(html, /extension:'webp',contentType:'image\/webp'/);
+  assert.match(html, /extension:'jpg',contentType:'image\/jpeg'/);
+  assert.match(html, /thumbnailPathCandidates=row=>row\.thumbnail_path\?/);
+});
+
 test('public gallery uses a thumbnail when available and keeps the poster fallback', () => {
   assert.match(html, /thumbnailPathCandidates/);
   assert.match(html, /resolveGalleryThumbnail/);
