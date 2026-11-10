@@ -48,8 +48,13 @@ test('legacy thumbnail cleanup removes only the two old contest-videos policies'
   assert.doesNotMatch(cleanupMigration, /contest_thumbnail_bucket_objects_insert|published_contest_thumbnail_bucket_objects_select/);
 });
 
-test('thumbnail generation validates the actual Blob MIME and falls back to JPEG', () => {
-  assert.match(html, /Math\.min\(\.75,[\s\S]*video\.duration/);
+test('thumbnail generation probes several frames and rejects unusable imagery', () => {
+  assert.match(html, /thumbnailFrameRatios=\[\.12,\.25,\.4,\.6,\.8\]/);
+  assert.match(html, /thumbnailFrameIsUsable=/);
+  assert.match(html, /mean>12&&mean<243/);
+  assert.match(html, /variance>120&&max-min>42/);
+  assert.match(html, /thumbnail_no_valid_frame/);
+  assert.match(html, /seekThumbnailFrame/);
   assert.match(html, /const canvasToBlob=\(canvas,type,quality\)=>new Promise/);
   assert.match(html, /webp\?\.type==='image\/webp'/);
   assert.match(html, /jpeg\?\.type==='image\/jpeg'/);
@@ -60,6 +65,18 @@ test('thumbnail generation validates the actual Blob MIME and falls back to JPEG
   assert.match(html, /async function uploadVideoThumbnail/);
   assert.match(html, /optional generation\/upload failed/);
   assert.match(html, /void uploadVideoThumbnail/);
+});
+
+test('thumbnail fallback keeps the video valid when every candidate is black, white or uniform', () => {
+  assert.match(html, /throw new Error\('thumbnail_no_valid_frame'\)/);
+  assert.match(html, /optional generation\/upload failed/);
+  assert.match(html, /await handleMediaUploadBeforeThumbnail\(event\)/);
+  assert.match(html, /await adminUploadAndFinalizeBeforeThumbnail\(media,file,messageBox\)/);
+});
+
+test('each accepted frame maps to one deterministic Storage object path', () => {
+  assert.match(html, /const path=`submission-thumbnails\/\$\{media\.submission_id\}\/\$\{media\.id\}\.\$\{extension\}`/);
+  assert.match(html, /upload\(path,blob,\{contentType,upsert:false\}\)/);
 });
 
 test('thumbnail probing is at most one WebP-to-JPEG sequence per media in a session', () => {
